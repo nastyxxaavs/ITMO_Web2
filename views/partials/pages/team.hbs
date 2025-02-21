@@ -1,0 +1,25 @@
+{{> generalTemplate}}
+<head>
+  <link href="../../../public/styles/team.css" rel="stylesheet" />
+</head>
+<body>
+  <main>
+    <h1> Рога и копыта:<span>наша дружная команда профессионалов</span></h1>
+    <div class="box">
+      <div class="left">
+        <ul>
+          {{#each leftTeamMembers}}
+            {{> card}}
+          {{/each}}
+        </ul>
+      </div>
+      <div class="right">
+        <ul>
+          {{#each rightTeamMembers}}
+            {{> card}}
+          {{/each}}
+        </ul>
+      </div>
+    </div>
+  </main>
+</body>

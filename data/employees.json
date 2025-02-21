@@ -1,0 +1,46 @@
+{
+  "leftTeamMembers": [
+    {
+      "art": "../../../public/pics/avatar_1.png",
+      "fIO": "Кузьмин Родион Миронович",
+      "jobTitle": "Начальник отдела"
+    },
+    {
+      "art": "../../../public/pics/avatar_2.png",
+      "fIO": "Потапова Влада Федотовна",
+      "jobTitle": "Генеральный директор"
+    },
+    {
+      "art": "../../../public/pics/avatar_3.png",
+      "fIO": "Бирюков Игнатий Рудольфович",
+      "jobTitle": "Руководитель практики"
+    },
+    {
+      "art": "../../../public/pics/avatar_4.png",
+      "fIO": "Мышкин Богдан Кимович",
+      "jobTitle": "Помощник юриста"
+    }
+  ],
+  "rightTeamMembers": [
+    {
+      "art": "../../../public/pics/avatar_5.png",
+      "fIO": "Авсюков Денис Макарович",
+      "jobTitle": "Главный бухгалтер"
+    },
+    {
+      "art": "../../../public/pics/avatar_7.png",
+      "fIO": "Тихомиров Павел Юрьевич",
+      "jobTitle": "Ведущий юрист"
+    },
+    {
+      "art": "../../../public/pics/avatar_6.png",
+      "fIO": "Шубина Юлия Борисовна",
+      "jobTitle": "Младший юрист"
+    },
+    {
+      "art": "../../../public/pics/avatar_8.png",
+      "fIO": "Галкин Николай Семёнович",
+      "jobTitle": "HR"
+    }
+  ]
+}

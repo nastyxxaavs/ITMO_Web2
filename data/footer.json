@@ -1,0 +1,47 @@
+{
+  "footer_block": [
+    {
+      "contacts": {
+        "h3": "Контакты",
+        "address": {
+          "link": {
+            "href": "https://maps.app.goo.gl/PKynoX3c9Lw77SKC9",
+            "img": {
+              "src": "../../../public/pics/address_2.png",
+              "alt": "Адрес"
+            }
+          },
+          "li": "Адрес: ул. Марата, 69-71, Санкт-Петербург, 191119, б-ц RENAISSANCE PLAZA"
+        },
+        "phone": {
+          "img": {
+            "src": "../../../public/pics/phone.png",
+            "alt": "Телефон"
+          },
+          "li": "Телефон: 89214567890"
+        },
+        "email": {
+          "link": {
+            "href": "https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://www.google.com/intl/ru/gmail/about/&ved=2ahUKEwiSkMry4_SIAxWvEhAIHYmPA9EQFnoECAgQAQ&usg=AOvVaw2F5WNzU4dZeDIZB61Xn48l",
+            "img": {
+              "src": "../../../public/pics/email.png",
+              "alt": "Почта"
+            }
+          },
+          "li": "Email: roga_kopyta777@gmail.com"
+        }
+      }
+    },
+    {
+      "help": {
+        "h3": "Мы готовы Вам помочь:",
+        "link":
+        {
+          "href": "../../../public/pics/help.jpg",
+          "class": "button",
+          "title": "Оставить заявку"
+        }
+      }
+    }
+  ]
+}
