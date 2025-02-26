@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 // @ts-ignore
 import { HandlebarsAdapter } from '@nestjs/platform-express';
 import { join } from 'path';
+import * as hbs from 'hbs';
 
 @Module({
   imports: [
@@ -18,5 +19,9 @@ import { join } from 'path';
 export class AppModule {
   static configure(consumer: any) {
     consumer.setViewEngine(new HandlebarsAdapter());
+  }
+
+  static registerPartials(){
+    hbs.registerPartials(__dirname + '/views/partials');
   }
 }

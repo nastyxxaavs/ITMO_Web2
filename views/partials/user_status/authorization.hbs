@@ -1,0 +1,16 @@
+{{#if isAuthenticated}}
+  <!-- Состояние для авторизованного пользователя -->
+  <div class="welcome-message">
+    <h2>Добро пожаловать, {{user.name}}!</h2>
+    <p>Вы успешно вошли в систему.</p>
+    <a href="/?auth=false">Выйти</a>
+  </div>
+{{else}}
+  <!-- Состояние для неавторизованного пользователя -->
+    <h2>Пожалуйста, войдите в систему, чтобы получить доступ к полному функционалу.</h2>
+    <form class="login-prompt">
+      <input type="text" placeholder="Логин" class="login_input">
+      <input type="text" placeholder="Пароль" class="password_input">
+      <button type="submit" class="login_button">Войти</button>
+    </form>
+{{/if}}

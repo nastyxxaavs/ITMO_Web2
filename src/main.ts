@@ -12,6 +12,8 @@ async function bootstrap() {
   // const port = process.env.PORT || 4000;
   app.useStaticAssets(join(__dirname, '..', 'public'));
 
+  // Регистрируем частичные шаблоны
+  AppModule.registerPartials();
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
   app.setViewEngine('hbs');
 
