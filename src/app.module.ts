@@ -4,8 +4,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 // @ts-ignore
 import { HandlebarsAdapter } from '@nestjs/platform-express';
-import { join } from 'path';
-import * as hbs from 'hbs';
 
 @Module({
   imports: [
@@ -21,7 +19,11 @@ export class AppModule {
     consumer.setViewEngine(new HandlebarsAdapter());
   }
 
-  static registerPartials(){
-    hbs.registerPartials(__dirname + '/views/partials');
-  }
+  // static registerAllPartials(){
+  //   hbs.registerPartials(path.join(viewsPath, 'partials', 'content'));
+  //   hbs.registerPartials(__dirname + '/views/partials');
+  //   hbs.registerPartials(__dirname + '/views/partials/content');
+  //   hbs.registerPartials(__dirname + '/views/partials/reuse_blocks');
+  //   hbs.registerPartials(__dirname + '/views/partials/user_status');
+  // }
 }
