@@ -14,24 +14,16 @@
 <body>
 <div class="wrapper">
   <script defer src="src/general.js"></script>
-
   {{#if customScripts}}
     {{#each customScripts}}
       <script defer src="src/{{this}}.js"></script>
     {{/each}}
   {{/if}}
-
   {{> reuse_blocks/stick_class}}
-
-
   {{> (lookup . 'content')}}
   <!-- content  -->
-
-
-
     {{> reuse_elements/line}}
     {{> structure_blocks/footer}}
-
 </div>
 </body>
 </html>

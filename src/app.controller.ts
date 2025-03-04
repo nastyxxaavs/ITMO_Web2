@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Render } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Redirect, Render, Req } from '@nestjs/common';
 import { AppService } from './app.service';
 import * as fs from 'fs';
 
@@ -15,8 +15,21 @@ export class AppController {
       titleContent: 'Рога и копыта: главная',
       keywordsContent: 'рога и копыта, юридическая помощь, о нас, наши ценности, достижения',
       descriptionContent: 'Данная страница (главная) содержит описание компании: раздел О нас, окно подачи заявки и всю контактную информацию',
-      user: isAuthenticated ? "Anastasia" : null
+      user: isAuthenticated ? "Nasty" : null,
     };
+  }
+
+  //Логика для обработки формы входа
+  @Post('/main')
+  @Redirect()
+  login(@Body() body: { username: string; password: string}) {
+    if (body.username === 'Nasty' && body.password === '777') {
+      return { url: '/main?auth=true' };
+    }
+    else
+    {
+      return { url: '/main?auth=false' };
+    }
   }
 
 
