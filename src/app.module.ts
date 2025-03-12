@@ -3,8 +3,9 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ServeStaticModule } from '@nestjs/serve-static';
-// import { HandlebarsAdapter } from '@nestjs/handlebars';
 import { join } from 'path';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { DatabaseConfigService } from './db.config.service';
 
 @Module({
   imports: [
@@ -14,21 +15,16 @@ import { join } from 'path';
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
     }),
+    TypeOrmModule.forRootAsync({
+     // useFactory: async (databaseConfigService: DatabaseConfigService) => {
+     //   return databaseConfigService.getTypeOrmConfig();
+      ////},
+      //inject: [DatabaseConfigService],
+      imports: [ConfigModule],
+      useClass: DatabaseConfigService,
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
-/*export class AppModule {
-  static configure(consumer: any) {
-    consumer.setViewEngine(new HandlebarsAdapter());
-  }
-
-  // static registerAllPartials(){
-  //   hbs.registerPartials(path.join(viewsPath, 'partials', 'content'));
-  //   hbs.registerPartials(__dirname + '/views/partials');
-  //   hbs.registerPartials(__dirname + '/views/partials/content');
-  //   hbs.registerPartials(__dirname + '/views/partials/reuse_blocks');
-  //   hbs.registerPartials(__dirname + '/views/partials/user_status');
-  // }
-}*/

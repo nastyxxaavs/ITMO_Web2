@@ -6,6 +6,7 @@ import { join } from 'path';
 import * as path from 'node:path';
 import * as hbs from 'hbs';
 import * as Handlebars from 'handlebars';
+import 'reflect-metadata';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);

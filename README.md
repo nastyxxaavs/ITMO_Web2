@@ -4,6 +4,9 @@
 
 ### Тема
 Сайт для юридической фирмы
+
+### Описание доменной области
+[Информация о сущностях](domensDescription.md)
 ### Развернутое приложение
 https://nastyxxaavs.github.io/ITMO_Web_Labs_5sem/pages/main.html
 
