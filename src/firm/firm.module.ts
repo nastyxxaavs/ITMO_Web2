@@ -3,11 +3,12 @@ import { FirmService } from './firm.service';
 import { FirmController } from './firm.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Firm } from './entities/firm.entity';
+import { FirmRepository } from './firm.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Firm])],
   controllers: [FirmController],
-  providers: [FirmService],
+  providers: [FirmService, FirmRepository],
   exports: [FirmService],
 })
 export class FirmModule {}

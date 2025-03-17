@@ -1,33 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { Service } from './entities/service.entity';
+import { ServiceRepository } from './service.repository';
 
 @Injectable()
 export class ServiceService {
-  constructor(@InjectRepository(Service) private serviceRepo: Repository<Service>) {}
+  constructor(private readonly serviceRepository: ServiceRepository) {}
 
   async create(createServiceDto: CreateServiceDto): Promise<Service> {
-    const service = this.serviceRepo.create(createServiceDto);
-    return await this.serviceRepo.save(service);
+    return this.serviceRepository.create(createServiceDto);
   }
 
   async findAll():Promise<Service[]> {
-    return await this.serviceRepo.find();
+    return this.serviceRepository.findAll();
   }
 
   async findOne(id: number): Promise<Service | null> {
-    return await this.serviceRepo.findOne({ where: { id } });
+    return this.serviceRepository.findOne(id);
   }
 
   async update(id: number, updateServiceDto: UpdateServiceDto): Promise<Service | null> {
-    await this.serviceRepo.update(id, updateServiceDto);
-    return await this.findOne(id);
+    return this.serviceRepository.update(id, updateServiceDto);
   }
 
   async remove(id: number): Promise<void> {
-    await this.serviceRepo.delete(id);
+    await this.serviceRepository.remove(id);
   }
 }

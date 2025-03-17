@@ -1,33 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { TeamMember } from './entities/member.entity';
+import { MemberRepository } from './member.repository';
 
 @Injectable()
 export class MemberService {
-  constructor(@InjectRepository(TeamMember) private memberRepo: Repository<TeamMember>) {}
+  constructor(private readonly memberRepository: MemberRepository) {}
 
   async create(createMemberDto: CreateMemberDto): Promise<TeamMember> {
-    const teamMember = this.memberRepo.create(createMemberDto);
-    return await this.memberRepo.save(teamMember);
+    return this.memberRepository.create(createMemberDto);
   }
 
   async findAll():Promise<TeamMember[]> {
-    return await this.memberRepo.find();
+    return this.memberRepository.findAll();
   }
 
   async findOne(id: number): Promise<TeamMember | null> {
-    return await this.memberRepo.findOne({ where: { id } });
+    return this.memberRepository.findOne(id);
   }
 
   async update(id: number, updateMemberDto: UpdateMemberDto): Promise<TeamMember| null> {
-    await this.memberRepo.update(id, updateMemberDto);
-    return await this.findOne(id);
+    return this.memberRepository.update(id, updateMemberDto);
   }
 
   async remove(id: number): Promise<void> {
-    await this.memberRepo.delete(id);
+    await this.memberRepository.remove(id);
   }
 }

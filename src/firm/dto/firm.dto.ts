@@ -8,9 +8,9 @@ export class FirmDto {
   id: number;
   name: string;
   description: string;
-  services?: Service[];
-  teamMembers?: TeamMember[];
-  users?: User[];
-  contacts?: Contact;
-  requests?: ClientRequestEntity[];
+  serviceIds?: number[];
+  teamMemberIds?: number[];
+  userIds?: number[];
+  contactId?: number;
+  requestIds?: number[];
 }

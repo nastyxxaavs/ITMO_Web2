@@ -1,4 +1,4 @@
-import { IsString } from "class-validator";
+import { IsOptional, IsString } from 'class-validator';
 
 export class CreateFirmDto {
   @IsString()
@@ -6,4 +6,19 @@ export class CreateFirmDto {
 
   @IsString()
   description: string;
+
+  @IsOptional()
+  serviceIds?: number[];
+
+  @IsOptional()
+  teamMemberIds?: number[];
+
+  @IsOptional()
+  userIds?: number[];
+
+  @IsOptional()
+  contactId?: number;
+
+  @IsOptional()
+  requestIds?: number[];
 }
