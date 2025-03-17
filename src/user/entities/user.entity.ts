@@ -1,8 +1,8 @@
 import { Column, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Firm } from '../../firm/entities/firm.entity';
 import { Service } from '../../service/entities/service.entity';
-import { ClientRequestEntity } from '../../requests/entities/clientRequest.entity';
-import { TeamMember } from '../../member/entities/teamMember.entity';
+import { ClientRequestEntity } from '../../requests/entities/request.entity';
+import { TeamMember } from '../../member/entities/member.entity';
 
 
 export enum AuthStatus{
@@ -31,9 +31,9 @@ export class User {
   email: string;
 
   @Column({
-      type: 'enum',
-      enum: AuthStatus,
-      default: AuthStatus.UNAUTHORIZED,
+    type: 'enum',
+    enum: AuthStatus,
+    default: AuthStatus.UNAUTHORIZED,
   })
   status: AuthStatus;
 

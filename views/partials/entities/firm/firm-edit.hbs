@@ -1,0 +1,9 @@
+<h1>Редактирование компании</h1>
+<form action="/firms/{{firm.id}}" method="POST">
+  <input type="hidden" name="_method" value="PUT">
+  <label>Название:</label>
+  <input type="text" name="name" value="{{firm.name}}">
+  <label>Описание:</label>
+  <input type="text" name="description" value="{{firm.description}}">
+  <button type="submit">Сохранить</button>
+</form>

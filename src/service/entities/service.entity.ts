@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToOne, ManyToMany } from 'typeorm';
 import { Firm } from '../../firm/entities/firm.entity';
-import { ClientRequestEntity } from '../../requests/entities/clientRequest.entity';
-import { TeamMember } from '../../member/entities/teamMember.entity';
+import { ClientRequestEntity } from '../../requests/entities/request.entity';
+import { TeamMember } from '../../member/entities/member.entity';
 import { User } from '../../user/entities/user.entity';
 
 export enum Category{

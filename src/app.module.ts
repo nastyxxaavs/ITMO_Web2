@@ -6,6 +6,12 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseConfigService } from './db.config.service';
+import { FirmModule } from './firm/firm.module';
+import { ContactModule } from './contact/contact.module';
+import { MemberModule } from './member/member.module';
+import { RequestsModule } from './requests/requests.module';
+import { ServiceModule } from './service/service.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -23,6 +29,12 @@ import { DatabaseConfigService } from './db.config.service';
       imports: [ConfigModule],
       useClass: DatabaseConfigService,
     }),
+    FirmModule,
+    ContactModule,
+    MemberModule,
+    RequestsModule,
+    ServiceModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,9 +1,9 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne } from 'typeorm';
 import { Service } from '../../service/entities/service.entity';
-import { TeamMember } from '../../member/entities/teamMember.entity';
+import { TeamMember } from '../../member/entities/member.entity';
 import { User } from '../../user/entities/user.entity';
 import { Contact } from '../../contact/entities/contact.entity';
-import { ClientRequestEntity } from '../../requests/entities/clientRequest.entity';
+import { ClientRequestEntity } from '../../requests/entities/request.entity';
 
 @Entity()
 export class Firm {

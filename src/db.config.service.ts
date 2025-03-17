@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { User } from './user/entities/user.entity';
 import { Service } from './service/entities/service.entity';
-import { TeamMember } from './member/entities/teamMember.entity';
+import { TeamMember } from './member/entities/member.entity';
 import { Contact } from './contact/entities/contact.entity';
 import { Firm } from './firm/entities/firm.entity';
-import {ClientRequestEntity} from './requests/entities/clientRequest.entity';
+import {ClientRequestEntity} from './requests/entities/request.entity';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 

@@ -1,0 +1,14 @@
+<h1>Компании</h1>
+<ul>
+  {{#each firms}}
+    <li>
+      <a href="/firms/{{this.id}}">{{this.name}}</a> - {{this.description}}
+      <a href="/firms/{{this.id}}/edit">✏️</a>
+      <form action="/firms/{{this.id}}" method="POST" style="display:inline;">
+        <input type="hidden" name="_method" value="DELETE">
+        <button type="submit">🗑️</button>
+      </form>
+    </li>
+  {{/each}}
+</ul>
+<a href="/firms/add">Добавить компанию</a>

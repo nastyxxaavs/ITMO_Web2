@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Firm } from '../../firm/entities/firm.entity';
 import { Service } from '../../service/entities/service.entity';
-import { TeamMember } from '../../member/entities/teamMember.entity';
+import { TeamMember } from '../../member/entities/member.entity';
 import { User } from '../../user/entities/user.entity';
 
 export enum Status{
