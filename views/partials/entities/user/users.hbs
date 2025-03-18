@@ -1,0 +1,14 @@
+<h1>Список пользователей</h1>
+<ul>
+  {{#each users}}
+    <li>
+      <a href="/users/{{this.id}}">{{this.username}}</a> - {{this.email}}, {{this.status}}, {{this.role}}
+      <a href="/users/{{this.id}}/edit">✏️</a>
+      <form action="/users/{{this.id}}" method="POST" style="display:inline;">
+        <input type="hidden" name="_method" value="DELETE">
+        <button type="submit">🗑️</button>
+      </form>
+    </li>
+  {{/each}}
+</ul>
+<a href="/users/add">Добавить сотрудника</a>

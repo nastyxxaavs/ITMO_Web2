@@ -1,37 +1,70 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Redirect } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Redirect,
+  HttpStatus,
+  HttpCode,
+  NotFoundException, ValidationPipe,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserDto } from './dto/user.dto';
 
-@Controller('user')
+@Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
   @Redirect('/users')
-  async create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  @HttpCode(HttpStatus.CREATED)
+  async create(@Body(ValidationPipe) createUserDto: CreateUserDto) {
+    await this.userService.create(createUserDto);
+    return { statusCode: HttpStatus.CREATED };
   }
 
   @Get()
-  async findAll() {
-    return this.userService.findAll();
+  async findAll():Promise<UserDto[]>  {
+    const users = await this.userService.findAll();
+    if (!users) {
+      throw new NotFoundException(`Users are not found`);
+    }
+    return users;
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: number) {
-    return this.userService.findOne(+id);
+  async findOne(@Param('id') id: number): Promise<UserDto> {
+    const user = await this.userService.findOne(id);
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    return user;
   }
 
   @Patch(':id')
   @Redirect('/users/:id')
+  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NOT_MODIFIED)
   async update(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+    if( await this.userService.update(+id, updateUserDto)){
+      return { statusCode: HttpStatus.OK };
+    }
+    return { statusCode: HttpStatus.NOT_MODIFIED };
   }
 
   @Delete(':id')
   @Redirect('/users')
+  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NOT_MODIFIED)
   async remove(@Param('id') id: number) {
-    return this.userService.remove(+id);
+    if (await this.userService.remove(+id)){
+      return { statusCode: HttpStatus.OK };
+    }
+    return { statusCode: HttpStatus.NOT_MODIFIED };
   }
 }

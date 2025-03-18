@@ -30,4 +30,8 @@ export class MemberRepository {
   async remove(id: number): Promise<void> {
     await this.memberRepo.delete(id);
   }
+
+  async existById(id: number): Promise<boolean> {
+    return !!(await this.memberRepo.findOne({ where: { id } }));
+  }
 }

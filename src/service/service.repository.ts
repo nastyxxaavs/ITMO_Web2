@@ -30,4 +30,8 @@ export class ServiceRepository {
   async remove(id: number): Promise<void> {
     await this.serviceRepo.delete(id);
   }
+
+  async existById(id: number): Promise<boolean> {
+    return !!(await this.serviceRepo.findOne({ where: { id } }));
+  }
 }
