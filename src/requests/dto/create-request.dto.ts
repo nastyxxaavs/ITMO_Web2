@@ -11,22 +11,6 @@ export class CreateRequestDto {
   contactInfo: string;
 
   @IsNotEmpty()
+  @IsString()
   serviceRequestedId: number;
-
-  @IsDate()
-  @IsNotEmpty()
-  requestDate: Date;
-
-  @IsEnum(Status)
-  @IsNotEmpty()
-  status: Status;
-
-  @IsOptional()
-  firmId?: number;
-
-  @IsOptional()
-  userId?: number;
-
-  @IsOptional()
-  teamMemberId?: number;
 }

@@ -9,7 +9,7 @@ import {
   Redirect,
   HttpCode,
   HttpStatus,
-  ValidationPipe, NotFoundException,
+  ValidationPipe, NotFoundException, Render,
 } from '@nestjs/common';
 import { ServiceService } from './service.service';
 import { CreateServiceDto } from './dto/create-service.dto';
@@ -22,7 +22,8 @@ export class ServiceController {
   constructor(private readonly serviceService: ServiceService) {}
 
   @Post()
-  @Redirect('/services')
+  //@Redirect('/services')
+  @Render('service-add')
   @HttpCode(HttpStatus.CREATED)
   async create(@Body(ValidationPipe) createServiceDto: CreateServiceDto) {
     await this.serviceService.create(createServiceDto);
@@ -30,27 +31,35 @@ export class ServiceController {
   }
 
   @Get()
-  async findAll():Promise<ServiceDto[]> {
+  @Render('services')
+  async findAll():Promise< { services: ServiceDto[]}> {
     //return this.serviceService.findAll();
     const services = await this.serviceService.findAll();
     if (!services) {
       throw new NotFoundException(`Services are not found`);
     }
-    return services;
+    return { services };
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: number): Promise<ServiceDto> {
+  @Render('service')
+  async findOne(@Param('id') id: number){ //: Promise< { service: ServiceDto}> {
     //return this.serviceService.findOne(+id);
     const service = await this.serviceService.findOne(id);
     if (!service) {
       throw new NotFoundException(`Service with ID ${id} not found`);
     }
-    return service;
+    return {
+      name: service.name,
+      description: service.description,
+      category: service.category,
+      price: service.price,
+    };
   }
 
   @Patch(':id')
-  @Redirect('/services/:id')
+  //@Redirect('/services/:id')
+  @Render('service-edit')
   @HttpCode(HttpStatus.OK)
   @HttpCode(HttpStatus.NOT_MODIFIED)
   async update(@Param('id') id: number, @Body() updateServiceDto: UpdateServiceDto) {
@@ -62,13 +71,19 @@ export class ServiceController {
   }
 
   @Delete(':id')
-  @Redirect('/services')
+  //@Redirect('/services')
+  @Render('services')
   @HttpCode(HttpStatus.OK)
   @HttpCode(HttpStatus.NOT_MODIFIED)
   async remove(@Param('id') id: number) {
     //return this.serviceService.remove(+id);
     if (await this.serviceService.remove(+id)){
-      return { statusCode: HttpStatus.OK };
+      const services = await this.serviceService.findAll();
+      if (!services || services.length === 0) {
+        throw new NotFoundException(`Services are not found`);
+      }
+      return { services,
+        statusCode: HttpStatus.OK };
     }
     return { statusCode: HttpStatus.NOT_MODIFIED };
   }

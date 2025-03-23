@@ -9,7 +9,7 @@ import {
   Redirect,
   HttpStatus,
   HttpCode,
-  NotFoundException, ValidationPipe,
+  NotFoundException, ValidationPipe, Render,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -21,7 +21,8 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  @Redirect('/users')
+  //@Redirect('/users')
+  @Render('user-add')
   @HttpCode(HttpStatus.CREATED)
   async create(@Body(ValidationPipe) createUserDto: CreateUserDto) {
     await this.userService.create(createUserDto);
@@ -29,25 +30,33 @@ export class UserController {
   }
 
   @Get()
-  async findAll():Promise<UserDto[]>  {
+  @Render('users')
+  async findAll():Promise< { users: UserDto[]}>  {
     const users = await this.userService.findAll();
     if (!users) {
       throw new NotFoundException(`Users are not found`);
     }
-    return users;
+    return {users};
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: number): Promise<UserDto> {
+  @Render('user')
+  async findOne(@Param('id') id: number){ //: Promise<{ user: UserDto}> {
     const user = await this.userService.findOne(id);
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
-    return user;
+    return {
+      username: user.username,
+      email: user.email,
+      status: user.status,
+      role: user.role,
+    };
   }
 
   @Patch(':id')
-  @Redirect('/users/:id')
+  //@Redirect('/users/:id')
+  @Render('user-edit')
   @HttpCode(HttpStatus.OK)
   @HttpCode(HttpStatus.NOT_MODIFIED)
   async update(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
@@ -58,12 +67,17 @@ export class UserController {
   }
 
   @Delete(':id')
-  @Redirect('/users')
+  //@Redirect('/users')
+  @Render('users')
   @HttpCode(HttpStatus.OK)
   @HttpCode(HttpStatus.NOT_MODIFIED)
   async remove(@Param('id') id: number) {
     if (await this.userService.remove(+id)){
-      return { statusCode: HttpStatus.OK };
+      const users = await this.userService.findAll();
+      if (!users || users.length === 0) {}
+      return {
+        users,
+        statusCode: HttpStatus.OK };
     }
     return { statusCode: HttpStatus.NOT_MODIFIED };
   }

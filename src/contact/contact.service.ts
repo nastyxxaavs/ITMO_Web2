@@ -21,7 +21,13 @@ export class ContactService {
   }
 
   async create(createContactDto: CreateContactDto): Promise<Contact> {
-    return this.contactRepository.create(createContactDto);
+    return this.contactRepository.create({
+      address: createContactDto.address,
+      phone: createContactDto.phone,
+      email: createContactDto.email,
+      mapsLink: createContactDto.mapsLink,
+      firmId: createContactDto.firmId,
+    });
   }
 
   async findAll(): Promise<ContactDto[]> {
@@ -36,7 +42,13 @@ export class ContactService {
 
   async update(id: number, updateContactDto: UpdateContactDto): Promise<boolean> {
     if (await this.contactRepository.existById(id)) {
-      await this.contactRepository.update(id, updateContactDto);
+      await this.contactRepository.update(id, {
+        address: updateContactDto.address,
+        phone: updateContactDto.phone,
+        email: updateContactDto.email,
+        mapsLink: updateContactDto.mapsLink,
+        firmId: updateContactDto.firmId,
+      });
       return  true;
     }
     return false;

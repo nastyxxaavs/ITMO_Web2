@@ -1,0 +1,20 @@
+{{#> layout}}
+  {{#if members.length}}
+      <h1>Команда сотрудников компании</h1>
+      <ul>
+        {{#each members}}
+          <li>
+            <a href="/members/{{this.id}}">{{this.firstName}} {{this.lastName}}</a> - {{this.position}}
+            <a href="/members/{{this.id}}/edit">✏️</a>
+            <form action="/members/{{this.id}}" method="POST" style="display:inline;">
+              <input type="hidden" name="_method" value="DELETE">
+              <button type="submit">🗑️</button>
+            </form>
+          </li>
+        {{/each}}
+      </ul>
+  {{else}}
+    <p>Сотрудники отсутствуют.</p>
+  {{/if}}
+<a href="/members/add">Добавить сотрудника</a>
+{{/layout}}

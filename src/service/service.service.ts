@@ -21,7 +21,16 @@ export class ServiceService {
   }
 
   async create(createServiceDto: CreateServiceDto): Promise<Service> {
-    return this.serviceRepository.create(createServiceDto);
+    return this.serviceRepository.create({
+      name: createServiceDto.name,
+      description: createServiceDto.description,
+      category: createServiceDto.category,
+      price: createServiceDto.price,
+      firmId: createServiceDto.firmId,
+      requestId: createServiceDto.requestId,
+      teamMemberIds: createServiceDto.teamMemberIds,
+      userIds: createServiceDto.userIds,
+    });
   }
 
   async findAll():Promise<ServiceDto[]> {
@@ -39,7 +48,16 @@ export class ServiceService {
   async update(id: number, updateServiceDto: UpdateServiceDto): Promise<boolean> {
     //return this.serviceRepository.update(id, updateServiceDto);
     if (await this.serviceRepository.existById(id)) {
-      await this.serviceRepository.update(id, updateServiceDto);
+      await this.serviceRepository.update(id, {
+        name: updateServiceDto.name,
+        description: updateServiceDto.description,
+        category: updateServiceDto.category,
+        price: updateServiceDto.price,
+        firmId: updateServiceDto.firmId,
+        requestId: updateServiceDto.requestId,
+        teamMemberIds: updateServiceDto.teamMemberIds,
+        userIds: updateServiceDto.userIds,
+      });
       return true;
     }
     return false;

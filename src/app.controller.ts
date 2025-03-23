@@ -7,7 +7,7 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  @Render('general')
+  @Render('main')
   getIndexPage(@Query('auth') auth: string) {
     const isAuthenticated = auth === 'true';
     return {
@@ -16,6 +16,7 @@ export class AppController {
       keywordsContent: 'рога и копыта, юридическая помощь, о нас, наши ценности, достижения',
       descriptionContent: 'Данная страница (главная) содержит описание компании: раздел О нас, окно подачи заявки и всю контактную информацию',
       user: isAuthenticated ? "Nasty" : null,
+      customStyle: 'styles/main.css',
     };
   }
 

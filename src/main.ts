@@ -5,15 +5,11 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import * as path from 'node:path';
 import * as hbs from 'hbs';
-import * as Handlebars from 'handlebars';
 import 'reflect-metadata';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
-  // await app.listen(process.env.PORT ?? 3000);
-  // Получаем порт из переменной окружения или используем порт по умолчанию (4000)
-  // const port = process.env.PORT || 4000;
 
   app.useStaticAssets(join(__dirname, '..', 'public'));
   app.useStaticAssets(join(__dirname, '..', 'data'));

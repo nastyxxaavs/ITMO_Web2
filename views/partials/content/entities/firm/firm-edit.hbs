@@ -1,0 +1,15 @@
+{{#> layout}}
+    <h1>Редактирование компании</h1>
+    <form action="/firms/{{this.id}}" method="POST">
+      <input type="hidden" name="_method" value="PATCH">
+      <label>Название:</label>
+      <label>
+        <input type="text" name="name" required>
+      </label>
+      <label>Описание:</label>
+      <label>
+        <input type="text" name="description" required>
+      </label>
+      <button type="submit">Сохранить</button>
+    </form>
+{{/layout}}

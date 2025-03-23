@@ -20,7 +20,14 @@ export class MemberService {
   }
 
   async create(createMemberDto: CreateMemberDto): Promise<TeamMember> {
-    return this.memberRepository.create(createMemberDto);
+    return this.memberRepository.create({
+      firstName: createMemberDto.firstName,
+      lastName: createMemberDto.lastName,
+      position: createMemberDto.position,
+      firmId: createMemberDto.firmId,
+      serviceIds: createMemberDto.serviceIds,
+      requestId: createMemberDto.requestId,
+    });
   }
 
   async findAll():Promise<TeamMemberDto[]> {
@@ -35,7 +42,14 @@ export class MemberService {
 
   async update(id: number, updateMemberDto: UpdateMemberDto): Promise<boolean> {
     if (await this.memberRepository.existById(id)) {
-      await this.memberRepository.update(id, updateMemberDto);
+      await this.memberRepository.update(id, {
+        firstName: updateMemberDto.firstName,
+        lastName: updateMemberDto.lastName,
+        position: updateMemberDto.position,
+        firmId: updateMemberDto.firmId,
+        serviceIds: updateMemberDto.serviceIds,
+        requestId: updateMemberDto.requestId,
+      });
       return  true;
     }
     return false;

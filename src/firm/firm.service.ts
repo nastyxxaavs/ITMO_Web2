@@ -20,7 +20,15 @@ export class FirmService {
   }
 
   async create(createFirmDto: CreateFirmDto): Promise<Firm> {
-    return this.firmRepository.create(createFirmDto);
+    return this.firmRepository.create({
+      name: createFirmDto.name,
+      description: createFirmDto.description,
+      serviceIds: createFirmDto.serviceIds,
+      teamMemberIds: createFirmDto.teamMemberIds,
+      userIds: createFirmDto.userIds,
+      contactId: createFirmDto.contactId,
+      requestIds: createFirmDto.requestIds,
+    });
   }
 
   async findAll():Promise<FirmDto[]> {
@@ -35,7 +43,15 @@ export class FirmService {
 
   async update(id: number, updateFirmDto: UpdateFirmDto): Promise<boolean> {
     if (await this.firmRepository.existById(id)) {
-      await this.firmRepository.update(id, updateFirmDto);
+      await this.firmRepository.update(id, {
+        name: updateFirmDto.name,
+        description: updateFirmDto.description,
+        serviceIds: updateFirmDto.serviceIds,
+        teamMemberIds: updateFirmDto.teamMemberIds,
+        userIds: updateFirmDto.userIds,
+        contactId: updateFirmDto.contactId,
+        requestIds: updateFirmDto.requestIds,
+      });
       return  true;
     }
     return false;
