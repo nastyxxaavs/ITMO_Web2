@@ -9,6 +9,6 @@ import { MemberRepository } from './member.repository';
   imports: [TypeOrmModule.forFeature([TeamMember])],
   controllers: [MemberController],
   providers: [MemberService, MemberRepository],
-  exports: [MemberService],
+  exports: [MemberService, MemberRepository],
 })
 export class MemberModule {}

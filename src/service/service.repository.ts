@@ -1,20 +1,32 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Service } from './entities/service.entity';
-import { Repository } from 'typeorm';
+import { Category, Service } from './entities/service.entity';
+import { FindOperator, In, Repository } from 'typeorm';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
+import { TeamMember } from '../member/entities/member.entity';
 
 @Injectable()
 export class ServiceRepository {
-  constructor(@InjectRepository(Service) private serviceRepo: Repository<Service>) {}
+  constructor(
+    @InjectRepository(Service) private serviceRepo: Repository<Service>,
+  ) {}
 
-  async create(createServiceDto: CreateServiceDto): Promise<Service> {
+  async create(createServiceDto: {
+    firmId: number | undefined;
+    teamMemberIds: number[];
+    price: number;
+    requestId: number | undefined;
+    userIds: number[] | undefined;
+    name: string;
+    description: string;
+    category: Category;
+  }): Promise<Service> {
     const service = this.serviceRepo.create(createServiceDto);
     return await this.serviceRepo.save(service);
   }
 
-  async findAll():Promise<Service[]> {
+  async findAll(): Promise<Service[]> {
     return await this.serviceRepo.find();
   }
 
@@ -22,7 +34,51 @@ export class ServiceRepository {
     return await this.serviceRepo.findOne({ where: { id } });
   }
 
-  async update(id: number, updateServiceDto: UpdateServiceDto): Promise<Service | null> {
+  async findOneByName(name: string): Promise<Service | null> {
+    return await this.serviceRepo.findOne({ where: { name } });
+  }
+
+  async findIdByName(names: string[]): Promise<Service[]> {
+    return this.find({
+      where: {
+        name: In(names),
+      },
+    });
+  }
+
+  async findNameById(ids: number[]): Promise<Service[]> {
+    return this.findName({
+      where: {
+        id: In(ids),
+      },
+    });
+  }
+
+  find(arg0: {
+    where: { name: FindOperator<any> };
+  }): Service[] | PromiseLike<Service[]> {
+    throw new Error('Method not implemented.');
+  }
+
+  findName(arg0: {
+    where: { id: FindOperator<any> };
+  }): Service[] | PromiseLike<Service[]> {
+    throw new Error('Method not implemented.');
+  }
+
+  async update(
+    id: number,
+    updateServiceDto: {
+      firmId: number | undefined;
+      teamMemberIds: number[];
+      price: number | undefined;
+      requestId: number | undefined;
+      userIds: number[] | undefined;
+      name: string | undefined;
+      description: string | undefined;
+      category: Category | undefined;
+    },
+  ): Promise<Service | null> {
     await this.serviceRepo.update(id, updateServiceDto);
     return await this.findOne(id);
   }

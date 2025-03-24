@@ -9,6 +9,6 @@ import { FirmRepository } from './firm.repository';
   imports: [TypeOrmModule.forFeature([Firm])],
   controllers: [FirmController],
   providers: [FirmService, FirmRepository],
-  exports: [FirmService],
+  exports: [FirmService, FirmRepository],
 })
 export class FirmModule {}

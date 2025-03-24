@@ -1,13 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
 import { Contact } from './entities/contact.entity';
 import { ContactRepository } from './contact.repository';
 import { ContactDto } from './dto/contact.dto';
+import { FirmRepository } from '../firm/firm.repository';
 
 @Injectable()
 export class ContactService {
-  constructor(private readonly contactRepository: ContactRepository) {}
+  constructor(
+    private readonly contactRepository: ContactRepository,
+    private readonly firmRepository: FirmRepository) {}
 
   private mapToDto(contact: Contact): ContactDto {
     return {
@@ -20,13 +23,25 @@ export class ContactService {
     };
   }
 
+  async getFirmIdByName(firmName: string): Promise<number | null> {
+    const firm = await this.firmRepository.findOneByName(firmName);
+    return firm ? firm.id : null;
+  }
+
+
   async create(createContactDto: CreateContactDto): Promise<Contact> {
+    const firmId = createContactDto.firmName
+      ? await this.getFirmIdByName(createContactDto.firmName)
+      : null;
+    if (!firmId) {
+      throw new NotFoundException('Firm not found');
+    }
     return this.contactRepository.create({
       address: createContactDto.address,
       phone: createContactDto.phone,
       email: createContactDto.email,
       mapsLink: createContactDto.mapsLink,
-      firmId: createContactDto.firmId,
+      firmId: firmId,
     });
   }
 
@@ -42,12 +57,18 @@ export class ContactService {
 
   async update(id: number, updateContactDto: UpdateContactDto): Promise<boolean> {
     if (await this.contactRepository.existById(id)) {
+      const firmId = updateContactDto.firmName
+        ? await this.getFirmIdByName(updateContactDto.firmName)
+        : null;
+      if (!firmId) {
+        throw new NotFoundException('Firm not found');
+      }
       await this.contactRepository.update(id, {
         address: updateContactDto.address,
         phone: updateContactDto.phone,
         email: updateContactDto.email,
         mapsLink: updateContactDto.mapsLink,
-        firmId: updateContactDto.firmId,
+        firmId: firmId,
       });
       return  true;
     }

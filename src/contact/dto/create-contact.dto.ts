@@ -17,5 +17,5 @@ export class CreateContactDto {
   mapsLink: string;
 
   @IsOptional()
-  firmId?: number;
+  firmName?: string;
 }

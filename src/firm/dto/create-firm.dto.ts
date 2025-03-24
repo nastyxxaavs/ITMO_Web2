@@ -8,16 +8,16 @@ export class CreateFirmDto {
   description: string;
 
   @IsOptional()
-  serviceIds?: number[];
+  serviceNames?: string[];
 
   @IsOptional()
-  teamMemberIds?: number[];
+  teamMemberNames?: string[];
 
   @IsOptional()
   userIds?: number[];
 
   @IsOptional()
-  contactId?: number;
+  contact?: string;
 
   @IsOptional()
   requestIds?: number[];

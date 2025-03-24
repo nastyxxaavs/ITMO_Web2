@@ -8,6 +8,6 @@ export class ServiceDto {
   price: number;
   firmId?: number;
   requestId?: number;
-  teamMemberIds?: number[];
+  teamMemberNames?: string[];
   userIds?: number[];
 }

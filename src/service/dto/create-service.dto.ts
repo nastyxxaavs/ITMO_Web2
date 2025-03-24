@@ -25,7 +25,7 @@ export class CreateServiceDto {
   requestId?: number;
 
   @IsOptional()
-  teamMemberIds?: number[];
+  teamMemberNames?: string[];
 
   @IsOptional()
   userIds?: number[];

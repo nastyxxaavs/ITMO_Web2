@@ -2,14 +2,20 @@ import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Contact } from './entities/contact.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateContactDto } from './dto/create-contact.dto';
-import { UpdateContactDto } from './dto/update-contact.dto';
 
 @Injectable()
 export class ContactRepository {
-  constructor(@InjectRepository(Contact) private readonly repo: Repository<Contact>) {}
+  constructor(
+    @InjectRepository(Contact) private readonly repo: Repository<Contact>,
+  ) {}
 
-  async create(createContactDto: CreateContactDto): Promise<Contact> {
+  async create(createContactDto: {
+    address: string;
+    phone: string;
+    mapsLink: string;
+    firmId: number;
+    email: string;
+  }): Promise<Contact> {
     const contact = this.repo.create(createContactDto);
     return await this.repo.save(contact);
   }
@@ -22,7 +28,20 @@ export class ContactRepository {
     return await this.repo.findOne({ where: { id } });
   }
 
-  async update(id: number, updateContactDto: UpdateContactDto): Promise<Contact | null> {
+  async findOneByName(phone: string): Promise<Contact | null> {
+    return await this.repo.findOne({ where: { phone } });
+  }
+
+  async update(
+    id: number,
+    updateContactDto: {
+      firmId: number;
+      address: string | undefined;
+      phone: string | undefined;
+      mapsLink: string | undefined;
+      email: string | undefined;
+    },
+  ): Promise<Contact | null> {
     await this.repo.update(id, updateContactDto);
     return this.findOne(id);
   }

@@ -1,20 +1,31 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ClientRequestEntity } from './entities/request.entity';
+import { ClientRequestEntity, Status } from './entities/request.entity';
 import { Repository } from 'typeorm';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
+import { TeamMember } from '../member/entities/member.entity';
 
 @Injectable()
 export class RequestsRepository {
-  constructor(@InjectRepository(ClientRequestEntity) private requestRepo: Repository<ClientRequestEntity>) {}
+  constructor(
+    @InjectRepository(ClientRequestEntity)
+    private requestRepo: Repository<ClientRequestEntity>,
+  ) {}
 
-  async create(createRequestDto: CreateRequestDto): Promise<ClientRequestEntity> {
+  async create(createRequestDto: {
+    teamMember: Promise<TeamMember | null>;
+    contactInfo: string;
+    clientName: string;
+    requestDate: Date;
+    serviceRequestedId: number | null;
+    status: Status;
+  }): Promise<ClientRequestEntity> {
     const request = this.requestRepo.create(createRequestDto);
     return await this.requestRepo.save(request);
   }
 
-  async findAll():Promise<ClientRequestEntity[]> {
+  async findAll(): Promise<ClientRequestEntity[]> {
     return await this.requestRepo.find();
   }
 
@@ -22,7 +33,15 @@ export class RequestsRepository {
     return await this.requestRepo.findOne({ where: { id } });
   }
 
-  async update(id: number, updateRequestDto: UpdateRequestDto): Promise<ClientRequestEntity | null> {
+  async update(
+    id: number,
+    updateRequestDto: {
+      contactInfo: string | undefined;
+      clientName: string | undefined;
+      serviceRequestedId: number | null;
+      status: Status;
+    },
+  ): Promise<ClientRequestEntity | null> {
     await this.requestRepo.update(id, updateRequestDto);
     return await this.findOne(id);
   }

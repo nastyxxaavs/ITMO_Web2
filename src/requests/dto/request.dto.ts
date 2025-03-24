@@ -4,10 +4,10 @@ export class ClientRequestDto {
   id: number;
   clientName: string;
   contactInfo: string;
-  serviceRequestedId: number;
+  serviceRequested: string;
   requestDate: Date;
   status: Status;
   firmId?: number;
   userId?: number;
-  teamMemberId?: number;
+  teamMemberName?: string;
 }

@@ -5,7 +5,7 @@ export class TeamMemberDto {
   firstName: string;
   lastName: string;
   position: Position;
-  firmId?: number;
-  serviceIds?: number[];
+  firmName?: string;
+  serviceNames?: string[];
   requestId?: number;
 }

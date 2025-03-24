@@ -55,7 +55,7 @@ export class RequestsController {
     return {
       clientName: request.clientName,
       contactInfo: request.contactInfo,
-      serviceRequested: request.serviceRequestedId,
+      serviceRequested: request.serviceRequested,
       requestDate: request.requestDate,
       status: request.status,
     };

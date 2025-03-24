@@ -1,26 +1,58 @@
 import { Injectable } from '@nestjs/common';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
-import { Service } from './entities/service.entity';
+import { Category, Service } from './entities/service.entity';
 import { ServiceRepository } from './service.repository';
 import { ServiceDto } from './dto/service.dto';
+import { MemberRepository } from '../member/member.repository';
+import { TeamMember } from '../member/entities/member.entity';
 
 @Injectable()
 export class ServiceService {
-  constructor(private readonly serviceRepository: ServiceRepository) {}
+  constructor(private readonly serviceRepository: ServiceRepository,
+              private readonly teamMemberRepository: MemberRepository,) {}
 
-  private mapToDto(service: Service): ServiceDto {
+  private mapToDto(service: Service): {
+    firmId: number;
+    price: number;
+    requestId: number;
+    teamMemberNames: Promise<string[]>;
+    userIds: number[];
+    name: string;
+    description: string;
+    id: number;
+    category: Category
+  } {
+    const memberIds = service.teamMembers.map((member: TeamMember) => member.id);
+    const teamMemberNames = this.getMemberNamesByIds(memberIds);
     return {
       id: service.id,
       name: service.name,
       description: service.description,
       category: service.category,
       price: service.price,
-
+      firmId: service.firm.id,
+      requestId: service.requests.id,
+      teamMemberNames,
+      userIds: service.users.map(user => user.id),
     };
   }
 
+  private async getTeamMemberIdsByNames(teamMemberNames: string[]): Promise<number[]> {
+    const teamMembers = await this.teamMemberRepository.findIdByName(teamMemberNames)
+    return teamMembers.map(member => member.id);
+  }
+
+  private async getMemberNamesByIds(memberIds: number[]): Promise<string[]> {
+    const members = await this.serviceRepository.findNameById(memberIds)
+    return members.map(member => member.name);
+  }
+
   async create(createServiceDto: CreateServiceDto): Promise<Service> {
+    const teamMemberIds = createServiceDto.teamMemberNames
+      ? await this.getTeamMemberIdsByNames(createServiceDto.teamMemberNames)
+      : [];
+
     return this.serviceRepository.create({
       name: createServiceDto.name,
       description: createServiceDto.description,
@@ -28,18 +60,38 @@ export class ServiceService {
       price: createServiceDto.price,
       firmId: createServiceDto.firmId,
       requestId: createServiceDto.requestId,
-      teamMemberIds: createServiceDto.teamMemberIds,
+      teamMemberIds,
       userIds: createServiceDto.userIds,
     });
   }
 
-  async findAll():Promise<ServiceDto[]> {
+  async findAll():Promise<{
+    firmId: number;
+    price: number;
+    requestId: number;
+    teamMemberNames: Promise<string[]>;
+    userIds: number[];
+    name: string;
+    description: string;
+    id: number;
+    category: Category
+  }[]> {
     //return this.serviceRepository.findAll();
     const services = await this.serviceRepository.findAll();
     return services.map(this.mapToDto);
   }
 
-  async findOne(id: number): Promise<ServiceDto | null> {
+  async findOne(id: number): Promise<{
+    firmId: number;
+    price: number;
+    requestId: number;
+    teamMemberNames: Promise<string[]>;
+    userIds: number[];
+    name: string;
+    description: string;
+    id: number;
+    category: Category
+  } | null> {
     //return this.serviceRepository.findOne(id);
     const service = await this.serviceRepository.findOne(id);
     return service ? this.mapToDto(service) : null;
@@ -48,6 +100,9 @@ export class ServiceService {
   async update(id: number, updateServiceDto: UpdateServiceDto): Promise<boolean> {
     //return this.serviceRepository.update(id, updateServiceDto);
     if (await this.serviceRepository.existById(id)) {
+      const teamMemberIds = updateServiceDto.teamMemberNames
+        ? await this.getTeamMemberIdsByNames(updateServiceDto.teamMemberNames)
+        : [];
       await this.serviceRepository.update(id, {
         name: updateServiceDto.name,
         description: updateServiceDto.description,
@@ -55,7 +110,7 @@ export class ServiceService {
         price: updateServiceDto.price,
         firmId: updateServiceDto.firmId,
         requestId: updateServiceDto.requestId,
-        teamMemberIds: updateServiceDto.teamMemberIds,
+        teamMemberIds,
         userIds: updateServiceDto.userIds,
       });
       return true;

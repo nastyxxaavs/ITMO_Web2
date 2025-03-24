@@ -21,7 +21,6 @@ export class FormController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@Body(ValidationPipe) createFormDto: CreateSubmissionDto): Promise<{ statusCode: number; message: string }> {
-    //return this.formService.create(createFormDto);
     try {
       await this.formService.create(createFormDto);
       return {

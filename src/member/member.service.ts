@@ -1,53 +1,124 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
-import { TeamMember } from './entities/member.entity';
+import { Position, TeamMember } from './entities/member.entity';
 import { MemberRepository } from './member.repository';
 import { TeamMemberDto } from './dto/member.dto';
+import { FirmRepository } from '../firm/firm.repository';
+import { ServiceRepository } from '../service/service.repository';
+import { Service } from '../service/entities/service.entity';
 
 
 @Injectable()
 export class MemberService {
-  constructor(private readonly memberRepository: MemberRepository) {}
+  constructor(private readonly memberRepository: MemberRepository,
+              private readonly firmRepository: FirmRepository,
+              private readonly serviceRepository: ServiceRepository) {}
 
-  private mapToDto(member: TeamMember): TeamMemberDto {
+  private mapToDto(member: TeamMember): {
+    firstName: string;
+    lastName: string;
+    requestId: number;
+    firmName: string;
+    id: number;
+    position: Position;
+    serviceNames: Promise<string[]>
+  } {
+    const serviceIds = member.services.map((service: Service) => service.id);
+    const serviceNames = this.getServiceNamesByIds(serviceIds);
     return {
       id: member.id,
       firstName: member.firstName,
       lastName: member.lastName,
       position: member.position,
+      firmName: member.firm.name,
+      serviceNames,
+      requestId: member.requests.id,
     };
   }
 
+  async getFirmIdByName(firmName: string): Promise<number | null> {
+    const firm = await this.firmRepository.findOneByName(firmName);
+    return firm ? firm.id : null;
+  }
+
+  private async getServiceIdsByNames(serviceNames: string[]): Promise<number[]> {
+    const services = await this.serviceRepository.findIdByName(serviceNames)
+    return services.map(service => service.id);
+  }
+
+  private async getServiceNamesByIds(serviceIds: number[]): Promise<string[]> {
+    const services = await this.serviceRepository.findNameById(serviceIds)
+    return services.map(service => service.name);
+  }
+
   async create(createMemberDto: CreateMemberDto): Promise<TeamMember> {
+    const firmId = createMemberDto.firmName
+      ? await this.getFirmIdByName(createMemberDto.firmName)
+      : null;
+    if (!firmId) {
+      throw new NotFoundException('Firm not found');
+    }
+
+    const serviceIds = createMemberDto.serviceNames
+      ? await this.getServiceIdsByNames(createMemberDto.serviceNames)
+      : [];
+
     return this.memberRepository.create({
       firstName: createMemberDto.firstName,
       lastName: createMemberDto.lastName,
       position: createMemberDto.position,
-      firmId: createMemberDto.firmId,
-      serviceIds: createMemberDto.serviceIds,
+      firmId,
+      serviceIds,
       requestId: createMemberDto.requestId,
     });
   }
 
-  async findAll():Promise<TeamMemberDto[]> {
+  async findAll():Promise<{
+    firstName: string;
+    lastName: string;
+    requestId: number;
+    firmName: string;
+    id: number;
+    position: Position;
+    serviceNames: Promise<string[]>
+  }[]> {
     const members = await this.memberRepository.findAll();
     return members.map(this.mapToDto);
   }
 
-  async findOne(id: number): Promise<TeamMemberDto | null> {
+  async findOne(id: number): Promise<{
+    firstName: string;
+    lastName: string;
+    requestId: number;
+    firmName: string;
+    id: number;
+    position: Position;
+    serviceNames: Promise<string[]>
+  } | null> {
     const member = await this.memberRepository.findOne(id);
     return member ? this.mapToDto(member) : null;
   }
 
   async update(id: number, updateMemberDto: UpdateMemberDto): Promise<boolean> {
     if (await this.memberRepository.existById(id)) {
+      const firmId = updateMemberDto.firmName
+        ? await this.getFirmIdByName(updateMemberDto.firmName)
+        : null;
+      if (!firmId) {
+        throw new NotFoundException('Firm not found');
+      }
+
+      const serviceIds = updateMemberDto.serviceNames
+        ? await this.getServiceIdsByNames(updateMemberDto.serviceNames)
+        : [];
+
       await this.memberRepository.update(id, {
         firstName: updateMemberDto.firstName,
         lastName: updateMemberDto.lastName,
         position: updateMemberDto.position,
-        firmId: updateMemberDto.firmId,
-        serviceIds: updateMemberDto.serviceIds,
+        firmId,
+        serviceIds,
         requestId: updateMemberDto.requestId,
       });
       return  true;

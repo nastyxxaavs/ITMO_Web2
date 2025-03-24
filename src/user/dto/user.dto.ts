@@ -6,7 +6,7 @@ export class UserDto {
   email: string;
   status: AuthStatus;
   role: Role;
-  firmId?: number;
-  serviceIds?: number[];
+  firmName?: number;
+  serviceNames?: number[];
   requestIds?: number[];
 }

@@ -20,7 +20,7 @@ export class ClientRequestEntity {
   @Column()
   contactInfo: string;
 
-  @Column({ type: 'varchar' })
+  @Column()
   serviceRequested: Service;
 
   @Column()

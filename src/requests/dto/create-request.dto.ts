@@ -1,5 +1,4 @@
-import { IsDate, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { Status } from '../entities/request.entity';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateRequestDto {
   @IsString()
@@ -12,5 +11,5 @@ export class CreateRequestDto {
 
   @IsNotEmpty()
   @IsString()
-  serviceRequestedId: number;
+  serviceRequested: string;
 }

@@ -14,10 +14,10 @@ export class CreateMemberDto {
   position: Position;
 
   @IsOptional()
-  firmId?: number;
+  firmName?: string;
 
   @IsOptional()
-  serviceIds?: number[];
+  serviceNames?: string[];
 
   @IsOptional()
   requestId?: number;
