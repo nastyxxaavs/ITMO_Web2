@@ -7,9 +7,9 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  @Render('main')
-  getIndexPage(@Query('auth') auth: string) {
-    const isAuthenticated = auth === 'true';
+  @Render('general')
+  getIndexPage(@Req() req) {
+    const isAuthenticated = req.session.isAuthenticated;
     return {
       isAuthenticated,
       titleContent: 'Рога и копыта: главная',
@@ -17,29 +17,40 @@ export class AppController {
       descriptionContent: 'Данная страница (главная) содержит описание компании: раздел О нас, окно подачи заявки и всю контактную информацию',
       user: isAuthenticated ? "Nasty" : null,
       customStyle: 'styles/main.css',
+      content: "main",
     };
   }
 
   //Логика для обработки формы входа
   @Post('/main')
   @Redirect()
-  login(@Body() body: { username: string; password: string}) {
+  login(@Body() body: { username: string; password: string}, @Req() req) {
     if (body.username === 'Nasty' && body.password === '777') {
-      return { url: '/main?auth=true' };
+      //return { url: '/main?auth=true' };
+      req.session.isAuthenticated = true; // Сохраняем состояние авторизации
+      return { url: '/main' };
     }
     else
     {
-      return { url: '/main?auth=false' };
+      req.session.isAuthenticated = false;
+      return { url: '/main' };
     }
+  }
+
+  @Get('/logout')
+  @Redirect('/main')
+  logout(@Req() req) {
+    req.session.isAuthenticated = false; // Сбросить сессию
+    return { url: '/main' }; // Перенаправить на главную страницу
   }
 
 
   @Get('/index')
   @Render('general')
-  index(@Query('auth') auth: string) {
-    const isAuthenticated = auth === 'true';
+  index(@Req() req) {
+    const isAuthenticated = req.session.isAuthenticated;
     return {
-      content: "content/index",
+      content: "index",
       isAuthenticated,
       titleContent: 'Рога и копыта: главная',
       keywordsContent: 'рога и копыта, юридическая помощь, о нас, наши ценности, достижения',
@@ -51,10 +62,11 @@ export class AppController {
 
   @Get('/main')
   @Render('general')
-  main(@Query('auth') auth: string) {
-    const isAuthenticated = auth === 'true';
+  main(@Req() req) {
+    //const isAuthenticated = auth === 'true';
+    const isAuthenticated = req.session.isAuthenticated;
     return {
-      content: "content/main",
+      content: "main",
       isAuthenticated,
       titleContent: 'Рога и копыта: главная',
       keywordsContent: 'рога и копыта, юридическая помощь, о нас, наши ценности, достижения',
@@ -66,10 +78,11 @@ export class AppController {
 
   @Get('/services')
   @Render('general')
-  services(@Query('auth') auth: string) {
-    const isAuthenticated = auth === 'true';
+  services(@Req() req) {
+    //const isAuthenticated = auth === 'true';
+    const isAuthenticated = req.session.isAuthenticated;
     return {
-      content: "content/services",
+      content: "services",
       isAuthenticated,
       titleContent: 'Рога и копыта: услуги',
       keywordsContent: 'рога и копыта, судебные споры, внешнеэкономическая деятельность, сельское хозяйство, трудовые споры, споры с таможней',
@@ -81,8 +94,9 @@ export class AppController {
 
   @Get('/team')
   @Render('general')
-  async team(@Query('auth') auth: string) {
-    const isAuthenticated = auth === 'true';
+  async team(@Req() req) {
+    //const isAuthenticated = auth === 'true';
+    const isAuthenticated = req.session.isAuthenticated;
     const filePath = 'data/employees.json';
     const data = JSON.parse(await fs.promises.readFile(filePath, 'utf-8'));
     const leftMembers = data.leftTeamMembers;
@@ -90,7 +104,7 @@ export class AppController {
 
 
     return {
-      content: "content/team",
+      content: "team",
       isAuthenticated,
       titleContent: 'Рога и копыта: команда',
       keywordsContent: 'рога и копыта, юридическая помощь, о нас, команда',
@@ -104,10 +118,11 @@ export class AppController {
 
   @Get('/client_feedbacks')
   @Render('general')
-  feedbacks(@Query('auth') auth: string) {
-    const isAuthenticated = auth === 'true';
+  feedbacks(@Req() req) {
+    //const isAuthenticated = auth === 'true';
+    const isAuthenticated = req.session.isAuthenticated;
     return {
-      content: "content/client_feedbacks",
+      content: "client_feedbacks",
       isAuthenticated,
       titleContent: 'Отзывы о наших услугах',
       customStyle: 'styles/client_feedbacks.css',

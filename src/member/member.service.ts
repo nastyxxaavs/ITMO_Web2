@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
 import { Position, TeamMember } from './entities/member.entity';
-import { MemberRepository } from './member.repository';
+import { TeamMemberRepository } from './member.repository';
 import { TeamMemberDto } from './dto/member.dto';
 import { FirmRepository } from '../firm/firm.repository';
 import { ServiceRepository } from '../service/service.repository';
@@ -11,9 +11,11 @@ import { Service } from '../service/entities/service.entity';
 
 @Injectable()
 export class MemberService {
-  constructor(private readonly memberRepository: MemberRepository,
+  constructor(private readonly teamMemberRepository: TeamMemberRepository,
               private readonly firmRepository: FirmRepository,
-              private readonly serviceRepository: ServiceRepository) {}
+              @Inject(forwardRef(() => ServiceRepository))
+              private serviceRepository: ServiceRepository) {}
+
 
   private mapToDto(member: TeamMember): {
     firstName: string;
@@ -64,7 +66,7 @@ export class MemberService {
       ? await this.getServiceIdsByNames(createMemberDto.serviceNames)
       : [];
 
-    return this.memberRepository.create({
+    return this.teamMemberRepository.create({
       firstName: createMemberDto.firstName,
       lastName: createMemberDto.lastName,
       position: createMemberDto.position,
@@ -83,7 +85,7 @@ export class MemberService {
     position: Position;
     serviceNames: Promise<string[]>
   }[]> {
-    const members = await this.memberRepository.findAll();
+    const members = await this.teamMemberRepository.findAll();
     return members.map(this.mapToDto);
   }
 
@@ -96,12 +98,12 @@ export class MemberService {
     position: Position;
     serviceNames: Promise<string[]>
   } | null> {
-    const member = await this.memberRepository.findOne(id);
+    const member = await this.teamMemberRepository.findOne(id);
     return member ? this.mapToDto(member) : null;
   }
 
   async update(id: number, updateMemberDto: UpdateMemberDto): Promise<boolean> {
-    if (await this.memberRepository.existById(id)) {
+    if (await this.teamMemberRepository.existById(id)) {
       const firmId = updateMemberDto.firmName
         ? await this.getFirmIdByName(updateMemberDto.firmName)
         : null;
@@ -113,7 +115,7 @@ export class MemberService {
         ? await this.getServiceIdsByNames(updateMemberDto.serviceNames)
         : [];
 
-      await this.memberRepository.update(id, {
+      await this.teamMemberRepository.update(id, {
         firstName: updateMemberDto.firstName,
         lastName: updateMemberDto.lastName,
         position: updateMemberDto.position,
@@ -127,8 +129,8 @@ export class MemberService {
   }
 
   async remove(id: number): Promise<boolean> {
-    if (await this.memberRepository.existById(id)){
-      await this.memberRepository.remove(id);
+    if (await this.teamMemberRepository.existById(id)){
+      await this.teamMemberRepository.remove(id);
       return true;
     }
     return false;

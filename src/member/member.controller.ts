@@ -14,6 +14,7 @@ import { MemberService } from './member.service';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
 import { TeamMemberDto } from './dto/member.dto';
+import { Position } from './entities/member.entity';
 
 @Controller('members')
 export class MemberController {
@@ -30,7 +31,17 @@ export class MemberController {
 
   @Get()
   @Render('members')
-  async findAll(): Promise< {members: TeamMemberDto[] }> {
+  async findAll(): Promise<{
+    members: {
+      firstName: string;
+      lastName: string;
+      requestId: number;
+      firmName: string;
+      id: number;
+      position: Position;
+      serviceNames: Promise<string[]>
+    }[]
+  }> {
     const members = await this.memberService.findAll();
     if (!members) {
       throw new NotFoundException(`Members are not found`);

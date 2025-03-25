@@ -7,7 +7,7 @@ import { UpdateRequestDto } from './dto/update-request.dto';
 import { TeamMember } from '../member/entities/member.entity';
 
 @Injectable()
-export class RequestsRepository {
+export class ClientRequestEntityRepository {
   constructor(
     @InjectRepository(ClientRequestEntity)
     private requestRepo: Repository<ClientRequestEntity>,

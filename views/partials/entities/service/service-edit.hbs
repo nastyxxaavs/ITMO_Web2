@@ -1,0 +1,23 @@
+{{#> layout}}
+  <h1>Редактирование услуг</h1>
+  <form action="/services/{{this.id}}" method="POST">
+    <input type="hidden" name="_method" value="PATCH">
+    <label for="name">Название услуги:</label>
+    <label>
+      <input type="text" name="name">
+    </label>
+    <label for="description">Описание:</label>
+    <label>
+      <input type="text" name="description" >
+    </label>
+    <label for="category">Категория:</label>
+    <label>
+      <input type="text" name="category" >
+    </label>
+    <label for="price">Примерная стоимость:</label>
+    <label>
+      <input type="text" name="price" >
+    </label>
+    <button type="submit">Сохранить</button>
+  </form>
+{{/layout}}

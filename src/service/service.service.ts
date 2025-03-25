@@ -1,16 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { Category, Service } from './entities/service.entity';
 import { ServiceRepository } from './service.repository';
-import { ServiceDto } from './dto/service.dto';
-import { MemberRepository } from '../member/member.repository';
+import { TeamMemberRepository } from '../member/member.repository';
 import { TeamMember } from '../member/entities/member.entity';
 
 @Injectable()
 export class ServiceService {
   constructor(private readonly serviceRepository: ServiceRepository,
-              private readonly teamMemberRepository: MemberRepository,) {}
+              @Inject(forwardRef(() => TeamMemberRepository))
+              private teamMemberRepository: TeamMemberRepository) {}
 
   private mapToDto(service: Service): {
     firmId: number;

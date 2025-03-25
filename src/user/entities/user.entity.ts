@@ -54,9 +54,6 @@ export class User {
   @OneToMany(() => ClientRequestEntity, (request) => request.users)
   requests: ClientRequestEntity[];
 
-  // @OneToMany(() => TeamMember, (member) => member.)
-  // requests: ClientRequestEntity[];
-
   login(password: string): boolean {
     if (this.password === password) { // возможно изменить на проверку юрла потом
       this.status = AuthStatus.AUTHORIZED;

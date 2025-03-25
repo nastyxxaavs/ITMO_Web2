@@ -23,10 +23,6 @@ import { FormModule } from './form/form.module';
       rootPath: join(__dirname, '..', 'public'),
     }),
     TypeOrmModule.forRootAsync({
-     // useFactory: async (databaseConfigService: DatabaseConfigService) => {
-     //   return databaseConfigService.getTypeOrmConfig();
-      ////},
-      //inject: [DatabaseConfigService],
       imports: [ConfigModule],
       useClass: DatabaseConfigService,
     }),

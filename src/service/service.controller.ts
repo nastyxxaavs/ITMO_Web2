@@ -14,8 +14,7 @@ import {
 import { ServiceService } from './service.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
-import { UserDto } from '../user/dto/user.dto';
-import { ServiceDto } from './dto/service.dto';
+import { Category } from './entities/service.entity';
 
 @Controller('services')
 export class ServiceController {
@@ -32,7 +31,19 @@ export class ServiceController {
 
   @Get()
   @Render('services')
-  async findAll():Promise< { services: ServiceDto[]}> {
+  async findAll():Promise<{
+    services: {
+      firmId: number;
+      price: number;
+      requestId: number;
+      teamMemberNames: Promise<string[]>;
+      userIds: number[];
+      name: string;
+      description: string;
+      id: number;
+      category: Category
+    }[]
+  }> {
     //return this.serviceService.findAll();
     const services = await this.serviceService.findAll();
     if (!services) {

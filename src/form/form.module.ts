@@ -6,9 +6,9 @@ import { Submission } from './entities/form.entity';
 import { SubmissionRepository } from './form.repository';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Submission])],
-  controllers: [FormController, SubmissionRepository],
-  providers: [FormService],
+  imports: [TypeOrmModule.forFeature([Submission, SubmissionRepository])],
+  controllers: [FormController],
+  providers: [FormService, SubmissionRepository],
   exports: [FormService],
 })
 export class FormModule {}

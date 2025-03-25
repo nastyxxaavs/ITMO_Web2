@@ -16,11 +16,13 @@
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
+    "strict": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "strictPropertyInitialization": false
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts"],
+  "extends": ["node_modules"]
 }

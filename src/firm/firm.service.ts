@@ -5,7 +5,7 @@ import { Firm } from './entities/firm.entity';
 import { FirmRepository } from './firm.repository';
 import { FirmDto } from './dto/firm.dto';
 import { ServiceRepository } from '../service/service.repository';
-import { MemberRepository } from '../member/member.repository';
+import { TeamMemberRepository } from '../member/member.repository';
 import { ContactRepository } from '../contact/contact.repository';
 import { Service } from '../service/entities/service.entity';
 import { TeamMember } from '../member/entities/member.entity';
@@ -17,7 +17,7 @@ export class FirmService {
   constructor(
     private readonly firmRepository: FirmRepository,
     private readonly serviceRepository: ServiceRepository,
-    private readonly teamMemberRepository: MemberRepository,
+    private readonly teamMemberRepository: TeamMemberRepository,
     private readonly contactRepository: ContactRepository,) {}
 
   private mapToDto(firm: Firm): {

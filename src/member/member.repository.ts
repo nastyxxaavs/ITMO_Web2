@@ -7,7 +7,7 @@ import { UpdateMemberDto } from './dto/update-member.dto';
 import { Service } from '../service/entities/service.entity';
 
 @Injectable()
-export class MemberRepository {
+export class TeamMemberRepository {
   constructor(
     @InjectRepository(TeamMember) private memberRepo: Repository<TeamMember>,
   ) {}

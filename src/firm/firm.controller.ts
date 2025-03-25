@@ -9,19 +9,32 @@ import {
   Redirect,
   HttpCode,
   HttpStatus,
-  ValidationPipe, NotFoundException, Render, Query,
+  ValidationPipe, NotFoundException, Render, Query, Req,
 } from '@nestjs/common';
 import { FirmService } from './firm.service';
 import { CreateFirmDto } from './dto/create-firm.dto';
 import { UpdateFirmDto } from './dto/update-firm.dto';
 import { FirmDto } from './dto/firm.dto';
 
-@Controller('firms')
+@Controller()
 export class FirmController {
   constructor(private readonly firmService: FirmService) {}
 
+  // @Get('/firm-add')
+  // @Render('general')
+  // showForm(@Req() req){
+  //   const isAuthenticated = req.session.isAuthenticated;
+  //   return {
+  //     isAuthenticated,
+  //     user: isAuthenticated ? 'Anastasia' : null,
+  //     content: 'firm-add',
+  //     titleContent: 'Добавить запрос',
+  //     customStyle: 'styles/entities/firm-add.css',
+  //   };
+  // }
+
   @Post()
-  @Render('firm-add')
+  @Render('general')
   //@Redirect('/firms/add')
   @HttpCode(HttpStatus.CREATED)
   async create(@Body(ValidationPipe) createFirmDto: CreateFirmDto) {
@@ -35,7 +48,18 @@ export class FirmController {
   @Get()
   @Render('firms')
   //@Redirect('/firms')
-  async findAll():Promise< {firms: FirmDto[]}> {
+  async findAll():Promise<{
+    firms: {
+      contactId: number;
+      memberNames: Promise<string[]>;
+      userIds: number[];
+      name: string;
+      description: string;
+      id: number;
+      requestIds: number[];
+      serviceNames: Promise<string[]>
+    }[]
+  }> {
     const firms = await this.firmService.findAll();
     if (!firms || firms.length === 0) {
       throw new NotFoundException(`Firms are not found`);
@@ -46,12 +70,16 @@ export class FirmController {
   @Get(':id')
   @Render('firm')
   //@Redirect('/firms/:id')
-  async findOne(@Param('id') id: number): Promise<{firm: FirmDto}> {
+  async findOne(@Param('id') id: number){ //: Promise<{firm: FirmDto}> {
     const firm = await this.firmService.findOne(id);
     if (!firm) {
       throw new NotFoundException(`Firm with ID ${id} not found`);
     }
-    return { firm };
+    return {
+      name: firm.name,
+      description: firm.description,
+      contact: firm.contactId,
+    };
   }
 
   @Patch(':id')

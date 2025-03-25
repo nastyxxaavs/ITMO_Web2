@@ -3,7 +3,9 @@
   <div class="welcome-message">
     <h3>Добро пожаловать, {{user}}!</h3>
     <p>Вы успешно вошли в систему</p>
-    <a href="/main?auth=false">Выйти</a>
+    <form action="/logout" method="GET">
+      <button type="submit">Выйти</button>
+    </form>
   </div>
 {{else}}
   <!-- Состояние для неавторизованного пользователя -->

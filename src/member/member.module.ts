@@ -1,14 +1,20 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MemberService } from './member.service';
 import { MemberController } from './member.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TeamMember } from './entities/member.entity';
-import { MemberRepository } from './member.repository';
+import { TeamMemberRepository } from './member.repository';
+import { FirmRepository } from '../firm/firm.repository';
+import { FirmModule } from '../firm/firm.module';
+import { ServiceRepository } from '../service/service.repository';
+import { ServiceModule } from '../service/service.module';
+import { Firm } from '../firm/entities/firm.entity';
+import { Service } from '../service/entities/service.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([TeamMember])],
+  imports: [TypeOrmModule.forFeature([TeamMember, TeamMemberRepository, Firm, Service]), forwardRef(() =>FirmModule), forwardRef(() =>ServiceModule)],
   controllers: [MemberController],
-  providers: [MemberService, MemberRepository],
-  exports: [MemberService, MemberRepository],
+  providers: [MemberService, TeamMemberRepository, FirmRepository, ServiceRepository],
+  exports: [MemberService, TeamMemberRepository],
 })
 export class MemberModule {}

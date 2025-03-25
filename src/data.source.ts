@@ -5,6 +5,7 @@ import { TeamMember } from './member/entities/member.entity';
 import { Contact } from './contact/entities/contact.entity';
 import { Firm } from './firm/entities/firm.entity';
 import { ClientRequestEntity } from './requests/entities/request.entity';
+import { Submission } from './form/entities/form.entity';
 
 export default new DataSource({
   type: 'postgres',
@@ -13,8 +14,16 @@ export default new DataSource({
   username: 'nastyxxaavs_user',
   password: '2bHktO83QaYtLS0cCa01ZM3gpkPjPpEY',
   database: 'nastyxxaavs',
-  entities: [ User, Service,TeamMember, Contact, Firm, ClientRequestEntity],
-  migrations: ["src/migrations/1741758438236-CreateEntities.ts"],
+  entities: [
+    __dirname + './contact/entities/*{.ts,.js}',
+    __dirname + './firm/entities/*{.ts,.js}',
+    __dirname + './form/entities/*{.ts,.js}',
+    __dirname + './member/entities/*{.ts,.js}',
+    __dirname + './requests/entities/*{.ts,.js}',
+    __dirname + './service/entities/*{.ts,.js}',
+    __dirname + './user/entities/*{.ts,.js}',
+  ],
+  migrations: [__dirname + './migrations/*{.ts,.js}'],
   migrationsTableName: 'migrations',
   ssl: {
     rejectUnauthorized: false,

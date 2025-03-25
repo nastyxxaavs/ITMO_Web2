@@ -2,17 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { ClientRequestEntity, Status } from './entities/request.entity';
-import { RequestsRepository } from './request.repository';
+import { ClientRequestEntityRepository } from './request.repository';
 import { ServiceRepository } from '../service/service.repository';
 import { Position, TeamMember } from '../member/entities/member.entity';
 import { Category } from '../service/entities/service.entity';
-import { MemberRepository } from '../member/member.repository';
+import { TeamMemberRepository } from '../member/member.repository';
 
 @Injectable()
 export class RequestsService {
-  constructor(private readonly requestRepository: RequestsRepository,
+  constructor(private readonly clientRequestEntityRepository: ClientRequestEntityRepository,
               private readonly serviceRepository: ServiceRepository,
-              private readonly teamMemberRepository: MemberRepository,) {}
+              private readonly teamMemberRepository: TeamMemberRepository,) {}
 
   private mapToDto(request: ClientRequestEntity): {
     firmId: number;
@@ -91,7 +91,7 @@ export class RequestsService {
       ? await this.getServiceIdByName(createRequestDto.serviceRequested)
       : null;
     const teamMember = this.giveMember(createRequestDto);
-    return this.requestRepository.create({
+    return this.clientRequestEntityRepository.create({
       clientName: createRequestDto.clientName,
       contactInfo: createRequestDto.contactInfo,
       requestDate: new Date(),
@@ -113,7 +113,7 @@ export class RequestsService {
     serviceRequested: string;
     status: Status
   }[]> {
-    const requestEntities = await this.requestRepository.findAll();
+    const requestEntities = await this.clientRequestEntityRepository.findAll();
     return requestEntities.map(this.mapToDto);
   }
 
@@ -128,7 +128,7 @@ export class RequestsService {
     serviceRequested: string;
     status: Status
   } | null> {
-    const request = await this.requestRepository.findOne(id);
+    const request = await this.clientRequestEntityRepository.findOne(id);
     return request ? this.mapToDto(request) : null;
   }
 
@@ -136,12 +136,12 @@ export class RequestsService {
     id: number,
     updateRequestDto: UpdateRequestDto,
   ): Promise<boolean> {
-    if (await this.requestRepository.existById(id)) {
+    if (await this.clientRequestEntityRepository.existById(id)) {
       const serviceRequestedId = updateRequestDto.serviceRequested
         ? await this.getServiceIdByName(updateRequestDto.serviceRequested)
         : null;
 
-      await this.requestRepository.update(id, {
+      await this.clientRequestEntityRepository.update(id, {
         clientName: updateRequestDto.clientName,
         contactInfo: updateRequestDto.contactInfo,
         status: Status['В процессе'],
@@ -153,8 +153,8 @@ export class RequestsService {
   }
 
   async remove(id: number): Promise<boolean> {
-    if (await this.requestRepository.existById(id)) {
-      await this.requestRepository.remove(id);
+    if (await this.clientRequestEntityRepository.existById(id)) {
+      await this.clientRequestEntityRepository.remove(id);
       return true;
     }
     return false;

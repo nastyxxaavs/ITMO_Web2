@@ -1,0 +1,26 @@
+<main>
+  <div class="request-edit">
+    <h1>Редактирование запросов</h1>
+    <form action="/request-edit/{{this.id}}" method="POST">
+      <input type="hidden" name="_method" value="PATCH">
+      <label for="clientName">Имя клиента:</label>
+      <label>
+        <input type="text" name="clientName">
+      </label>
+      <label for="contactInfo">Контактные данные:</label>
+      <label>
+        <input type="text" name="contactInfo" >
+      </label>
+      <label for="serviceRequested">Требуемая услуга:</label>
+      <select id="serviceRequested" name="serviceRequested">
+        <option value="service1">Консультирование сельхозпроизводителей</option>
+        <option value="service2">Споры с таможней</option>
+        <option value="service3">Трудовые споры</option>
+        <option value="service4">Контракты</option>
+        <option value="service5">Локализация бизнеса</option>
+      </select>
+
+      <button type="submit">Сохранить</button>
+    </form>
+  </div>
+</main>

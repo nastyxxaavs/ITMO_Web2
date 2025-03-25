@@ -1,13 +1,21 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { RequestsService } from './requests.service';
 import { RequestsController } from './requests.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { RequestsRepository } from './request.repository';
+import { ClientRequestEntityRepository } from './request.repository';
+import { TeamMemberRepository } from '../member/member.repository';
+import { ServiceRepository } from '../service/service.repository';
+import { MemberModule } from '../member/member.module';
+import { ServiceModule } from '../service/service.module';
+import { ClientRequestEntity } from './entities/request.entity';
+import { TeamMember } from '../member/entities/member.entity';
+import { Service } from '../service/entities/service.entity';
+import { Firm } from '../firm/entities/firm.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Request])],
+  imports: [TypeOrmModule.forFeature([ClientRequestEntity, ClientRequestEntityRepository, TeamMember, Service, Firm]), forwardRef(() =>MemberModule), forwardRef(() =>ServiceModule)],
   controllers: [RequestsController],
-  providers: [RequestsService, RequestsRepository],
-  exports: [RequestsService, RequestsRepository],
+  providers: [RequestsService, ClientRequestEntityRepository, TeamMemberRepository, ServiceRepository],
+  exports: [RequestsService, ClientRequestEntityRepository],
 })
 export class RequestsModule {}
