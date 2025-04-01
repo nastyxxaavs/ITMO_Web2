@@ -5,8 +5,8 @@ import { TeamMember } from '../../member/entities/member.entity';
 import { User } from '../../user/entities/user.entity';
 
 export enum Status{
-  'В процессе',
-  'Завершен',
+  IN_PROGRESS = 'В процессе',
+  COMPLETED = 'Завершен',
 }
 
 @Entity()

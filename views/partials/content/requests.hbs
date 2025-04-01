@@ -1,11 +1,12 @@
 <main>
+  <div class="entities">
       {{#if requests.length}}
     <h1>Запросы клиентов</h1>
     <ul>
       {{#each requests}}
         <li>
           <a href="/requests/{{this.id}}"></a> - {{this.clientName}}, {{this.contactInfo}}, {{this.serviceRequested}}, {{this.requestDate}}, {{this.status}}
-          <a href="/requests/{{this.id}}/edit">✏️</a>
+          <a href="/request-edit/{{this.id}}">✏️</a>
           <form action="/requests/{{this.id}}" method="POST" style="display:inline;">
             <input type="hidden" name="_method" value="DELETE">
             <button type="submit">🗑️</button>
@@ -17,4 +18,5 @@
         <p>Заказы отсутствуют.</p>
       {{/if}}
     <a href="/request-add">Создать новый запрос</a>
+  </div>
 </main>

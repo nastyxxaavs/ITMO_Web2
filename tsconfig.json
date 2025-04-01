@@ -8,7 +8,7 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
-    "target": "ES2021",
+    "target": "ESNext",//ES2021
     "sourceMap": true,
     "outDir": "./dist",
     "rootDir": "./src",
@@ -24,5 +24,5 @@
     "strictPropertyInitialization": false
   },
   "include": ["src/**/*.ts"],
-  "extends": ["node_modules"]
+  "exclude": ["node_modules"]
 }

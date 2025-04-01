@@ -10,9 +10,11 @@ import { TeamMemberRepository } from '../member/member.repository';
 
 @Injectable()
 export class RequestsService {
-  constructor(private readonly clientRequestEntityRepository: ClientRequestEntityRepository,
-              private readonly serviceRepository: ServiceRepository,
-              private readonly teamMemberRepository: TeamMemberRepository,) {}
+  constructor(
+    private readonly clientRequestEntityRepository: ClientRequestEntityRepository,
+    private readonly serviceRepository: ServiceRepository,
+    private readonly teamMemberRepository: TeamMemberRepository,
+  ) {}
 
   private mapToDto(request: ClientRequestEntity): {
     firmId: number;
@@ -23,7 +25,7 @@ export class RequestsService {
     userId: number;
     teamMemberName: string;
     serviceRequested: string;
-    status: Status
+    status: Status;
   } {
     return {
       serviceRequested: request.serviceRequested.name,
@@ -34,7 +36,9 @@ export class RequestsService {
       status: request.status,
       firmId: request.firm.id,
       userId: request.users.id,
-      teamMemberName: request.teamMembers.firstName.concat(request.teamMembers.lastName),
+      teamMemberName: request.teamMembers.firstName.concat(
+        request.teamMembers.lastName,
+      ),
     };
   }
 
@@ -43,8 +47,12 @@ export class RequestsService {
     return service ? service.id : null;
   }
 
-  private async giveMember(createRequestDto: CreateRequestDto): Promise<TeamMember | null> {
-    const service = await this.serviceRepository.findOneByName(createRequestDto.serviceRequested)
+  private async giveMember(
+    createRequestDto: CreateRequestDto,
+  ): Promise<TeamMember | null> {
+    const service = await this.serviceRepository.findOneByName(
+      createRequestDto.serviceRequested,
+    );
     if (!service) {
       return null;
     }
@@ -52,27 +60,39 @@ export class RequestsService {
 
     switch (service.category) {
       case Category['Арбитраж/третейские суды']:
-        teamMember = await this.teamMemberRepository.findOneByPosition(Position['Руководитель практики'])
+        teamMember = await this.teamMemberRepository.findOneByPosition(
+          Position['Руководитель практики'],
+        );
         break;
 
       case Category['Споры с таможней']:
-        teamMember = await this.teamMemberRepository.findOneByPosition(Position['Ведущий юрист'])
+        teamMember = await this.teamMemberRepository.findOneByPosition(
+          Position['Ведущий юрист'],
+        );
         break;
 
       case Category['Трудовые споры']:
-        teamMember = await this.teamMemberRepository.findOneByPosition(Position['Младший юрист'])
+        teamMember = await this.teamMemberRepository.findOneByPosition(
+          Position['Младший юрист'],
+        );
         break;
 
       case Category['Контракты']:
-        teamMember = await this.teamMemberRepository.findOneByPosition(Position['Главный бухгалтер'])
+        teamMember = await this.teamMemberRepository.findOneByPosition(
+          Position['Главный бухгалтер'],
+        );
         break;
 
       case Category['Локализация бизнеса']:
-        teamMember = await this.teamMemberRepository.findOneByPosition(Position['Генеральный директор'])
+        teamMember = await this.teamMemberRepository.findOneByPosition(
+          Position['Генеральный директор'],
+        );
         break;
 
       case Category['Консультирование сельхозпроизводителей']:
-        teamMember = await this.teamMemberRepository.findOneByPosition(Position['Помощник юриста'])
+        teamMember = await this.teamMemberRepository.findOneByPosition(
+          Position['Помощник юриста'],
+        );
         break;
 
       default:
@@ -82,10 +102,9 @@ export class RequestsService {
     return teamMember;
   }
 
-
-
   async create(
-    createRequestDto: CreateRequestDto): Promise<ClientRequestEntity> {
+    createRequestDto: CreateRequestDto,
+  ): Promise<ClientRequestEntity> {
     //const request = new CreateRequestDto();
     const serviceRequestedId = createRequestDto.serviceRequested
       ? await this.getServiceIdByName(createRequestDto.serviceRequested)
@@ -95,24 +114,25 @@ export class RequestsService {
       clientName: createRequestDto.clientName,
       contactInfo: createRequestDto.contactInfo,
       requestDate: new Date(),
-      status: Status['В процессе'],
+      status: Status.IN_PROGRESS,
       serviceRequestedId,
       teamMember,
-      }
-    );
+    });
   }
 
-  async findAll(): Promise<{
-    firmId: number;
-    contactInfo: string;
-    clientName: string;
-    requestDate: Date;
-    id: number;
-    userId: number;
-    teamMemberName: string;
-    serviceRequested: string;
-    status: Status
-  }[]> {
+  async findAll(): Promise<
+    {
+      firmId: number;
+      contactInfo: string;
+      clientName: string;
+      requestDate: Date;
+      id: number;
+      userId: number;
+      teamMemberName: string;
+      serviceRequested: string;
+      status: Status;
+    }[]
+  > {
     const requestEntities = await this.clientRequestEntityRepository.findAll();
     return requestEntities.map(this.mapToDto);
   }
@@ -126,7 +146,7 @@ export class RequestsService {
     userId: number;
     teamMemberName: string;
     serviceRequested: string;
-    status: Status
+    status: Status;
   } | null> {
     const request = await this.clientRequestEntityRepository.findOne(id);
     return request ? this.mapToDto(request) : null;
@@ -145,7 +165,7 @@ export class RequestsService {
         clientName: updateRequestDto.clientName,
         contactInfo: updateRequestDto.contactInfo,
         status: Status['В процессе'],
-        serviceRequestedId
+        serviceRequestedId,
       });
       return true;
     }

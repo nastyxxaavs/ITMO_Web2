@@ -1,25 +1,27 @@
-{{#> layout}}
-  <form action="/contacts" method="post">
-    <label for="address">Адрес:</label>
-    <label>
-      <input type="text" name="address">
-    </label>
-    <label for="phone">Телефон:</label>
-    <label>
-      <input type="text" name="phone" >
-    </label>
-    <label for="email">Почта:</label>
-    <label>
-      <input type="text" name="email" >
-    </label>
-    <label for="mapsLink">Карта:</label>
-    <label>
-      <input type="text" name="mapsLink" >
-    </label>
-    <label for="firmName">Фирма:</label>
-    <label>
-      <input type="text" name="firmName">
-    </label>
-    <button type="submit">Создать</button>
-  </form>
-{{/layout}}
+<main>
+  <div class="entity-add">
+      <form action="/contact-add" method="post">
+        <label for="address">Адрес:</label>
+        <label>
+          <input type="text" name="address">
+        </label>
+        <label for="phone">Телефон:</label>
+        <label>
+          <input type="text" name="phone" >
+        </label>
+        <label for="email">Почта:</label>
+        <label>
+          <input type="text" name="email" >
+        </label>
+        <label for="mapsLink">Карта:</label>
+        <label>
+          <input type="text" name="mapsLink" >
+        </label>
+        <label for="firmName">Фирма:</label>
+        <label>
+          <input type="text" name="firmName">
+        </label>
+        <button type="submit">Создать</button>
+      </form>
+  </div>
+</main>

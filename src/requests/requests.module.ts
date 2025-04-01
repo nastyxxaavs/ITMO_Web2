@@ -1,6 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { RequestsService } from './requests.service';
-import { RequestsController } from './requests.controller';
+//import { RequestsController } from './requests.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClientRequestEntityRepository } from './request.repository';
 import { TeamMemberRepository } from '../member/member.repository';
@@ -14,7 +14,7 @@ import { Firm } from '../firm/entities/firm.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([ClientRequestEntity, ClientRequestEntityRepository, TeamMember, Service, Firm]), forwardRef(() =>MemberModule), forwardRef(() =>ServiceModule)],
-  controllers: [RequestsController],
+  //controllers: [RequestsController],
   providers: [RequestsService, ClientRequestEntityRepository, TeamMemberRepository, ServiceRepository],
   exports: [RequestsService, ClientRequestEntityRepository],
 })

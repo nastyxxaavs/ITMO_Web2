@@ -12,9 +12,9 @@ export class ContactRepository {
   async create(createContactDto: {
     address: string;
     phone: string;
+    email: string;
     mapsLink: string;
     firmId: number;
-    email: string;
   }): Promise<Contact> {
     const contact = this.repo.create(createContactDto);
     return await this.repo.save(contact);

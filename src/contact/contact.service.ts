@@ -36,13 +36,18 @@ export class ContactService {
     if (!firmId) {
       throw new NotFoundException('Firm not found');
     }
-    return this.contactRepository.create({
+    console.log(firmId);
+
+    const contact=  this.contactRepository.create({
       address: createContactDto.address,
       phone: createContactDto.phone,
       email: createContactDto.email,
       mapsLink: createContactDto.mapsLink,
       firmId: firmId,
     });
+    console.log('Contact being saved:', contact);
+
+    return contact;
   }
 
   async findAll(): Promise<ContactDto[]> {

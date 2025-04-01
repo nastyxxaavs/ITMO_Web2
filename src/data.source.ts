@@ -1,11 +1,7 @@
 import { DataSource } from "typeorm";
-import { User } from './user/entities/user.entity';
-import { Service } from './service/entities/service.entity';
-import { TeamMember } from './member/entities/member.entity';
-import { Contact } from './contact/entities/contact.entity';
-import { Firm } from './firm/entities/firm.entity';
-import { ClientRequestEntity } from './requests/entities/request.entity';
-import { Submission } from './form/entities/form.entity';
+import * as path from 'path';
+
+const __dirname = path.resolve();
 
 export default new DataSource({
   type: 'postgres',
@@ -15,15 +11,15 @@ export default new DataSource({
   password: '2bHktO83QaYtLS0cCa01ZM3gpkPjPpEY',
   database: 'nastyxxaavs',
   entities: [
-    __dirname + './contact/entities/*{.ts,.js}',
-    __dirname + './firm/entities/*{.ts,.js}',
-    __dirname + './form/entities/*{.ts,.js}',
-    __dirname + './member/entities/*{.ts,.js}',
-    __dirname + './requests/entities/*{.ts,.js}',
-    __dirname + './service/entities/*{.ts,.js}',
-    __dirname + './user/entities/*{.ts,.js}',
+    path.join(__dirname, './user/entities/*{.ts,.js}'),
+    path.join(__dirname, './service/entities/*{.ts,.js}'),
+    path.join(__dirname, './member/entities/*{.ts,.js}'),
+    path.join(__dirname, './contact/entities/*{.ts,.js}'),
+    path.join(__dirname, './firm/entities/*{.ts,.js}'),
+    path.join(__dirname, './requests/entities/*{.ts,.js}'),
+    path.join(__dirname, './form/entities/*{.ts,.js}')
   ],
-  migrations: [__dirname + './migrations/*{.ts,.js}'],
+  migrations: [path.join(__dirname, './migrations/*{.ts,.js}')],
   migrationsTableName: 'migrations',
   ssl: {
     rejectUnauthorized: false,
@@ -31,3 +27,4 @@ export default new DataSource({
   logging: true, //логирование
   synchronize: false, // автоматическая синхронизация схемы
 });
+

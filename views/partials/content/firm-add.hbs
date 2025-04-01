@@ -1,11 +1,15 @@
-{{#> layout}}
-<form action="/firms" method="post">
-  <label for="name">Название фирмы:</label>
-  <input type="text" id="name" name="name" required>
-
-  <label for="description">Описание:</label>
-  <textarea id="description" name="description" required></textarea>
-
-  <button type="submit">Создать</button>
-</form>
-{{/layout}}
+<main>
+  <div class="entity-add">
+      <form action="/firm-add" method="post">
+        <label for="name">Название фирмы:</label>
+        <label>
+          <input type="text" name="name">
+        </label>
+        <label for="description">Описание:</label>
+        <label>
+             <textarea name="description" ></textarea>
+          </label>
+        <button type="submit">Создать</button>
+      </form>
+  </div>
+</main>

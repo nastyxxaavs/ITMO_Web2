@@ -1,21 +1,23 @@
-{{#> layout}}
-  <form action="/users" method="post">
-    <label for="username">Имя пользователя:</label>
-    <label>
-      <input type="text" name="username">
-    </label>
-    <label for="email">Почта:</label>
-    <label>
-      <input type="text" name="email" >
-    </label>
-    <label for="status">Статус авторизации:</label>
-    <label>
-      <input type="text" name="status" >
-    </label>
-    <label for="role">Роль:</label>
-    <label>
-      <input type="text" name="role">
-    </label>
-    <button type="submit">Создать</button>
-  </form>
-{{/layout}}
+<main>
+  <div class="entity-add">
+      <form action="/user-add" method="post">
+        <label for="username">Имя пользователя:</label>
+        <label>
+          <input type="text" name="username">
+        </label>
+        <label for="email">Почта:</label>
+        <label>
+          <input type="text" name="email" >
+        </label>
+        <label for="status">Статус авторизации:</label>
+        <label>
+          <input type="text" name="status" >
+        </label>
+        <label for="role">Роль:</label>
+        <label>
+          <input type="text" name="role">
+        </label>
+        <button type="submit">Создать</button>
+      </form>
+  </div>
+</main>

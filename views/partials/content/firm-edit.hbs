@@ -1,6 +1,7 @@
-{{#> layout}}
+<main>
+  <div class="entity-edit">
     <h1>Редактирование компании</h1>
-    <form action="/firms/{{this.id}}" method="POST">
+    <form action="/firm-edit/{{this.id}}" method="POST">
       <input type="hidden" name="_method" value="PATCH">
       <label>Название:</label>
       <label>
@@ -12,4 +13,5 @@
       </label>
       <button type="submit">Сохранить</button>
     </form>
-{{/layout}}
+  </div>
+</main>

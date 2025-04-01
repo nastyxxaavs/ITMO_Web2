@@ -1,21 +1,23 @@
-{{#> layout}}
-  {{#if firms.length}}
-    <h1> Список компаний </h1>
-    <ul>
-      {{#each firms}}
-        <li>
-          <a href="/firms/{{this.id}}">{{this.name}}</a> - {{this.description}}
-          <a href="/firms/{{this.id}}/edit">✏️</a>
-          <form action="/firms/{{this.id}}" method="POST" style="display:inline;">
-            <input type="hidden" name="_method" value="DELETE">
-            <button type="submit">🗑️</button>
-          </form>
-        </li>
-      {{/each}}
-    </ul>
-  {{else}}
-    <p>Компании отсутствуют.</p>
-  {{/if}}
+<main>
+  <div class="entities">
+    {{#if firms.length}}
+      <h1> Список компаний </h1>
+      <ul>
+        {{#each firms}}
+          <li>
+            <a href="/firms/{{this.id}}">{{this.name}}</a> - {{this.description}}
+            <a href="/firm-edit/{{this.id}}">✏️</a>
+            <form action="/firms/{{this.id}}" method="POST" style="display:inline;">
+              <input type="hidden" name="_method" value="DELETE">
+              <button type="submit">🗑️</button>
+            </form>
+          </li>
+        {{/each}}
+      </ul>
+    {{else}}
+      <p>Компании отсутствуют.</p>
+    {{/if}}
 
-  <a href="/firms/add">Добавить компанию</a>
-{{/layout}}
+    <a href="/firm-add">Добавить компанию</a>
+  </div>
+</main>
