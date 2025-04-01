@@ -53,6 +53,10 @@ async function bootstrap() {
   server.use('/public', express.static(join(__dirname, '..', 'public')));
   server.use('/data', express.static(join(__dirname, '..', 'data')));
 
+  app.enableCors({
+    origin: '*', // Разрешаем запросы с любых доменов
+  });
+
   const port = configService.get<number>('PORT') || 4000;
   await app.listen(port);
   console.log(`Application is running on: http://localhost:${port}`);

@@ -13,6 +13,7 @@ export class FormService {
     return this.formRepository.create({
       name: createFormDto.name,
       email: createFormDto.email,
+      createdAt: new Date(),
     });
   }
 
