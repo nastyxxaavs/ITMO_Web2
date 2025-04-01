@@ -14,19 +14,18 @@ export class CreateServiceDto {
   @IsNotEmpty()
   category: Category;
 
-  @IsNumber()
   @IsNotEmpty()
   price: number;
 
-  @IsOptional()
-  firmId?: number;
-
-  @IsOptional()
-  requestId?: number;
-
-  @IsOptional()
-  teamMemberNames?: string[];
-
-  @IsOptional()
-  userIds?: number[];
+  // @IsOptional()
+  // firmId?: number;
+  //
+  // @IsOptional()
+  // requestId?: number;
+  //
+  // @IsOptional()
+  // teamMemberNames?: string[];
+  //
+  // @IsOptional()
+  // userIds?: number[];
 }

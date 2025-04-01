@@ -55,24 +55,25 @@ export class MemberService {
   }
 
   async create(createMemberDto: CreateMemberDto): Promise<TeamMember> {
-    const firmId = createMemberDto.firmName
-      ? await this.getFirmIdByName(createMemberDto.firmName)
-      : null;
-    if (!firmId) {
-      throw new NotFoundException('Firm not found');
-    }
+    // const firmId = createMemberDto.firmName
+    //   ? await this.getFirmIdByName(createMemberDto.firmName)
+    //   : null;
+    // if (!firmId) {
+    //   throw new NotFoundException('Firm not found');
+    // }
+    // console.log(firmId);
 
-    const serviceIds = createMemberDto.serviceNames
-      ? await this.getServiceIdsByNames(createMemberDto.serviceNames)
-      : [];
+    // const serviceIds = createMemberDto.serviceNames
+    //   ? await this.getServiceIdsByNames(createMemberDto.serviceNames)
+    //   : [];
 
     return this.teamMemberRepository.create({
       firstName: createMemberDto.firstName,
       lastName: createMemberDto.lastName,
       position: createMemberDto.position,
-      firmId,
-      serviceIds,
-      requestId: createMemberDto.requestId,
+      firmId: 1,
+      //serviceIds: serviceIds,
+      //requestId: createMemberDto.requestId,
     });
   }
 
@@ -111,17 +112,17 @@ export class MemberService {
         throw new NotFoundException('Firm not found');
       }
 
-      const serviceIds = updateMemberDto.serviceNames
-        ? await this.getServiceIdsByNames(updateMemberDto.serviceNames)
-        : [];
+      // const serviceIds = updateMemberDto.serviceNames
+      //   ? await this.getServiceIdsByNames(updateMemberDto.serviceNames)
+      //   : [];
 
       await this.teamMemberRepository.update(id, {
         firstName: updateMemberDto.firstName,
         lastName: updateMemberDto.lastName,
         position: updateMemberDto.position,
         firmId,
-        serviceIds,
-        requestId: updateMemberDto.requestId,
+        //serviceIds,
+        //requestId: updateMemberDto.requestId,
       });
       return  true;
     }

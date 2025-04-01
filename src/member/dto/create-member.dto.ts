@@ -16,9 +16,9 @@ export class CreateMemberDto {
   @IsOptional()
   firmName?: string;
 
-  @IsOptional()
-  serviceNames?: string[];
-
-  @IsOptional()
-  requestId?: number;
+  // @IsOptional()
+  // serviceNames?: string[];
+  //
+  // @IsOptional()
+  // requestId?: number;
 }

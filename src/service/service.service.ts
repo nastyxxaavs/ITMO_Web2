@@ -49,19 +49,19 @@ export class ServiceService {
   }
 
   async create(createServiceDto: CreateServiceDto): Promise<Service> {
-    const teamMemberIds = createServiceDto.teamMemberNames
-      ? await this.getTeamMemberIdsByNames(createServiceDto.teamMemberNames)
-      : [];
+    // const teamMemberIds = createServiceDto.teamMemberNames
+    //   ? await this.getTeamMemberIdsByNames(createServiceDto.teamMemberNames)
+    //   : [];
 
     return this.serviceRepository.create({
       name: createServiceDto.name,
       description: createServiceDto.description,
       category: createServiceDto.category,
       price: createServiceDto.price,
-      firmId: createServiceDto.firmId,
-      requestId: createServiceDto.requestId,
-      teamMemberIds,
-      userIds: createServiceDto.userIds,
+      //firmId: createServiceDto.firmId,
+      //requestId: createServiceDto.requestId,
+      //teamMemberIds,
+      //userIds: createServiceDto.userIds,
     });
   }
 
@@ -100,18 +100,18 @@ export class ServiceService {
   async update(id: number, updateServiceDto: UpdateServiceDto): Promise<boolean> {
     //return this.serviceRepository.update(id, updateServiceDto);
     if (await this.serviceRepository.existById(id)) {
-      const teamMemberIds = updateServiceDto.teamMemberNames
-        ? await this.getTeamMemberIdsByNames(updateServiceDto.teamMemberNames)
-        : [];
+    //   const teamMemberIds = updateServiceDto.teamMemberNames
+    //     ? await this.getTeamMemberIdsByNames(updateServiceDto.teamMemberNames)
+    //     : [];
       await this.serviceRepository.update(id, {
         name: updateServiceDto.name,
         description: updateServiceDto.description,
         category: updateServiceDto.category,
         price: updateServiceDto.price,
-        firmId: updateServiceDto.firmId,
-        requestId: updateServiceDto.requestId,
-        teamMemberIds,
-        userIds: updateServiceDto.userIds,
+        // firmId: updateServiceDto.firmId,
+        // requestId: updateServiceDto.requestId,
+        // teamMemberIds,
+        // userIds: updateServiceDto.userIds,
       });
       return true;
     }
@@ -119,7 +119,6 @@ export class ServiceService {
   }
 
   async remove(id: number): Promise<boolean> {
-    //await this.serviceRepository.remove(id);
     if (await this.serviceRepository.existById(id)){
       await this.serviceRepository.remove(id);
       return true;

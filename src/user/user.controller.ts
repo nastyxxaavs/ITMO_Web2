@@ -1,33 +1,54 @@
-// import {
-//   Controller,
-//   Get,
-//   Post,
-//   Body,
-//   Patch,
-//   Param,
-//   Delete,
-//   Redirect,
-//   HttpStatus,
-//   HttpCode,
-//   NotFoundException, ValidationPipe, Render,
-// } from '@nestjs/common';
-// import { UserService } from './user.service';
-// import { CreateUserDto } from './dto/create-user.dto';
-// import { UpdateUserDto } from './dto/update-user.dto';
-// import { UserDto } from './dto/user.dto';
-//
-// @Controller('users')
-// export class UserController {
-//   constructor(private readonly userService: UserService) {}
-//
-//   @Post()
-//   //@Redirect('/users')
-//   @Render('user-add')
-//   @HttpCode(HttpStatus.CREATED)
-//   async create(@Body(ValidationPipe) createUserDto: CreateUserDto) {
-//     await this.userService.create(createUserDto);
-//     return { statusCode: HttpStatus.CREATED };
-//   }
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Redirect,
+  HttpStatus,
+  HttpCode,
+  NotFoundException, ValidationPipe, Render, Req,
+} from '@nestjs/common';
+import { UserService } from './user.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UserDto } from './dto/user.dto';
+
+@Controller()
+export class UserController {
+  constructor(private readonly userService: UserService) {}
+
+  @Get('/user-add')
+  @Render('general')
+  showUser(@Req() req) {
+    console.log('Incoming request:', req.url);
+    const isAuthenticated = req.session.isAuthenticated;
+    console.log('isAuthenticated:', isAuthenticated);
+
+    return {
+      isAuthenticated,
+      user: isAuthenticated ? 'Anastasia' : null,
+      content: "user-add",
+      titleContent: 'Добавить пользователя',
+      customStyle: '../styles/entity-add.css',
+    };
+  }
+
+  @Post('/user-add')
+  @HttpCode(HttpStatus.CREATED)
+  async create(@Body(ValidationPipe) createUserDto: CreateUserDto, @Req() req) {
+    const isAuthenticated = req.session.isAuthenticated;
+    if (!isAuthenticated) {
+      return { statusCode: HttpStatus.UNAUTHORIZED, content: 'unauthorized' };
+    }
+    await this.userService.create(createUserDto);
+    return {
+      statusCode: HttpStatus.CREATED,
+    isAuthenticated,
+    };
+  }
 //
 //   @Get()
 //   @Render('users')
@@ -81,4 +102,4 @@
 //     }
 //     return { statusCode: HttpStatus.NOT_MODIFIED };
 //   }
-// }
+}

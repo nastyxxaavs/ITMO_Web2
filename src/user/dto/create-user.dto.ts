@@ -6,11 +6,6 @@ export class CreateUserDto {
   @IsNotEmpty()
   username: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(6)
-  password: string;
-
   @IsEmail()
   @IsNotEmpty()
   email: string;
@@ -23,12 +18,12 @@ export class CreateUserDto {
   @IsOptional()
   role?: Role;
 
-  @IsOptional()
-  firmId?: number;
-
-  @IsOptional()
-  serviceIds?: number[];
-
-  @IsOptional()
-  requestIds?: number[];
+  // @IsOptional()
+  // firmId?: number;
+  //
+  // @IsOptional()
+  // serviceIds?: number[];
+  //
+  // @IsOptional()
+  // requestIds?: number[];
 }

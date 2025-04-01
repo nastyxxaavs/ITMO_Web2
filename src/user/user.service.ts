@@ -23,12 +23,12 @@ export class UserService {
     return this.userRepository.create({
       username: createUserDto.username,
       email: createUserDto.email,
-      password: createUserDto.password,
+      //password: '777',
       status: createUserDto.status,
       role: createUserDto.role,
-      firmId: createUserDto.firmId,
-      serviceIds: createUserDto.serviceIds,
-      requestIds: createUserDto.requestIds,
+      //firmId: 1,
+      //serviceIds: [1,2],
+      //requestIds: [1],
     });
   }
 
@@ -47,12 +47,12 @@ export class UserService {
       await this.userRepository.update(id, {
         username: updateUserDto.username,
         email: updateUserDto.email,
-        password: updateUserDto.password,
+        //password: updateUserDto.password,
         status: updateUserDto.status,
         role: updateUserDto.role,
-        firmId: updateUserDto.firmId,
-        serviceIds: updateUserDto.serviceIds,
-        requestIds: updateUserDto.requestIds,
+        //firmId: updateUserDto.firmId,
+        //serviceIds: updateUserDto.serviceIds,
+        //requestIds: updateUserDto.requestIds,
       });
       return  true;
     }

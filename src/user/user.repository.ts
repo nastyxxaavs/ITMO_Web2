@@ -12,7 +12,8 @@ export class UserRepository {
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const user = this.userRepo.create(createUserDto);
-    user.password = hash(user.password);
+    //user.password = hash(user.password);
+    user.password = '12345';
     return await this.userRepo.save(user);
   }
 

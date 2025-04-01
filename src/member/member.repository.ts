@@ -16,8 +16,6 @@ export class TeamMemberRepository {
     firstName: string;
     lastName: string;
     firmId: number;
-    serviceIds: number[] | undefined;
-    requestId: number | undefined;
     position: Position;
   }): Promise<TeamMember> {
     const teamMember = this.memberRepo.create(createMemberDto);
@@ -70,8 +68,6 @@ export class TeamMemberRepository {
       firstName: string | undefined;
       lastName: string | undefined;
       firmId: number;
-      serviceIds: number[];
-      requestId: number | undefined;
       position: Position | undefined;
     },
   ): Promise<TeamMember | null> {

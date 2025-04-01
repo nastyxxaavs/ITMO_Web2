@@ -13,11 +13,7 @@ export class ServiceRepository {
   ) {}
 
   async create(createServiceDto: {
-    firmId: number | undefined;
-    teamMemberIds: number[];
     price: number;
-    requestId: number | undefined;
-    userIds: number[] | undefined;
     name: string;
     description: string;
     category: Category;
@@ -69,11 +65,7 @@ export class ServiceRepository {
   async update(
     id: number,
     updateServiceDto: {
-      firmId: number | undefined;
-      teamMemberIds: number[];
       price: number | undefined;
-      requestId: number | undefined;
-      userIds: number[] | undefined;
       name: string | undefined;
       description: string | undefined;
       category: Category | undefined;
