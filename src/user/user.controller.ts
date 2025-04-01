@@ -49,32 +49,34 @@ export class UserController {
     isAuthenticated,
     };
   }
-//
-//   @Get()
-//   @Render('users')
-//   async findAll():Promise< { users: UserDto[]}>  {
-//     const users = await this.userService.findAll();
-//     if (!users) {
-//       throw new NotFoundException(`Users are not found`);
-//     }
-//     return {users};
-//   }
-//
-//   @Get(':id')
-//   @Render('user')
-//   async findOne(@Param('id') id: number){ //: Promise<{ user: UserDto}> {
-//     const user = await this.userService.findOne(id);
-//     if (!user) {
-//       throw new NotFoundException(`User with ID ${id} not found`);
-//     }
-//     return {
-//       username: user.username,
-//       email: user.email,
-//       status: user.status,
-//       role: user.role,
-//     };
-//   }
-//
+
+  @Get('/users')
+  @Render('general')
+  async findAll():Promise<{ customStyle: string; users: UserDto[]; content: string }>  {
+    const users = await this.userService.findAll();
+    if (!users) {
+      throw new NotFoundException(`Users are not found`);
+    }
+    return {users,
+      content: "users",
+      customStyle: '../styles/entities.css',};
+  }
+
+  @Get(':id')
+  @Render('user')
+  async findOne(@Param('id') id: number){ //: Promise<{ user: UserDto}> {
+    const user = await this.userService.findOne(id);
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    return {
+      username: user.username,
+      email: user.email,
+      status: user.status,
+      role: user.role,
+    };
+  }
+
 //   @Patch(':id')
 //   //@Redirect('/users/:id')
 //   @Render('user-edit')

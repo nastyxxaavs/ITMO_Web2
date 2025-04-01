@@ -5,19 +5,22 @@
       <ul>
         {{#each firms}}
           <li>
+            <div class="entity-content">
             <a href="/firms/{{this.id}}">{{this.name}}</a> - {{this.description}}
             <a href="/firm-edit/{{this.id}}">✏️</a>
             <form action="/firms/{{this.id}}" method="POST" style="display:inline;">
               <input type="hidden" name="_method" value="DELETE">
-              <button type="submit">🗑️</button>
+              <a href="/firm-delete/{{this.id}}">🗑️</a>
             </form>
+            </div>
           </li>
         {{/each}}
       </ul>
     {{else}}
       <p>Компании отсутствуют.</p>
     {{/if}}
-
+    <div class="do-entity-add">
     <a href="/firm-add">Добавить компанию</a>
+    </div>
   </div>
 </main>

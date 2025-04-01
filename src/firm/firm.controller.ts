@@ -48,29 +48,32 @@ export class FirmController {
     }
   }
 
-  //
-  // @Get()
-  // @Render('firms')
-  // //@Redirect('/firms')
-  // async findAll():Promise<{
-  //   firms: {
-  //     contactId: number;
-  //     memberNames: Promise<string[]>;
-  //     userIds: number[];
-  //     name: string;
-  //     description: string;
-  //     id: number;
-  //     requestIds: number[];
-  //     serviceNames: Promise<string[]>
-  //   }[]
-  // }> {
-  //   const firms = await this.firmService.findAll();
-  //   if (!firms || firms.length === 0) {
-  //     throw new NotFoundException(`Firms are not found`);
-  //   }
-  //   return { firms };
-  // }
-  //
+
+  @Get('/firms')
+  @Render('general')
+  async findAll():Promise<{
+    customStyle: string;
+    firms: {
+      contactId: number;
+      memberNames: Promise<string[]>;
+      userIds: number[];
+      name: string;
+      description: string;
+      id: number;
+      requestIds: number[];
+      serviceNames: Promise<string[]>
+    }[];
+    content: string
+  }> {
+    const firms = await this.firmService.findAll();
+    if (!firms || firms.length === 0) {
+      throw new NotFoundException(`Firms are not found`);
+    }
+    return { firms,
+      content: "firms",
+      customStyle: '../styles/entities.css'};
+  }
+
   // @Get(':id')
   // @Render('firm')
   // //@Redirect('/firms/:id')

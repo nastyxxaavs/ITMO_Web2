@@ -50,16 +50,18 @@ export class ContactController {
     };
   }
 
-  // @Get('/contacts')
-  // @Render('general')
-  // async findAll():Promise< { contacts: ContactDto[] } > {
-  //   const contacts = await this.contactService.findAll();
-  //   if (!contacts || contacts.length === 0) {
-  //     throw new NotFoundException(`Contacts are not found`);
-  //   }
-  //   return { contacts };
-  // }
-  //
+  @Get('/contacts')
+  @Render('general')
+  async findAll():Promise<{ customStyle: string; contacts: ContactDto[]; content: string }> {
+    const contacts = await this.contactService.findAll();
+    if (!contacts || contacts.length === 0) {
+      throw new NotFoundException(`Contacts are not found`);
+    }
+    return { contacts,
+      content: "contacts",
+      customStyle: '../styles/entities.css',};
+  }
+
   // @Get(':id')
   // @Render('contact')
   // async findOne(@Param('id') id: number){ //: Promise< { contact: ContactDto }> {

@@ -50,27 +50,31 @@ export class MemberController {
        isAuthenticated,
     };
   }
-  //
-  // @Get()
-  // @Render('members')
-  // async findAll(): Promise<{
-  //   members: {
-  //     firstName: string;
-  //     lastName: string;
-  //     requestId: number;
-  //     firmName: string;
-  //     id: number;
-  //     position: Position;
-  //     serviceNames: Promise<string[]>
-  //   }[]
-  // }> {
-  //   const members = await this.memberService.findAll();
-  //   if (!members) {
-  //     throw new NotFoundException(`Members are not found`);
-  //   }
-  //   return  { members };
-  // }
-  //
+
+  @Get('/members')
+  @Render('general')
+  async findAll(): Promise<{
+    customStyle: string;
+    members: {
+      firstName: string;
+      lastName: string;
+      requestId: number;
+      firmName: string;
+      id: number;
+      position: Position;
+      serviceNames: Promise<string[]>
+    }[];
+    content: string
+  }> {
+    const members = await this.memberService.findAll();
+    if (!members) {
+      throw new NotFoundException(`Members are not found`);
+    }
+    return  { members,
+      content: "members",
+      customStyle: '../styles/entities.css',};
+  }
+
   // @Get(':id')
   // @Render('member')
   // async findOne(@Param('id') id: number){ //: Promise< { member: TeamMemberDto }> {

@@ -47,40 +47,40 @@ export class RequestsController {
     };
   }
 
-//   @Get('/requests')
-//   @Render('general')
-//   async findAll(@Req() req):Promise<{
-//     customStyle: string;
-//     titleContent: string;
-//     isAuthenticated: any;
-//     requests: {
-//       firmId: number;
-//       contactInfo: string;
-//       clientName: string;
-//       requestDate: Date;
-//       id: number;
-//       userId: number;
-//       teamMemberName: string;
-//       serviceRequested: string;
-//       status: Status
-//     }[];
-//     user: string | null;
-//     content: string
-//   }> {
-//     const isAuthenticated = req.session.isAuthenticated;
-//     const requests = await this.requestsService.findAll();
-//     if (!requests) {
-//       throw new NotFoundException(`Requests are not found`);
-//     }
-//     return {
-//       isAuthenticated,
-//       user: isAuthenticated ? 'Anastasia' : null,
-//       requests,
-//       content: 'requests',
-//       titleContent: 'Список запросов',
-//       customStyle: 'styles/entities.css', };
-//   }
-//
+  @Get('/requests')
+  @Render('general')
+  async findAll(@Req() req):Promise<{
+    customStyle: string;
+    titleContent: string;
+    isAuthenticated: any;
+    requests: {
+      firmId: number;
+      contactInfo: string;
+      clientName: string;
+      requestDate: Date;
+      id: number;
+      userId: number;
+      teamMemberName: string;
+      serviceRequested: string;
+      status: Status
+    }[];
+    user: string | null;
+    content: string
+  }> {
+    const isAuthenticated = req.session.isAuthenticated;
+    const requests = await this.requestsService.findAll();
+    if (!requests) {
+      throw new NotFoundException(`Requests are not found`);
+    }
+    return {
+      isAuthenticated,
+      user: isAuthenticated ? 'Anastasia' : null,
+      requests,
+      content: 'requests',
+      titleContent: 'Список запросов',
+      customStyle: '../styles/entities.css', };
+  }
+
 //   @Get(':id')
 //   @Render('general')
 //   async findOne(@Param('id') id: number){ //: Promise< { request: ClientRequestDto }> {

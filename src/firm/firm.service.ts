@@ -30,20 +30,20 @@ export class FirmService {
     requestIds: number[];
     serviceNames: Promise<string[]>
   } {
-    const serviceIds = firm.services.map((service: Service) => service.id);
-    const serviceNames = this.getServiceNamesByIds(serviceIds);
-    const memberIds = firm.teamMembers.map((member: TeamMember) => member.id);
-    const memberNames = this.getMemberNamesByIds(memberIds);
+    const serviceIds = firm.services?.map((service: Service) => service.id);
+    const serviceNames = this?.getServiceNamesByIds(serviceIds);
+    const memberIds = firm.teamMembers?.map((member: TeamMember) => member.id);
+    const memberNames = this?.getMemberNamesByIds(memberIds);
 
     return {
       id: firm.id,
       name: firm.name,
       description: firm.description,
-      contactId: firm.contacts.id,
-      serviceNames,
-      memberNames,
-      requestIds: firm.requests.map(clientRequest => clientRequest.id),
-      userIds: firm.requests.map(user => user.id),
+      contactId: firm.contacts?.id,
+      serviceNames: serviceNames,
+      memberNames:memberNames,
+      requestIds: firm.requests?.map(clientRequest => clientRequest.id),
+      userIds: firm.requests?.map(user => user.id),
     };
   }
 

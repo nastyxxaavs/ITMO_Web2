@@ -28,15 +28,15 @@ export class RequestsService {
     status: Status;
   } {
     return {
-      serviceRequested: request.serviceRequested.name,
+      serviceRequested: request.serviceRequested?.name,
       id: request.id,
       clientName: request.clientName,
       contactInfo: request.contactInfo,
       requestDate: request.requestDate,
       status: request.status,
-      firmId: request.firm.id,
-      userId: request.users.id,
-      teamMemberName: request.teamMembers.firstName.concat(
+      firmId: request.firm?.id,
+      userId: request.users?.id,
+      teamMemberName: request.teamMembers?.firstName.concat(
         request.teamMembers.lastName,
       ),
     };

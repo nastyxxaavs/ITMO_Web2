@@ -26,16 +26,16 @@ export class MemberService {
     position: Position;
     serviceNames: Promise<string[]>
   } {
-    const serviceIds = member.services.map((service: Service) => service.id);
-    const serviceNames = this.getServiceNamesByIds(serviceIds);
+    const serviceIds = member.services?.map((service: Service) => service.id);
+    const serviceNames = this?.getServiceNamesByIds(serviceIds);
     return {
       id: member.id,
       firstName: member.firstName,
       lastName: member.lastName,
       position: member.position,
-      firmName: member.firm.name,
-      serviceNames,
-      requestId: member.requests.id,
+      firmName: member.firm?.name,
+      serviceNames: serviceNames,
+      requestId: member.requests?.id,
     };
   }
 
@@ -105,12 +105,12 @@ export class MemberService {
 
   async update(id: number, updateMemberDto: UpdateMemberDto): Promise<boolean> {
     if (await this.teamMemberRepository.existById(id)) {
-      const firmId = updateMemberDto.firmName
-        ? await this.getFirmIdByName(updateMemberDto.firmName)
-        : null;
-      if (!firmId) {
-        throw new NotFoundException('Firm not found');
-      }
+      // const firmId = updateMemberDto.firmName
+      //   ? await this.getFirmIdByName(updateMemberDto.firmName)
+      //   : null;
+      // if (!firmId) {
+      //   throw new NotFoundException('Firm not found');
+      // }
 
       // const serviceIds = updateMemberDto.serviceNames
       //   ? await this.getServiceIdsByNames(updateMemberDto.serviceNames)
@@ -120,7 +120,7 @@ export class MemberService {
         firstName: updateMemberDto.firstName,
         lastName: updateMemberDto.lastName,
         position: updateMemberDto.position,
-        firmId,
+        firmId: 1,
         //serviceIds,
         //requestId: updateMemberDto.requestId,
       });

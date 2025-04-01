@@ -23,18 +23,18 @@ export class ServiceService {
     id: number;
     category: Category
   } {
-    const memberIds = service.teamMembers.map((member: TeamMember) => member.id);
-    const teamMemberNames = this.getMemberNamesByIds(memberIds);
+    const memberIds = service.teamMembers?.map((member: TeamMember) => member.id);
+    const teamMemberNames = this?.getMemberNamesByIds(memberIds);
     return {
       id: service.id,
       name: service.name,
       description: service.description,
       category: service.category,
       price: service.price,
-      firmId: service.firm.id,
-      requestId: service.requests.id,
+      firmId: service.firm?.id,
+      requestId: service.requests?.id,
       teamMemberNames,
-      userIds: service.users.map(user => user.id),
+      userIds: service.users?.map(user => user.id),
     };
   }
 
@@ -76,7 +76,6 @@ export class ServiceService {
     id: number;
     category: Category
   }[]> {
-    //return this.serviceRepository.findAll();
     const services = await this.serviceRepository.findAll();
     return services.map(this.mapToDto);
   }
@@ -92,13 +91,11 @@ export class ServiceService {
     id: number;
     category: Category
   } | null> {
-    //return this.serviceRepository.findOne(id);
     const service = await this.serviceRepository.findOne(id);
     return service ? this.mapToDto(service) : null;
   }
 
   async update(id: number, updateServiceDto: UpdateServiceDto): Promise<boolean> {
-    //return this.serviceRepository.update(id, updateServiceDto);
     if (await this.serviceRepository.existById(id)) {
     //   const teamMemberIds = updateServiceDto.teamMemberNames
     //     ? await this.getTeamMemberIdsByNames(updateServiceDto.teamMemberNames)

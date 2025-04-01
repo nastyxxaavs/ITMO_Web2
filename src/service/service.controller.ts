@@ -51,29 +51,32 @@ export class ServiceController {
     };
   }
 
-  // @Get()
-  // @Render('services')
-  // async findAll():Promise<{
-  //   services: {
-  //     firmId: number;
-  //     price: number;
-  //     requestId: number;
-  //     teamMemberNames: Promise<string[]>;
-  //     userIds: number[];
-  //     name: string;
-  //     description: string;
-  //     id: number;
-  //     category: Category
-  //   }[]
-  // }> {
-  //   //return this.serviceService.findAll();
-  //   const services = await this.serviceService.findAll();
-  //   if (!services) {
-  //     throw new NotFoundException(`Services are not found`);
-  //   }
-  //   return { services };
-  // }
-  //
+  @Get('/all-services')
+  @Render('general')
+  async findAll():Promise<{
+    customStyle: string;
+    services: {
+      firmId: number;
+      price: number;
+      requestId: number;
+      teamMemberNames: Promise<string[]>;
+      userIds: number[];
+      name: string;
+      description: string;
+      id: number;
+      category: Category
+    }[];
+    content: string
+  }> {
+    const services = await this.serviceService.findAll();
+    if (!services) {
+      throw new NotFoundException(`Services are not found`);
+    }
+    return { services,
+      content: "all_services",
+      customStyle: '../styles/entities.css'};
+  }
+
   // @Get(':id')
   // @Render('service')
   // async findOne(@Param('id') id: number){ //: Promise< { service: ServiceDto}> {

@@ -19,7 +19,7 @@ export class ContactService {
       phone: contact.phone,
       email: contact.email,
       mapsLink: contact.mapsLink,
-      firmId: contact.firm.id
+      firmId: contact.firm?.id
     };
   }
 
