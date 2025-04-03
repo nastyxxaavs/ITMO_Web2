@@ -54,7 +54,9 @@ async function bootstrap() {
   server.use('/data', express.static(join(__dirname, '..', 'data')));
 
   app.enableCors({
-    origin: '*', // Разрешаем запросы с любых доменов
+    origin: true,//'*', // Разрешаем запросы с любых доменов
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'HEAD', 'PUT'],
+    allowedHeaders: 'Content-Type, Accept',
   });
 
   const port = configService.get<number>('PORT') || 4000;

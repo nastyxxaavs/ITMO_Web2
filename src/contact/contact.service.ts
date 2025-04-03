@@ -6,12 +6,23 @@ import { Firm } from '../firm/entities/firm.entity';
 import { Contact } from './entities/contact.entity';
 import { ContactRepository } from './contact.repository';
 import { FirmRepository } from '../firm/firm.repository';
+import { Observable, Subject } from 'rxjs';
 
 @Injectable()
 export class ContactService {
+  private eventStream = new Subject<any>();
   constructor(
     private readonly contactRepository: ContactRepository,
     private readonly firmRepository: FirmRepository) {}
+
+  getEventStream(): Observable<any> {
+    return this.eventStream.asObservable();
+  }
+
+  notifyContactChange(message: string): void {
+    console.log('Sending SSE:', message);
+    this.eventStream.next({ message });
+  }
 
   private mapToDto(contact: Contact): ContactDto {
     return {
