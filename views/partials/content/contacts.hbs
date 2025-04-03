@@ -1,6 +1,4 @@
 <main>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
   <div class="entities">
       {{#if contacts.length}}
          <h1>Контакты компании</h1>
@@ -25,34 +23,4 @@
     <a href="/contact-add">Добавить контакт</a>
   </div>
   </div>
-
-  <script>
-    toastr.options = { positionClass: 'toast-top-right', timeout: 5000 };
-
-    function setupEventSource() {
-      const eventSource = new EventSource('http://localhost:8082/contact-events');
-
-      // Обработчик для события, которое приходит от сервера
-      eventSource.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.message) {
-            toastr.info(data.message);
-          }
-        } catch (e) {
-          console.error('SSE parse error:', e);
-        }
-      };
-
-      // Обработчик для ошибок SSE
-      eventSource.onerror = (e) => {
-        console.error('SSE error:', e);
-        eventSource.close();
-        setTimeout(setupEventSource, 2000); // Переподключение через 2 сек
-      };
-    }
-    document.addEventListener('DOMContentLoaded', setupEventSource, (e) => {
-      e.preventDefault();
-    });
-  </script>
 </main>

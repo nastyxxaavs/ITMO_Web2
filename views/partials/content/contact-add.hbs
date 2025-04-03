@@ -2,30 +2,62 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
   <div class="entity-add">
-      <form action="/contact-add" method="post">
+      <form id="addContactForm">
         <label for="address">Адрес:</label>
         <label>
-          <input type="text" name="address">
+          <input id="addressInput" type="text" name="address">
         </label>
         <label for="phone">Телефон:</label>
         <label>
-          <input type="text" name="phone" >
+          <input id="phoneInput" type="text" name="phone" >
         </label>
         <label for="email">Почта:</label>
         <label>
-          <input type="text" name="email" >
+          <input id="emailInput" type="text" name="email" >
         </label>
         <label for="mapsLink">Карта:</label>
         <label>
-          <input type="text" name="mapsLink" >
+          <input id="mapsLinkInput" type="text" name="mapsLink" >
         </label>
         <label for="firmName">Фирма:</label>
         <label>
-          <input type="text" name="firmName">
+          <input id="firmNameInput" type="text" name="firmName">
         </label>
         <button type="submit">Создать</button>
       </form>
   </div>
+  <script>
+    document.getElementById('addContactForm').addEventListener('submit', async (e) =>{
+      e.preventDefault();
+
+      const address = document.getElementById('addressInput').value;
+      const phone = document.getElementById('phoneInput').value;
+      const email = document.getElementById('emailInput').value;
+      const mapsLink = document.getElementById('mapsLinkInput').value;
+      const firmName = document.getElementById('firmNameInput').value;
+
+
+      const data = { address, phone, email, mapsLink, firmName};
+
+
+      fetch(`http://localhost:8082/contact-add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+        .then(response => response.json())
+        .then(data => {
+
+          console.log('Success:', data);
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+    });
+  </script>
+
   <script>
     toastr.options = { positionClass: 'toast-top-right',  timeout: 5000  };
 
@@ -49,11 +81,9 @@
       eventSource.onerror = (e) => {
         console.error('SSE error:', e);
         eventSource.close();
-        setTimeout(setupEventSource, 2000); // Переподключение через 2 сек
+        setTimeout(setupEventSource, 2000);
       };
     }
-    document.addEventListener('DOMContentLoaded', setupEventSource,(e) => {
-      e.preventDefault();
-    });
+    document.addEventListener('DOMContentLoaded', setupEventSource)
   </script>
 </main>

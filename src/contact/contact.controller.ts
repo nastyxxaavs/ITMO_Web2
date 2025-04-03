@@ -19,18 +19,6 @@ import { interval, map, mergeWith, Observable } from 'rxjs';
 export class ContactController {
   constructor(private readonly contactService: ContactService) {}
 
-  // @Get('/contact-events')
-  // @Render('general')
-  // async showEvents():Promise<{ customStyle: string; contacts: ContactDto[]; content: string }> {
-  //   const contacts = await this.contactService.findAll();
-  //   if (!contacts || contacts.length === 0) {
-  //     throw new NotFoundException(`Contacts are not found`);
-  //   }
-  //   return { contacts,
-  //     content: "contacts",
-  //     customStyle: '../styles/entities.css',};
-  // }
-
   @Sse('contact-events')
   sendEvents(@Res() res): Observable<MessageEvent> {
     res.setHeader('Content-Type', 'text/event-stream');

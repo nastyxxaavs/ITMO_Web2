@@ -82,7 +82,7 @@
       eventSource.onerror = (e) => {
         console.error('SSE error:', e);
         eventSource.close();
-        setTimeout(setupEventSource, 2000); // Переподключение через 2 сек
+        setTimeout(setupEventSource, 2000);
       };
     }
     document.addEventListener('DOMContentLoaded', setupEventSource)
