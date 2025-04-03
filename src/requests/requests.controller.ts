@@ -54,14 +54,14 @@ export class RequestsController {
     titleContent: string;
     isAuthenticated: any;
     requests: {
-      firmId: number;
+      firmId: number | undefined;
       contactInfo: string;
       clientName: string;
       requestDate: Date;
       id: number;
-      userId: number;
-      teamMemberName: string;
-      serviceRequested: string;
+      userId: number | undefined;
+      teamMemberName: string | undefined;
+      serviceRequested: string | undefined;
       status: Status
     }[];
     user: string | null;
@@ -81,56 +81,70 @@ export class RequestsController {
       customStyle: '../styles/entities.css', };
   }
 
-//   @Get(':id')
-//   @Render('general')
-//   async findOne(@Param('id') id: number){ //: Promise< { request: ClientRequestDto }> {
-//     const request = await this.requestsService.findOne(id);
-//     if (!request) {
-//       throw new NotFoundException(`Request with ID ${id} not found`);
-//     }
-//     return {
-//       clientName: request.clientName,
-//       contactInfo: request.contactInfo,
-//       serviceRequested: request.serviceRequested,
-//       requestDate: request.requestDate,
-//       status: request.status,
-//       content: 'request',
-//       titleContent: 'Требуемый запрос',
-//       customStyle: 'styles/entity-info.css',
-//     };
-//   }
-//
-//   // @Get('/request-edit')
-//   // @Render('general')
-//   // showEditForm(@Req() req){
-//   //   const isAuthenticated = req.session.isAuthenticated;
-//   //   return {
-//   //     isAuthenticated,
-//   //     user: isAuthenticated ? 'Anastasia' : null,
-//   //     content: 'request-edit',
-//   //     titleContent: 'Добавить запрос',
-//   //     customStyle: 'styles/entities/entity-edit.css',
-//   //   };
-//   // }
-//
-//
-//   @Patch(':id/edit')
-//   @Render('general')
-//   @HttpCode(HttpStatus.OK)
-//   @HttpCode(HttpStatus.NOT_MODIFIED)
-//   async update(@Param('id') id: number, @Body() updateRequestDto: UpdateRequestDto) {
-//     if( await this.requestsService.update(+id, updateRequestDto)){
-//       return { statusCode: HttpStatus.OK,
-//         content: 'request-edit',
-//         titleContent: 'Редактирование запроса',
-//         customStyle: 'styles/entities/entity-edit.css',};
-//     }
-//     return { statusCode: HttpStatus.NOT_MODIFIED,
-//       content: 'request-edit',
-//       titleContent: 'Редактирование запроса',
-//       customStyle: 'styles/entity-edit.css'};
-//   }
-//
+  @Get('/requests/:id')
+  @Render('general')
+  async findOne(@Param('id') id: number){
+    const request = await this.requestsService.findOne(id);
+    if (!request) {
+      throw new NotFoundException(`Request with ID ${id} not found`);
+    }
+    return {
+      clientName: request.clientName,
+      contactInfo: request.contactInfo,
+      serviceRequested: request.serviceRequested,
+      requestDate: request.requestDate,
+      status: request.status,
+      content: 'request',
+      titleContent: 'Требуемый запрос',
+      customStyle: '../styles/entity-info.css',
+    };
+  }
+
+  @Get('/request-edit/:id')
+  @Render('general')
+  showEditForm(@Req() req, @Param('id') id: string){
+    const isAuthenticated = req.session.isAuthenticated;
+    return {
+      id,
+      isAuthenticated,
+      user: isAuthenticated ? 'Anastasia' : null,
+      content: 'request-edit',
+      titleContent: 'Редактировать запрос',
+      customStyle: '../styles/entity-edit.css',
+    };
+  }
+
+
+  @Patch('/request-edit/:id')
+  @HttpCode(HttpStatus.OK)
+  async update(@Param('id') id: number, @Body() updateRequestDto: UpdateRequestDto) {
+    if (await this.requestsService.update(+id, updateRequestDto)) {
+      return {
+        statusCode: HttpStatus.OK,
+      }
+    }
+    return {
+      statusCode: HttpStatus.NOT_MODIFIED,
+    }
+  }
+
+  @Get('/request-delete/:id')
+  @HttpCode(HttpStatus.OK)
+  async removeViaGet(@Param('id') id: number): Promise<{ success: boolean; message: string }> {
+    const isRemoved = await this.requestsService.remove(+id);
+    if (isRemoved) {
+      return {
+        success: true,
+        message: 'Contact deleted successfully'
+      };
+    } else {
+      return {
+        success: false,
+        message: 'Contact not found or already deleted'
+      };
+    }
+  }
+
 //   @Delete(':id/delete')
 //   //@Redirect('/requests')
 //   @Render('requests')

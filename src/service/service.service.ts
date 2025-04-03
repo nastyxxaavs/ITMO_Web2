@@ -13,18 +13,17 @@ export class ServiceService {
               private teamMemberRepository: TeamMemberRepository) {}
 
   private mapToDto(service: Service): {
-    firmId: number;
+    firmId: number | undefined;
     price: number;
-    requestId: number;
-    teamMemberNames: Promise<string[]>;
-    userIds: number[];
+    requestId: number | undefined;
+    userIds: number[] | undefined;
     name: string;
     description: string;
     id: number;
     category: Category
   } {
     const memberIds = service.teamMembers?.map((member: TeamMember) => member.id);
-    const teamMemberNames = this?.getMemberNamesByIds(memberIds);
+    //const teamMemberNames = this?.getMemberNamesByIds(memberIds);
     return {
       id: service.id,
       name: service.name,
@@ -33,20 +32,20 @@ export class ServiceService {
       price: service.price,
       firmId: service.firm?.id,
       requestId: service.requests?.id,
-      teamMemberNames,
+      //teamMemberNames,
       userIds: service.users?.map(user => user.id),
     };
   }
+  //
+  // private async getTeamMemberIdsByNames(teamMemberNames: string[]): Promise<number[]> {
+  //   const teamMembers = await this.teamMemberRepository.findIdByName(teamMemberNames)
+  //   return teamMembers.map(member => member.id);
+  // }
 
-  private async getTeamMemberIdsByNames(teamMemberNames: string[]): Promise<number[]> {
-    const teamMembers = await this.teamMemberRepository.findIdByName(teamMemberNames)
-    return teamMembers.map(member => member.id);
-  }
-
-  private async getMemberNamesByIds(memberIds: number[]): Promise<string[]> {
-    const members = await this.serviceRepository.findNameById(memberIds)
-    return members.map(member => member.name);
-  }
+  // private async getMemberNamesByIds(memberIds: number[]): Promise<string[]> {
+  //   const members = await this.serviceRepository.findNameById(memberIds)
+  //   return members.map(member => member.name);
+  // }
 
   async create(createServiceDto: CreateServiceDto): Promise<Service> {
     // const teamMemberIds = createServiceDto.teamMemberNames
@@ -66,11 +65,10 @@ export class ServiceService {
   }
 
   async findAll():Promise<{
-    firmId: number;
+    firmId: number | undefined;
     price: number;
-    requestId: number;
-    teamMemberNames: Promise<string[]>;
-    userIds: number[];
+    requestId: number | undefined;
+    userIds: number[] | undefined;
     name: string;
     description: string;
     id: number;
@@ -81,11 +79,10 @@ export class ServiceService {
   }
 
   async findOne(id: number): Promise<{
-    firmId: number;
+    firmId: number | undefined;
     price: number;
-    requestId: number;
-    teamMemberNames: Promise<string[]>;
-    userIds: number[];
+    requestId: number | undefined;
+    userIds: number[] | undefined;
     name: string;
     description: string;
     id: number;

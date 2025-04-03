@@ -33,8 +33,8 @@ export class Service {
   @Column()
   price: number;
 
-  @ManyToOne(() => Firm, (firm) => firm.services)
-  firm: Firm;
+  @ManyToOne(() => Firm, (firm) => firm.services, {nullable: true})
+  firm: Firm | null;
 
   @OneToOne(() => ClientRequestEntity, (request) => request.services)
   requests: ClientRequestEntity;

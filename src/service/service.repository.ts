@@ -34,33 +34,33 @@ export class ServiceRepository {
     return await this.serviceRepo.findOne({ where: { name } });
   }
 
-  async findIdByName(names: string[]): Promise<Service[]> {
-    return this.find({
-      where: {
-        name: In(names),
-      },
-    });
-  }
+  // async findIdByName(names: string[]): Promise<Service[]> {
+  //   return this.find({
+  //     where: {
+  //       name: In(names),
+  //     },
+  //   });
+  // }
+  //
+  // async findNameById(ids: number[]): Promise<Service[]> {
+  //   return this.findName({
+  //     where: {
+  //       id: In(ids),
+  //     },
+  //   });
+  // }
 
-  async findNameById(ids: number[]): Promise<Service[]> {
-    return this.findName({
-      where: {
-        id: In(ids),
-      },
-    });
-  }
-
-  find(arg0: {
-    where: { name: FindOperator<any> };
-  }): Service[] | PromiseLike<Service[]> {
-    throw new Error('Method not implemented.');
-  }
-
-  findName(arg0: {
-    where: { id: FindOperator<any> };
-  }): Service[] | PromiseLike<Service[]> {
-    throw new Error('Method not implemented.');
-  }
+  // find(arg0: {
+  //   where: { name: FindOperator<any> };
+  // }): Service[] | PromiseLike<Service[]> {
+  //   throw new Error('Method not implemented.');
+  // }
+  //
+  // findName(arg0: {
+  //   where: { id: FindOperator<any> };
+  // }): Service[] | PromiseLike<Service[]> {
+  //   throw new Error('Method not implemented.');
+  // }
 
   async update(
     id: number,

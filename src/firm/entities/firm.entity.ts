@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, JoinColumn } from 'typeorm';
 import { Service } from '../../service/entities/service.entity';
 import { TeamMember } from '../../member/entities/member.entity';
 import { User } from '../../user/entities/user.entity';
@@ -17,18 +17,18 @@ export class Firm {
   description: string;
 
   @OneToMany(() => Service, (service) => service.firm)
-  services: Service[];
+  services: Service[] | null;
 
   @OneToMany(() => TeamMember, (teamMember) => teamMember.firm)
-  teamMembers: TeamMember[];
+  teamMembers: TeamMember[] | null;
 
   @OneToMany(() => User, (user) => user.firm)
-  users: User[];
+  users: User[] | null;
 
-  @OneToOne(() => Contact, (contact) => contact.firm)
-  contacts: Contact;
+  @OneToMany(() => Contact, (contact) => contact.firm)
+  contacts: Contact[] | null;
 
 
   @OneToMany(() => ClientRequestEntity, (request) => request.firm)
-  requests: ClientRequestEntity[];
+  requests: ClientRequestEntity[] | null;
 }

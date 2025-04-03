@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, ManyToOne } from 'typeorm';
 import { Firm } from '../../firm/entities/firm.entity';
 
 @Entity()
@@ -18,8 +18,8 @@ export class Contact {
   @Column()
   mapsLink: string;
 
-  @OneToOne(() => Firm, (firm) => firm.contacts)
-  firm: Firm;
+  @ManyToOne(() => Firm, (firm) => firm.contacts, {nullable: true})
+  firm: Firm | null;
 
   getContactDetails(): string {
     return `Адрес: ${this.address}\nТелефон: ${this.phone}\nEmail: ${this.email}\nСсылка на карты: ${this.mapsLink}`;

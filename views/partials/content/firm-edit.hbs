@@ -1,17 +1,42 @@
 <main>
   <div class="entity-edit">
     <h1>Редактирование компании</h1>
-    <form action="/firm-edit/{{this.id}}" method="POST">
-      <input type="hidden" name="_method" value="PATCH">
+    <form id="editFirmForm">
       <label>Название:</label>
       <label>
-        <input type="text" name="name" required>
+        <input id="nameInput" type="text" name="name" required>
       </label>
       <label>Описание:</label>
       <label>
-        <input type="text" name="description" required>
+        <input id="descriptionInput" type="text" name="description" required>
       </label>
       <button type="submit">Сохранить</button>
     </form>
   </div>
+<script>
+  document.getElementById('editFirmForm').addEventListener('submit', async (e) =>{
+    e.preventDefault();
+
+    const name = document.getElementById('nameInput').value;
+    const description = document.getElementById('descriptionInput').value;
+
+    const data = { name, description};
+    const firmId = {{id}};
+
+    fetch(`http://localhost:8082/firm-edit/${firmId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Success:', data);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+  });
+</script>
 </main>

@@ -1,21 +1,51 @@
 <main>
   <div class="entity-edit">
   <h1>Редактирование сотрудников</h1>
-  <form action="/member-edit/{{this.id}}" method="POST">
-    <input type="hidden" name="_method" value="PATCH">
+  <form id="editMemberForm">
     <label for="firstName">Имя:</label>
     <label>
-      <input type="text" name="firstName">
+      <input id="firstNameInput" type="text" name="firstName">
     </label>
     <label for="lastName">Фамилия:</label>
     <label>
-      <input type="text" name="lastName" >
+      <input id="lastNameInput" type="text" name="lastName" >
     </label>
     <label for="position">Должность:</label>
     <label>
-      <input type="text" name="position" >
+      <input id="positionInput" type="text" name="position" >
     </label>
     <button type="submit">Сохранить</button>
   </form>
   </div>
+  <script>
+    document.getElementById('editMemberForm').addEventListener('submit', async (e) =>{
+      e.preventDefault();
+
+      const firstName = document.getElementById('firstNameInput').value;
+      const lastName = document.getElementById('lastNameInput').value;
+      const position = document.getElementById('positionInput').value;
+
+
+
+      const data = { firstName,  lastName, position};
+      const memberId = {{id}};
+
+
+      fetch(`http://localhost:8082/member-edit/${memberId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+        .then(response => response.json())
+        .then(data => {
+
+          console.log('Success:', data);
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+    });
+  </script>
 </main>

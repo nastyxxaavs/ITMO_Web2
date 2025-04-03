@@ -1,25 +1,55 @@
 <main>
   <div class="entity-edit">
   <h1>Редактирование услуг</h1>
-  <form action="/service-edit/{{this.id}}" method="POST">
-    <input type="hidden" name="_method" value="PATCH">
+  <form id="editServiceForm">
     <label for="name">Название услуги:</label>
     <label>
-      <input type="text" name="name">
+      <input id="nameInput" type="text" name="name">
     </label>
     <label for="description">Описание:</label>
     <label>
-      <input type="text" name="description" >
+      <input id="descriptionInput" type="text" name="description" >
     </label>
     <label for="category">Категория:</label>
     <label>
-      <input type="text" name="category" >
+      <input id="categoryInput" type="text" name="category" >
     </label>
     <label for="price">Примерная стоимость:</label>
     <label>
-      <input type="text" name="price" >
+      <input id="priceInput" type="number" name="price" >
     </label>
     <button type="submit">Сохранить</button>
   </form>
   </div>
+  <script>
+    document.getElementById('editServiceForm').addEventListener('submit', async (e) =>{
+      e.preventDefault();
+
+      const name = document.getElementById('nameInput').value;
+      const description = document.getElementById('descriptionInput').value;
+      const category = document.getElementById('categoryInput').value;
+      const price = document.getElementById('priceInput').value;
+
+
+      const data = { name, description, category, price};
+      const serviceId = {{id}};
+
+
+      fetch(`http://localhost:8082/service-edit/${serviceId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+        .then(response => response.json())
+        .then(data => {
+
+          console.log('Success:', data);
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+    });
+  </script>
 </main>

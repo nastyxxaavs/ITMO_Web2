@@ -45,8 +45,8 @@ export class User {
   })
   role: Role;
 
-  @ManyToOne(() => Firm, (firm) => firm.users)
-  firm: Firm;
+  @ManyToOne(() => Firm, (firm) => firm.users, {nullable: true})
+  firm: Firm | null;
 
   @ManyToMany(() => Service, (service) => service.users)
   services: Service[];

@@ -53,19 +53,7 @@ export class MemberController {
 
   @Get('/members')
   @Render('general')
-  async findAll(): Promise<{
-    customStyle: string;
-    members: {
-      firstName: string;
-      lastName: string;
-      requestId: number;
-      firmName: string;
-      id: number;
-      position: Position;
-      serviceNames: Promise<string[]>
-    }[];
-    content: string
-  }> {
+  async findAll(): Promise<{ customStyle: string; members: TeamMemberDto[]; content: string }> {
     const members = await this.memberService.findAll();
     if (!members) {
       throw new NotFoundException(`Members are not found`);
@@ -75,32 +63,66 @@ export class MemberController {
       customStyle: '../styles/entities.css',};
   }
 
-  // @Get(':id')
-  // @Render('member')
-  // async findOne(@Param('id') id: number){ //: Promise< { member: TeamMemberDto }> {
-  //   const member = await this.memberService.findOne(id);
-  //   if (!member) {
-  //     throw new NotFoundException(`Member with ID ${id} not found`);
-  //   }
-  //   return {
-  //     firstname: member.firstName,
-  //      lastname: member.lastName,
-  //      position: member.position,
-  //   };
-  // }
-  //
-  // @Patch(':id')
-  // //@Redirect('/members/:id')
-  // @Render('member-edit')
-  // @HttpCode(HttpStatus.OK)
-  // @HttpCode(HttpStatus.NOT_MODIFIED)
-  // async update(@Param('id') id: number, @Body() updateMemberDto: UpdateMemberDto) {
-  //   if( await this.memberService.update(+id, updateMemberDto)){
-  //     return { statusCode: HttpStatus.OK };
-  //   }
-  //   return { statusCode: HttpStatus.NOT_MODIFIED };
-  // }
-  //
+  @Get('/members/:id')
+  @Render('general')
+  async findOne(@Param('id') id: number){
+    const member = await this.memberService.findOne(id);
+    if (!member) {
+      throw new NotFoundException(`Member with ID ${id} not found`);
+    }
+
+    return {
+      firstName: member.firstName,
+      lastName: member.lastName,
+      position: member.position,
+      content: "member",
+      customStyle: '../styles/entity-info.css',
+    };
+  }
+
+  @Get('/member-edit/:id')
+  @Render('general')
+  showContactEdit(@Req() req, @Param('id') id: string) {
+    console.log('Incoming request:', req.url);
+    const isAuthenticated = req.session.isAuthenticated;
+    console.log('isAuthenticated:', isAuthenticated);
+
+    return {
+      id,
+      isAuthenticated,
+      user: isAuthenticated ? 'Anastasia' : null,
+      content: "member-edit",
+      titleContent: 'Редактировать сотрудника',
+      customStyle: '../styles/entity-edit.css',
+    };
+  }
+
+  @Patch('/member-edit/:id')
+  @HttpCode(HttpStatus.OK)
+  async update(@Param('id') id: number, @Body() updateMemberDto: UpdateMemberDto) {
+    if( await this.memberService.update(+id, updateMemberDto)){
+      return { statusCode: HttpStatus.OK };
+    }
+    return { statusCode: HttpStatus.NOT_MODIFIED };
+  }
+
+  @Get('/member-delete/:id')
+  @HttpCode(HttpStatus.OK)
+  async removeViaGet(@Param('id') id: number): Promise<{ success: boolean; message: string }> {
+    const isRemoved = await this.memberService.remove(+id);
+    if (isRemoved) {
+      return {
+        success: true,
+        message: 'Contact deleted successfully'
+      };
+    } else {
+      return {
+        success: false,
+        message: 'Contact not found or already deleted'
+      };
+    }
+  }
+
   // @Delete(':id')
   // //@Redirect('/members')
   // @Render('members')

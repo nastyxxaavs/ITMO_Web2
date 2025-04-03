@@ -31,8 +31,8 @@ export class TeamMember {
   })
   position: Position;
 
-  @ManyToOne(() => Firm, (firm) => firm.teamMembers)
-  firm: Firm;
+  @ManyToOne(() => Firm, (firm) => firm.teamMembers, {nullable: true})
+  firm: Firm | null;
 
   @ManyToMany(() => Service, (service) => service.teamMembers)
   services: Service[];

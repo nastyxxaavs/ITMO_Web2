@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Position, TeamMember } from './entities/member.entity';
-import { FindOperator, In, Repository } from 'typeorm';
-import { CreateMemberDto } from './dto/create-member.dto';
-import { UpdateMemberDto } from './dto/update-member.dto';
-import { Service } from '../service/entities/service.entity';
+import { Repository } from 'typeorm';
+import { Firm } from '../firm/entities/firm.entity';
 
 @Injectable()
 export class TeamMemberRepository {
@@ -15,7 +13,7 @@ export class TeamMemberRepository {
   async create(createMemberDto: {
     firstName: string;
     lastName: string;
-    firmId: number;
+    firm: Firm | null;
     position: Position;
   }): Promise<TeamMember> {
     const teamMember = this.memberRepo.create(createMemberDto);
@@ -23,51 +21,25 @@ export class TeamMemberRepository {
   }
 
   async findAll(): Promise<TeamMember[]> {
-    return await this.memberRepo.find();
+    return await this.memberRepo.find({ relations: ['firm'] });
   }
 
   async findOne(id: number): Promise<TeamMember | null> {
-    return await this.memberRepo.findOne({ where: { id } });
+    return await this.memberRepo.findOne({ where: { id },  relations: ['firm']  });
   }
+
 
   async findOneByPosition(position: Position): Promise<TeamMember | null> {
-    return await this.memberRepo.findOne({ where: { position } });
+    return await this.memberRepo.findOne({ where: { position } ,  relations: ['firm'] });
   }
-
-  async findIdByName(names: string[]): Promise<TeamMember[]> {
-    return this.find({
-      where: {
-        name: In(names),
-      },
-    });
-  }
-
-  async findNameById(ids: number[]): Promise<TeamMember[]> {
-    return this.findName({
-      where: {
-        id: In(ids),
-      },
-    });
-  }
-
-  find(arg0: {
-    where: { name: FindOperator<any> };
-  }): TeamMember[] | PromiseLike<TeamMember[]> {
-    throw new Error('Method not implemented.');
-  }
-
-  findName(arg0: {
-    where: { id: FindOperator<any> };
-  }): TeamMember[] | PromiseLike<TeamMember[]> {
-    throw new Error('Method not implemented.');
-  }
+  
 
   async update(
     id: number,
     updateMemberDto: {
       firstName: string | undefined;
       lastName: string | undefined;
-      firmId: number;
+      firm: Firm | null;
       position: Position | undefined;
     },
   ): Promise<TeamMember | null> {

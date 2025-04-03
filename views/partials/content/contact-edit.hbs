@@ -1,29 +1,60 @@
 <main>
   <div class="entity-edit">
       <h1>Редактирование контактов</h1>
-      <form action="/contact-edit/{{this.id}}" method="POST">
-        <input type="hidden" name="_method" value="PATCH">
-        <label>Адрес:</label>
+      <form id="editContactForm">
+        <label for="address">Адрес:</label>
         <label>
-          <input type="text" name="address" >
+          <input id="addressInput" type="text" name="address">
         </label>
-        <label>Телефон:</label>
+        <label for="phone">Телефон:</label>
         <label>
-          <input type="text" name="phone" >
+          <input id="phoneInput" type="text" name="phone" >
         </label>
-        <label>Почта:</label>
+        <label for="email">Почта:</label>
         <label>
-          <input type="text" name="email" >
+          <input id="emailInput" type="text" name="email" >
         </label>
-        <label>Карта:</label>
+        <label for="mapsLink">Карта:</label>
         <label>
-          <input type="text" name="mapsLink" >
+          <input id="mapsLinkInput" type="text" name="mapsLink" >
         </label>
-        <label>Фирма:</label>
+        <label for="firmName">Фирма:</label>
         <label>
-          <input type="text" name="firmName" >
+          <input id="firmNameInput" type="text" name="firmName">
         </label>
-        <button type="submit">Сохранить</button>
+        <button type="submit">Создать</button>
       </form>
   </div>
+  <script>
+    document.getElementById('editContactForm').addEventListener('submit', async (e) =>{
+        e.preventDefault();
+
+        const address = document.getElementById('addressInput').value;
+        const phone = document.getElementById('phoneInput').value;
+        const email = document.getElementById('emailInput').value;
+        const mapsLink = document.getElementById('mapsLinkInput').value;
+        const firmName = document.getElementById('firmNameInput').value;
+
+
+        const data = { address, phone, email, mapsLink, firmName};
+        const contactId = {{id}};
+
+
+        fetch(`http://localhost:8082/contact-edit/${contactId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        })
+          .then(response => response.json())
+          .then(data => {
+
+            console.log('Success:', data);
+          })
+          .catch((error) => {
+            console.error('Error:', error);
+          });
+    });
+  </script>
 </main>

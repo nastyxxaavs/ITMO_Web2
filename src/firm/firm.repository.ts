@@ -3,6 +3,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Firm } from './entities/firm.entity';
 
+
 @Injectable()
 export class FirmRepository {
   constructor(
@@ -10,40 +11,37 @@ export class FirmRepository {
   ) {}
 
   async create(createFirmDto: {
-    serviceIds: number[];
-    teamMemberIds: number[];
-    contactId: number | null;
-    userIds: number[] | undefined;
+    userIds?: number[];
     name: string;
     description: string;
-    requestIds: number[] | undefined;
+    requestIds?: number[];
   }): Promise<Firm> {
     const firm = this.repo.create(createFirmDto);
     return await this.repo.save(firm);
   }
 
   async findAll(): Promise<Firm[]> {
-    return await this.repo.find();
+    return await this.repo.find({ relations: ['contacts'] });
   }
 
   async findOne(id: number): Promise<Firm | null> {
-    return await this.repo.findOne({ where: { id } });
+    return await this.repo.findOne({ where: { id }, relations: ['contacts'] });
   }
 
   async findOneByName(name: string): Promise<Firm | null> {
-    return await this.repo.findOne({ where: { name } });
+    return await this.repo.findOne({
+      where: { name },
+      relations: ['contacts'],
+    });
   }
 
   async update(
     id: number,
     updateFirmDto: {
-      serviceIds: number[];
-      teamMemberIds: number[];
-      contactId: number | null;
-      userIds: number[] | undefined;
-      name: string | undefined;
-      description: string | undefined;
-      requestIds: number[] | undefined;
+      name?: string;
+      description?: string;
+      userIds?: number[];
+      requestIds?: number[];
     },
   ): Promise<Firm | null> {
     await this.repo.update(id, updateFirmDto);

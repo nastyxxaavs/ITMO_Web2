@@ -32,8 +32,8 @@ export class ClientRequestEntity {
   })
   status: Status;
 
-  @ManyToOne(() => Firm, (firm) => firm.requests)
-  firm: Firm;
+  @ManyToOne(() => Firm, (firm) => firm.requests , {nullable: true})
+  firm: Firm | null;
 
   @ManyToOne(() => User, (user) => user.requests)
   users: User;

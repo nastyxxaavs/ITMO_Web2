@@ -38,8 +38,7 @@ export class ClientRequestEntityRepository {
     updateRequestDto: {
       contactInfo: string | undefined;
       clientName: string | undefined;
-      serviceRequestedId: number | null;
-      status: Status;
+      status: any;
     },
   ): Promise<ClientRequestEntity | null> {
     await this.requestRepo.update(id, updateRequestDto);

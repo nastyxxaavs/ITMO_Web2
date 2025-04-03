@@ -1,25 +1,55 @@
 <main>
   <div class="entity-edit">
   <h1>Редактирование пользователей</h1>
-  <form action="/user-edit/{{this.id}}" method="POST">
-    <input type="hidden" name="_method" value="PATCH">
+  <form id="editUserForm">
     <label for="username">Имя пользователя:</label>
     <label>
-      <input type="text" name="username">
+      <input id="usernameInput" type="text" name="username">
     </label>
     <label for="email">Почта:</label>
     <label>
-      <input type="text" name="email" >
+      <input id="emailInput" type="text" name="email" >
     </label>
     <label for="status">Статус авторизации:</label>
     <label>
-      <input type="text" name="status" >
+      <input id="statusInput" type="text" name="status" >
     </label>
     <label for="role">Роль:</label>
     <label>
-      <input type="text" name="role">
+      <input id="roleInput" type="text" name="role">
     </label>
     <button type="submit">Сохранить</button>
   </form>
   </div>
+  <script>
+    document.getElementById('editUserForm').addEventListener('submit', async (e) =>{
+      e.preventDefault();
+
+      const username = document.getElementById('usernameInput').value;
+      const email = document.getElementById('emailInput').value;
+      const status = document.getElementById('statusInput').value;
+      const role = document.getElementById('roleInput').value;
+
+
+      const data = { username, email, status, role};
+      const userId = {{id}};
+
+
+      fetch(`http://localhost:8082/user-edit/${userId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+        .then(response => response.json())
+        .then(data => {
+
+          console.log('Success:', data);
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+    });
+  </script>
 </main>

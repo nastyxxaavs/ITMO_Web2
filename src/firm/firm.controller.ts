@@ -5,8 +5,6 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
-  Redirect,
   HttpCode,
   HttpStatus,
   ValidationPipe, NotFoundException, Render, Query, Req,
@@ -14,15 +12,15 @@ import {
 import { FirmService } from './firm.service';
 import { CreateFirmDto } from './dto/create-firm.dto';
 import { UpdateFirmDto } from './dto/update-firm.dto';
-import { FirmDto } from './dto/firm.dto';
 
 @Controller()
 export class FirmController {
-  constructor(private readonly firmService: FirmService) {}
+  constructor(private readonly firmService: FirmService) {
+  }
 
   @Get('/firm-add')
   @Render('general')
-  showFirm(@Req() req){
+  showFirm(@Req() req) {
     console.log('Incoming request:', req.url);
     const isAuthenticated = req.session.isAuthenticated;
     return {
@@ -51,17 +49,15 @@ export class FirmController {
 
   @Get('/firms')
   @Render('general')
-  async findAll():Promise<{
+  async findAll(): Promise<{
     customStyle: string;
     firms: {
-      contactId: number;
-      memberNames: Promise<string[]>;
-      userIds: number[];
+      contactId: number[] | undefined;
+      userIds: number[] | undefined;
       name: string;
       description: string;
       id: number;
-      requestIds: number[];
-      serviceNames: Promise<string[]>
+      requestIds: number[] | undefined
     }[];
     content: string
   }> {
@@ -69,38 +65,83 @@ export class FirmController {
     if (!firms || firms.length === 0) {
       throw new NotFoundException(`Firms are not found`);
     }
-    return { firms,
+    return {
+      firms,
       content: "firms",
-      customStyle: '../styles/entities.css'};
+      customStyle: '../styles/entities.css'
+    };
   }
 
-  // @Get(':id')
-  // @Render('firm')
-  // //@Redirect('/firms/:id')
-  // async findOne(@Param('id') id: number){ //: Promise<{firm: FirmDto}> {
-  //   const firm = await this.firmService.findOne(id);
-  //   if (!firm) {
-  //     throw new NotFoundException(`Firm with ID ${id} not found`);
-  //   }
-  //   return {
-  //     name: firm.name,
-  //     description: firm.description,
-  //     contact: firm.contactId,
-  //   };
-  // }
-  //
-  // @Patch(':id')
-  // @Render('firm-edit')
-  // //@Redirect('/firms/:id')
-  // @HttpCode(HttpStatus.OK)
-  // @HttpCode(HttpStatus.NOT_MODIFIED)
-  // async update(@Param('id') id: number, @Body() updateFirmDto: UpdateFirmDto) {
-  //   if(await this.firmService.update(+id, updateFirmDto)){
-  //     return { statusCode: HttpStatus.OK };
-  //   }
-  //   return { statusCode: HttpStatus.NOT_MODIFIED };
-  // }
-  //
+  @Get('/firms/:id')
+  @Render('general')
+  async findOne(@Param('id') id: number, @Req() req) {
+    console.log('Incoming request:', req.url);
+    const isAuthenticated = req.session.isAuthenticated;
+    console.log('isAuthenticated:', isAuthenticated);
+
+
+    const firm = await this.firmService.findOne(id);
+    if (!firm) {
+      throw new NotFoundException(`Firm with ID ${id} not found`);
+    }
+    return {
+      name: firm.name,
+      description: firm.description,
+      contact: firm.contactId,
+      isAuthenticated,
+      user: isAuthenticated ? 'Anastasia' : null,
+      titleContent: 'Фирма',
+      content: "firm",
+      customStyle: '../styles/entity-info.css',
+    };
+  }
+
+  @Get('/firm-edit/:id')
+  @Render('general')
+  showContactEdit(@Req() req, @Param('id') id: string) {
+    console.log('Incoming request:', req.url);
+    const isAuthenticated = req.session.isAuthenticated;
+    console.log('isAuthenticated:', isAuthenticated);
+
+    return {
+      id,
+      isAuthenticated,
+      user: isAuthenticated ? 'Anastasia' : null,
+      content: "firm-edit",
+      titleContent: 'Редактировать фирму',
+      customStyle: '../styles/entity-edit.css',
+    };
+  }
+
+  @Patch('/firm-edit/:id')
+  @HttpCode(HttpStatus.OK)
+  async update(@Param('id') id: number, @Body() updateFirmDto: UpdateFirmDto) {
+    if (await this.firmService.update(+id, updateFirmDto)) {
+      return { statusCode: HttpStatus.OK };
+    }
+    return { statusCode: HttpStatus.NOT_MODIFIED };
+  }
+
+
+  @Get('/firm-delete/:id')
+  @HttpCode(HttpStatus.OK)
+  async removeViaGet(@Param('id') id: number): Promise<{ success: boolean; message: string }> {
+    const isRemoved = await this.firmService.remove(+id);
+    if (isRemoved) {
+      return {
+        success: true,
+        message: 'Contact deleted successfully'
+      };
+    } else {
+      return {
+        success: false,
+        message: 'Contact not found or already deleted'
+      };
+    }
+  }
+}
+
+
   // @Delete(':id')
   // @Render('firms')
   // //@Redirect('/firms/:id')
@@ -117,4 +158,4 @@ export class FirmController {
   //   }
   //   return { statusCode: HttpStatus.NOT_MODIFIED };
   // }
-}
+

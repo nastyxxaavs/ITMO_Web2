@@ -17,15 +17,15 @@ export class RequestsService {
   ) {}
 
   private mapToDto(request: ClientRequestEntity): {
-    firmId: number;
+    firmId: number | undefined;
     contactInfo: string;
     clientName: string;
     requestDate: Date;
     id: number;
-    userId: number;
-    teamMemberName: string;
-    serviceRequested: string;
-    status: Status;
+    userId: number | undefined;
+    teamMemberName: string | undefined;
+    serviceRequested: string | undefined;
+    status: Status
   } {
     return {
       serviceRequested: request.serviceRequested?.name,
@@ -120,33 +120,31 @@ export class RequestsService {
     });
   }
 
-  async findAll(): Promise<
-    {
-      firmId: number;
-      contactInfo: string;
-      clientName: string;
-      requestDate: Date;
-      id: number;
-      userId: number;
-      teamMemberName: string;
-      serviceRequested: string;
-      status: Status;
-    }[]
-  > {
+  async findAll(): Promise<{
+    firmId: number | undefined;
+    contactInfo: string;
+    clientName: string;
+    requestDate: Date;
+    id: number;
+    userId: number | undefined;
+    teamMemberName: string | undefined;
+    serviceRequested: string | undefined;
+    status: Status
+  }[]> {
     const requestEntities = await this.clientRequestEntityRepository.findAll();
     return requestEntities.map(this.mapToDto);
   }
 
   async findOne(id: number): Promise<{
-    firmId: number;
+    firmId: number | undefined;
     contactInfo: string;
     clientName: string;
     requestDate: Date;
     id: number;
-    userId: number;
-    teamMemberName: string;
-    serviceRequested: string;
-    status: Status;
+    userId: number | undefined;
+    teamMemberName: string | undefined;
+    serviceRequested: string | undefined;
+    status: Status
   } | null> {
     const request = await this.clientRequestEntityRepository.findOne(id);
     return request ? this.mapToDto(request) : null;
@@ -157,15 +155,15 @@ export class RequestsService {
     updateRequestDto: UpdateRequestDto,
   ): Promise<boolean> {
     if (await this.clientRequestEntityRepository.existById(id)) {
-      const serviceRequestedId = updateRequestDto.serviceRequested
-        ? await this.getServiceIdByName(updateRequestDto.serviceRequested)
-        : null;
+      // const serviceRequestedId = updateRequestDto.serviceRequested
+      //   ? await this.getServiceIdByName(updateRequestDto.serviceRequested)
+      //   : null;
 
       await this.clientRequestEntityRepository.update(id, {
         clientName: updateRequestDto.clientName,
         contactInfo: updateRequestDto.contactInfo,
         status: Status['В процессе'],
-        serviceRequestedId,
+        //serviceRequestedId,
       });
       return true;
     }

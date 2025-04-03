@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Contact } from './entities/contact.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Firm } from '../firm/entities/firm.entity';
 
 @Injectable()
 export class ContactRepository {
@@ -14,32 +15,39 @@ export class ContactRepository {
     phone: string;
     email: string;
     mapsLink: string;
-    firmId: number;
+    firm: Firm | null;
   }): Promise<Contact> {
-    const contact = this.repo.create(createContactDto);
+    let contact: Contact;
+    contact = this.repo.create(createContactDto);
     return await this.repo.save(contact);
   }
 
   async findAll(): Promise<Contact[]> {
-    return await this.repo.find();
+    return await this.repo.find({ relations: ['firm'] });
   }
 
   async findOne(id: number): Promise<Contact | null> {
-    return await this.repo.findOne({ where: { id } });
+    return await this.repo.findOne({
+      where: { id },
+      relations: ['firm']
+    });
   }
 
-  async findOneByName(phone: string): Promise<Contact | null> {
-    return await this.repo.findOne({ where: { phone } });
+  async findOneByPhone(phone: string): Promise<Contact | null> {
+    return await this.repo.findOne({
+      where: { phone },
+      relations: ['firm']
+    });
   }
 
   async update(
     id: number,
     updateContactDto: {
-      firmId: number;
-      address: string | undefined;
-      phone: string | undefined;
-      mapsLink: string | undefined;
-      email: string | undefined;
+      firm: Firm | null;
+      address?: string;
+      phone?: string;
+      mapsLink?: string;
+      email?: string;
     },
   ): Promise<Contact | null> {
     await this.repo.update(id, updateContactDto);

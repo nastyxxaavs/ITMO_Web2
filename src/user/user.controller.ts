@@ -62,8 +62,8 @@ export class UserController {
       customStyle: '../styles/entities.css',};
   }
 
-  @Get(':id')
-  @Render('user')
+  @Get('/users/:id')
+  @Render('general')
   async findOne(@Param('id') id: number){ //: Promise<{ user: UserDto}> {
     const user = await this.userService.findOne(id);
     if (!user) {
@@ -74,21 +74,56 @@ export class UserController {
       email: user.email,
       status: user.status,
       role: user.role,
+      content: "user",
+      customStyle: '../styles/entity-info.css',
     };
   }
 
-//   @Patch(':id')
-//   //@Redirect('/users/:id')
-//   @Render('user-edit')
-//   @HttpCode(HttpStatus.OK)
-//   @HttpCode(HttpStatus.NOT_MODIFIED)
-//   async update(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
-//     if( await this.userService.update(+id, updateUserDto)){
-//       return { statusCode: HttpStatus.OK };
-//     }
-//     return { statusCode: HttpStatus.NOT_MODIFIED };
-//   }
-//
+  @Get('/user-edit/:id')
+  @Render('general')
+  showContactEdit(@Req() req, @Param('id') id: string) {
+    console.log('Incoming request:', req.url);
+    const isAuthenticated = req.session.isAuthenticated;
+    console.log('isAuthenticated:', isAuthenticated);
+
+    return {
+      id,
+      isAuthenticated,
+      user: isAuthenticated ? 'Anastasia' : null,
+      content: "user-edit",
+      titleContent: 'Редактировать пользователя',
+      customStyle: '../styles/entity-edit.css',
+    };
+  }
+
+
+  @Patch('/user-edit/:id')
+  @HttpCode(HttpStatus.OK)
+  async update(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
+    if( await this.userService.update(+id, updateUserDto)){
+      return { statusCode: HttpStatus.OK };
+    }
+    return { statusCode: HttpStatus.NOT_MODIFIED };
+  }
+
+
+  @Get('/user-delete/:id')
+  @HttpCode(HttpStatus.OK)
+  async removeViaGet(@Param('id') id: number): Promise<{ success: boolean; message: string }> {
+    const isRemoved = await this.userService.remove(+id);
+    if (isRemoved) {
+      return {
+        success: true,
+        message: 'Contact deleted successfully'
+      };
+    } else {
+      return {
+        success: false,
+        message: 'Contact not found or already deleted'
+      };
+    }
+  }
+
 //   @Delete(':id')
 //   //@Redirect('/users')
 //   @Render('users')

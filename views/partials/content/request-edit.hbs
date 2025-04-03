@@ -1,15 +1,14 @@
 <main>
   <div class="entity-edit">
     <h1>Редактирование запросов</h1>
-    <form action="/request-edit/{{this.id}}" method="POST">
-      <input type="hidden" name="_method" value="PATCH">
+    <form  id="editRequestForm">
       <label for="clientName">Имя клиента:</label>
       <label>
-        <input type="text" name="clientName">
+        <input id="clientNameInput" type="text" name="clientName">
       </label>
       <label for="contactInfo">Контактные данные:</label>
       <label>
-        <input type="text" name="contactInfo" >
+        <input id="contactInfoInput" type="text" name="contactInfo" >
       </label>
       <label for="serviceRequested">Требуемая услуга:</label>
       <select id="serviceRequested" name="serviceRequested">
@@ -23,4 +22,34 @@
       <button type="submit">Сохранить</button>
     </form>
   </div>
+  <script>
+    document.getElementById('editRequestForm').addEventListener('submit', async (e) =>{
+      e.preventDefault();
+
+      const clientName = document.getElementById('clientNameInput').value;
+      const contactInfo = document.getElementById('contactInfoInput').value;
+      const serviceRequested = document.getElementById('serviceRequested').value;
+
+
+      const data = { clientName, contactInfo, serviceRequested};
+      const requestId = {{id}};
+
+
+      fetch(`http://localhost:8082/request-edit/${requestId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+        .then(response => response.json())
+        .then(data => {
+
+          console.log('Success:', data);
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+    });
+  </script>
 </main>
