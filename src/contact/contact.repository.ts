@@ -26,17 +26,25 @@ export class ContactRepository {
     return await this.repo.find({ relations: ['firm'] });
   }
 
+
+  async findAllWithPagination(skip: number, take: number): Promise<[Contact[], number]> {
+    return this.repo.findAndCount({
+      skip,
+      take,
+    });
+  }
+
   async findOne(id: number): Promise<Contact | null> {
     return await this.repo.findOne({
       where: { id },
-      relations: ['firm']
+      relations: ['firm'],
     });
   }
 
   async findOneByPhone(phone: string): Promise<Contact | null> {
     return await this.repo.findOne({
       where: { phone },
-      relations: ['firm']
+      relations: ['firm'],
     });
   }
 

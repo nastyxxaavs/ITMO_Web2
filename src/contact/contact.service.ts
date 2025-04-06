@@ -13,7 +13,8 @@ export class ContactService {
   private eventStream = new Subject<any>();
   constructor(
     private readonly contactRepository: ContactRepository,
-    private readonly firmRepository: FirmRepository) {}
+    private readonly firmRepository: FirmRepository,
+  ) {}
 
   getEventStream(): Observable<any> {
     return this.eventStream.asObservable();
@@ -31,7 +32,7 @@ export class ContactService {
       phone: contact.phone,
       email: contact.email,
       mapsLink: contact.mapsLink,
-      firmId: contact.firm?.id
+      firmId: contact.firm?.id,
     };
   }
 
@@ -63,12 +64,21 @@ export class ContactService {
     return contacts.map(this.mapToDto);
   }
 
+
+  async findAllWithPagination(skip: number, take: number): Promise<[ContactDto[], number]> {
+    const [contacts, total] = await this.contactRepository.findAllWithPagination(skip, take);
+    return [contacts.map(this.mapToDto), total];
+  }
+
   async findOne(id: number): Promise<ContactDto | null> {
     const contact = await this.contactRepository.findOne(id);
     return contact ? this.mapToDto(contact) : null;
   }
 
-  async update(id: number, updateContactDto: UpdateContactDto): Promise<boolean> {
+  async update(
+    id: number,
+    updateContactDto: UpdateContactDto,
+  ): Promise<boolean> {
     if (await this.contactRepository.existById(id)) {
       const firm = updateContactDto?.firmName
         ? await this.getFirmByName(updateContactDto.firmName)
@@ -89,8 +99,34 @@ export class ContactService {
     return false;
   }
 
+  async apiUpdate(
+    id: number,
+    updateContactDto: UpdateContactDto,
+  ): Promise<ContactDto | null> {
+    if (await this.contactRepository.existById(id)) {
+      const firm = updateContactDto?.firmName
+        ? await this.getFirmByName(updateContactDto.firmName)
+        : null;
+      if (updateContactDto.firmName && !firm) {
+        throw new NotFoundException('Firm not found');
+      }
+
+      await this.contactRepository.update(id, {
+        address: updateContactDto.address,
+        phone: updateContactDto.phone,
+        email: updateContactDto.email,
+        mapsLink: updateContactDto.mapsLink,
+        firm: firm,
+      });
+
+      const contact = await this.contactRepository.findOne(id);
+      return contact ? this.mapToDto(contact) : null;
+    }
+    throw  new NotFoundException(`Contact with ID ${id} not found`);
+  }
+
   async remove(id: number): Promise<boolean> {
-    if (await this.contactRepository.existById(id)){
+    if (await this.contactRepository.existById(id)) {
       await this.contactRepository.remove(id);
       return true;
     }

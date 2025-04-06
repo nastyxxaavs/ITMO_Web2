@@ -13,11 +13,12 @@ import { ContactModule } from '../contact/contact.module';
 import { TeamMember } from '../member/entities/member.entity';
 import { Contact } from '../contact/entities/contact.entity';
 import { Service } from '../service/entities/service.entity';
+import { FirmApiController } from './firm.api.controller';
 
 
 @Module({
   imports: [TypeOrmModule.forFeature([Firm, FirmRepository, TeamMember, Contact, Service]), ServiceModule, forwardRef(() =>MemberModule), forwardRef(() =>ContactModule)],
-  controllers: [FirmController],
+  controllers: [FirmController, FirmApiController],
   providers: [FirmService, FirmRepository, TeamMemberRepository,
     ContactRepository,
     ServiceRepository,],

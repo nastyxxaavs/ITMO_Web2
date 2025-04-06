@@ -7,7 +7,7 @@ import {
   Param,
   HttpCode,
   HttpStatus,
-  ValidationPipe, NotFoundException, Render, Req, Sse, Res,
+  ValidationPipe, NotFoundException, Render, Req, Sse, Res, Delete,
 } from '@nestjs/common';
 import { ContactService } from './contact.service';
 import { CreateContactDto } from './dto/create-contact.dto';
@@ -134,49 +134,49 @@ export class ContactController {
     }
 
   @Get('/contact-delete/:id')
-  @HttpCode(HttpStatus.OK)
-  async removeViaGet(@Param('id') id: number): Promise<{ success: boolean; message: string }> {
-    const isRemoved = await this.contactService.remove(+id);
-    if (isRemoved) {
-      this.contactService.notifyContactChange('Contact deleted'); //SSE
-      return {
-        success: true,
-        message: 'Contact deleted successfully'
-      };
-    } else {
-      return {
-        success: false,
-        message: 'Contact not found or already deleted'
-      };
-    }
+  @Render('general')
+  async showDeleteOpportunity(@Req() req, @Param('id') id: string) {
+    console.log('Incoming request:', req.url);
+    const isAuthenticated = req.session.isAuthenticated;
+    console.log('isAuthenticated:', isAuthenticated);
+
+    return {
+      id,
+      isAuthenticated,
+      user: isAuthenticated ? 'Anastasia' : null,
+      content: "contact-delete",
+      titleContent: 'Удалить контакт',
+      customStyle: '../styles/entity-edit.css',};
   }
 
+  @Delete('/contact-delete/:id')
+  @HttpCode(HttpStatus.OK)
+  async remove(@Param('id') id: number) {
+    if (await this.contactService.remove(id)) {
+      this.contactService.notifyContactChange('Contact deleted'); //SSE
+      return {
+        statusCode: HttpStatus.OK,
+      }
+    }
+    return { statusCode: HttpStatus.NOT_MODIFIED };
+  }
 
-//   @Get('/contact-delete/:id')
-//   @Render('general')
-//   async showDeleteOpportunity():Promise<{ customStyle: string; contacts: ContactDto[]; content: string }> {
-//     const contacts = await this.contactService.findAll();
-//     if (!contacts || contacts.length === 0) {
-//       throw new NotFoundException(`Contacts are not found`);
-//     }
-//     return { contacts,
-//       content: "contacts",
-//       customStyle: '../styles/entities.css',};
-//   }
-//
-//   @Delete('/contact-delete/:id')
-//   @HttpCode(HttpStatus.OK)
-//   async remove(@Param('id') id: number) {
-//     if (await this.contactService.remove(+id)){
-//       const contacts = await this.contactService.findAll();
-//       if (!contacts || contacts.length === 0) {
-//         throw new NotFoundException(`Contacts are not found`);
-//       }
-//       return { contacts,
-//         statusCode: HttpStatus.OK ,
-//     }
-//   }
-//     return { statusCode: HttpStatus.NOT_MODIFIED };
-// }
+    // @Get('/contact-delete/:id')
+    // @HttpCode(HttpStatus.OK)
+    // async removeViaGet(@Param('id') id: number): Promise<{ success: boolean; message: string }> {
+    //   const isRemoved = await this.contactService.remove(+id);
+    //   if (isRemoved) {
+    //     this.contactService.notifyContactChange('Contact deleted'); //SSE
+    //     return {
+    //       success: true,
+    //       message: 'Contact deleted successfully'
+    //     };
+    //   } else {
+    //     return {
+    //       success: false,
+    //       message: 'Contact not found or already deleted'
+    //     };
+    //   }
+    // }
 }
 
