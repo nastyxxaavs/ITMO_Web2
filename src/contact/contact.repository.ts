@@ -31,6 +31,7 @@ export class ContactRepository {
     return this.repo.findAndCount({
       skip,
       take,
+      relations: ['firm'],
     });
   }
 

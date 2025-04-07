@@ -3,7 +3,7 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
+  Get, Headers,
   HttpCode,
   HttpStatus,
   NotFoundException,
@@ -27,7 +27,8 @@ export class ServiceApiController {
   async findAll(
     @Query('page') page = 1,
     @Query('limit') limit = 3,
-  ): Promise<{ services: ServiceDto[]; total: number; page: number }> {
+    @Headers('host') host: string,
+  ): Promise<{ total: number; links: string | null; services: ServiceDto[]; page: number }> {
     const skip = (page - 1) * limit;
     const [services, total] = await this.serviceService.findAllWithPagination(
       skip,
@@ -38,10 +39,23 @@ export class ServiceApiController {
       throw new NotFoundException('No services found');
     }
 
+    const totalPages = Math.ceil(total / limit);
+    const prevPage = page > 1 ? `${host}/api/services?page=${page - 1}&limit=${limit}` : null;
+    const nextPage = page < totalPages ? `${host}/api/services?page=${page + 1}&limit=${limit}` : null;
+
+    const linkHeader: string[] = [];
+    if (prevPage) {
+      linkHeader.push(`<${prevPage}>; rel="prev"`);
+    }
+    if (nextPage) {
+      linkHeader.push(`<${nextPage}>; rel="next"`);
+    }
+
     return {
       services,
       total,
       page,
+      links: linkHeader.length ? linkHeader.join(', ') : null,
     };
   }
 

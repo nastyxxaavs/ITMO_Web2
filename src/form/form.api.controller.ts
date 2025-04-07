@@ -3,7 +3,7 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
+  Get, Headers,
   HttpCode,
   HttpStatus,
   NotFoundException,
@@ -27,7 +27,8 @@ export class FormApiController {
   async findAll(
     @Query('page') page = 1,
     @Query('limit') limit = 3,
-  ): Promise<{ forms: SubmissionDto[]; total: number; page: number }> {
+    @Headers('host') host: string,
+  ): Promise<{ total: number; links: string | null; page: number; forms: SubmissionDto[] }> {
     const skip = (page - 1) * limit;
     const [forms, total] = await this.formService.findAllWithPagination(
       skip,
@@ -38,10 +39,23 @@ export class FormApiController {
       throw new NotFoundException('No forms found');
     }
 
+    const totalPages = Math.ceil(total / limit);
+    const prevPage = page > 1 ? `${host}/api/forms?page=${page - 1}&limit=${limit}` : null;
+    const nextPage = page < totalPages ? `${host}/api/forms?page=${page + 1}&limit=${limit}` : null;
+
+    const linkHeader: string[] = [];
+    if (prevPage) {
+      linkHeader.push(`<${prevPage}>; rel="prev"`);
+    }
+    if (nextPage) {
+      linkHeader.push(`<${nextPage}>; rel="next"`);
+    }
+
     return {
       forms,
       total,
       page,
+      links: linkHeader.length ? linkHeader.join(', ') : null,
     };
   }
 

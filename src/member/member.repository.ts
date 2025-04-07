@@ -29,6 +29,7 @@ export class TeamMemberRepository {
     return this.memberRepo.findAndCount({
       skip,
       take,
+      relations: ['firm']
     });
   }
 

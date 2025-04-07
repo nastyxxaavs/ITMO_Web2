@@ -3,7 +3,7 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
+  Get, Headers,
   HttpCode,
   HttpStatus,
   NotFoundException,
@@ -26,7 +26,8 @@ export class ContactApiController {
   async findAll(
     @Query('page') page = 1,
     @Query('limit') limit = 3,
-  ): Promise<{ contacts: ContactDto[]; total: number; page: number }> {
+    @Headers('host') host: string,
+  ): Promise<{ total: number; links: string | null; page: number; contacts: ContactDto[] }> {
     const skip = (page - 1) * limit;
     const [contacts, total] = await this.contactService.findAllWithPagination(
       skip,
@@ -37,10 +38,23 @@ export class ContactApiController {
       throw new NotFoundException('No contacts found');
     }
 
+    const totalPages = Math.ceil(total / limit);
+    const prevPage = page > 1 ? `${host}/api/contacts?page=${page - 1}&limit=${limit}` : null;
+    const nextPage = page < totalPages ? `${host}/api/contacts?page=${page + 1}&limit=${limit}` : null;
+
+    const linkHeader: string[] = [];
+    if (prevPage) {
+      linkHeader.push(`<${prevPage}>; rel="prev"`);
+    }
+    if (nextPage) {
+      linkHeader.push(`<${nextPage}>; rel="next"`);
+    }
+
     return {
       contacts,
       total,
       page,
+      links: linkHeader.length ? linkHeader.join(', ') : null,
     };
   }
 
@@ -58,11 +72,7 @@ export class ContactApiController {
   async create(
     @Body(ValidationPipe) createContactDto: CreateContactDto,
   ): Promise<ContactDto> {
-    try {
       return await this.contactService.create(createContactDto);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
   }
 
 

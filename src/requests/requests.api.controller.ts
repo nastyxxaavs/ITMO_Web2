@@ -3,7 +3,7 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
+  Get, Headers,
   HttpCode,
   HttpStatus,
   NotFoundException,
@@ -28,8 +28,10 @@ export class RequestsApiController {
   async findAll(
     @Query('page') page = 1,
     @Query('limit') limit = 3,
+    @Headers('host') host: string,
   ): Promise<{
     total: number;
+    links: string | null;
     requests: {
       firmId: number | undefined;
       contactInfo: string;
@@ -53,10 +55,23 @@ export class RequestsApiController {
       throw new NotFoundException('No requests found');
     }
 
+    const totalPages = Math.ceil(total / limit);
+    const prevPage = page > 1 ? `${host}/api/requests?page=${page - 1}&limit=${limit}` : null;
+    const nextPage = page < totalPages ? `${host}/api/requests?page=${page + 1}&limit=${limit}` : null;
+
+    const linkHeader: string[] = [];
+    if (prevPage) {
+      linkHeader.push(`<${prevPage}>; rel="prev"`);
+    }
+    if (nextPage) {
+      linkHeader.push(`<${nextPage}>; rel="next"`);
+    }
+
     return {
       requests,
       total,
       page,
+      links: linkHeader.length ? linkHeader.join(', ') : null,
     };
   }
 

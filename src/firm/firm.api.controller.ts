@@ -3,7 +3,7 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
+  Get, Headers,
   HttpCode,
   HttpStatus,
   NotFoundException,
@@ -27,8 +27,10 @@ export class FirmApiController {
   async findAll(
     @Query('page') page = 1,
     @Query('limit') limit = 3,
+    @Headers('host') host: string,
   ): Promise<{
     total: number;
+    links: string | null;
     firms: {
       contactId: number[] | undefined;
       userIds: number[] | undefined;
@@ -49,10 +51,25 @@ export class FirmApiController {
       throw new NotFoundException('No firms found');
     }
 
+    const totalPages = Math.ceil(total / limit);
+    const prevPage = page > 1 ? `${host}/api/firms?page=${page - 1}&limit=${limit}` : null;
+    const nextPage = page < totalPages ? `${host}/api/firms?page=${page + 1}&limit=${limit}` : null;
+
+    const linkHeader: string[] = [];
+    if (prevPage) {
+      linkHeader.push(`<${prevPage}>; rel="prev"`);
+    }
+    if (nextPage) {
+      linkHeader.push(`<${nextPage}>; rel="next"`);
+    }
+
+
+
     return {
       firms,
       total,
       page,
+      links: linkHeader.length ? linkHeader.join(', ') : null,
     };
   }
 

@@ -3,7 +3,7 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
+  Get, Headers,
   HttpCode,
   HttpStatus,
   NotFoundException,
@@ -27,7 +27,8 @@ export class UserApiController {
   async findAll(
     @Query('page') page = 1,
     @Query('limit') limit = 3,
-  ): Promise<{ users: UserDto[]; total: number; page: number }> {
+    @Headers('host') host: string,
+  ): Promise<{ total: number; links: string | null; page: number; users: UserDto[] }> {
     const skip = (page - 1) * limit;
     const [users, total] = await this.userService.findAllWithPagination(
       skip,
@@ -38,10 +39,23 @@ export class UserApiController {
       throw new NotFoundException('No users found');
     }
 
+    const totalPages = Math.ceil(total / limit);
+    const prevPage = page > 1 ? `${host}/api/users?page=${page - 1}&limit=${limit}` : null;
+    const nextPage = page < totalPages ? `${host}/api/users?page=${page + 1}&limit=${limit}` : null;
+
+    const linkHeader: string[] = [];
+    if (prevPage) {
+      linkHeader.push(`<${prevPage}>; rel="prev"`);
+    }
+    if (nextPage) {
+      linkHeader.push(`<${nextPage}>; rel="next"`);
+    }
+
     return {
       users,
       total,
       page,
+      links: linkHeader.length ? linkHeader.join(', ') : null,
     };
   }
 

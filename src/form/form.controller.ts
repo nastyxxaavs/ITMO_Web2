@@ -48,7 +48,7 @@ export class FormController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateFormDto: UpdateFormDto) {
-    return this.formService.update(+id, updateFormDto);
+    return this.formService.apiUpdate(+id, updateFormDto);
   }
 
   @Delete(':id')

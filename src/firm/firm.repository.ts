@@ -28,6 +28,7 @@ export class FirmRepository {
     return this.repo.findAndCount({
       skip,
       take,
+      relations: ['contacts'],
     });
   }
 

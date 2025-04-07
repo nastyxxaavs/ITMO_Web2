@@ -13,6 +13,8 @@ import { RequestsModule } from './requests/requests.module';
 import { ServiceModule } from './service/service.module';
 import { UserModule } from './user/user.module';
 import { FormModule } from './form/form.module';
+import { APP_FILTER } from '@nestjs/core';
+import { ExceptionFilterImpl } from './exceptionFilter';
 
 @Module({
   imports: [
@@ -35,6 +37,9 @@ import { FormModule } from './form/form.module';
     FormModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,  {
+    provide: APP_FILTER,
+    useClass: ExceptionFilterImpl
+  }],
 })
 export class AppModule {}
