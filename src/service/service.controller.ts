@@ -124,22 +124,4 @@ export class ServiceController {
       };
     }
   }
-
-  // @Delete(':id')
-  // //@Redirect('/services')
-  // @Render('services')
-  // @HttpCode(HttpStatus.OK)
-  // @HttpCode(HttpStatus.NOT_MODIFIED)
-  // async remove(@Param('id') id: number) {
-  //   //return this.serviceService.remove(+id);
-  //   if (await this.serviceService.remove(+id)){
-  //     const services = await this.serviceService.findAll();
-  //     if (!services || services.length === 0) {
-  //       throw new NotFoundException(`Services are not found`);
-  //     }
-  //     return { services,
-  //       statusCode: HttpStatus.OK };
-  //   }
-  //   return { statusCode: HttpStatus.NOT_MODIFIED };
-  // }
 }

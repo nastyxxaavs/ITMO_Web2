@@ -122,21 +122,4 @@ export class MemberController {
       };
     }
   }
-
-  // @Delete(':id')
-  // //@Redirect('/members')
-  // @Render('members')
-  // @HttpCode(HttpStatus.OK)
-  // @HttpCode(HttpStatus.NOT_MODIFIED)
-  // async remove(@Param('id') id: number) {
-  // if (await this.memberService.remove(+id)){
-  //   const members = await this.memberService.findAll();
-  //   if (!members || members.length === 0) {
-  //     throw new NotFoundException(`Members are not found`);
-  //   }
-  //   return { members,
-  //     statusCode: HttpStatus.OK };
-  // }
-  // return { statusCode: HttpStatus.NOT_MODIFIED };
-  // }
 }

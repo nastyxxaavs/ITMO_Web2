@@ -5,6 +5,7 @@ import { FindOperator, In, Repository } from 'typeorm';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { TeamMember } from '../member/entities/member.entity';
+import { Contact } from '../contact/entities/contact.entity';
 
 @Injectable()
 export class ServiceRepository {
@@ -26,6 +27,13 @@ export class ServiceRepository {
     return await this.serviceRepo.find();
   }
 
+  async findAllWithPagination(skip: number, take: number): Promise<[Service[], number]> {
+    return this.serviceRepo.findAndCount({
+      skip,
+      take,
+    });
+  }
+
   async findOne(id: number): Promise<Service | null> {
     return await this.serviceRepo.findOne({ where: { id } });
   }
@@ -33,34 +41,6 @@ export class ServiceRepository {
   async findOneByName(name: string): Promise<Service | null> {
     return await this.serviceRepo.findOne({ where: { name } });
   }
-
-  // async findIdByName(names: string[]): Promise<Service[]> {
-  //   return this.find({
-  //     where: {
-  //       name: In(names),
-  //     },
-  //   });
-  // }
-  //
-  // async findNameById(ids: number[]): Promise<Service[]> {
-  //   return this.findName({
-  //     where: {
-  //       id: In(ids),
-  //     },
-  //   });
-  // }
-
-  // find(arg0: {
-  //   where: { name: FindOperator<any> };
-  // }): Service[] | PromiseLike<Service[]> {
-  //   throw new Error('Method not implemented.');
-  // }
-  //
-  // findName(arg0: {
-  //   where: { id: FindOperator<any> };
-  // }): Service[] | PromiseLike<Service[]> {
-  //   throw new Error('Method not implemented.');
-  // }
 
   async update(
     id: number,

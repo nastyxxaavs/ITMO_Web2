@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Position, TeamMember } from './entities/member.entity';
 import { Repository } from 'typeorm';
 import { Firm } from '../firm/entities/firm.entity';
+import { Contact } from '../contact/entities/contact.entity';
 
 @Injectable()
 export class TeamMemberRepository {
@@ -23,6 +24,14 @@ export class TeamMemberRepository {
   async findAll(): Promise<TeamMember[]> {
     return await this.memberRepo.find({ relations: ['firm'] });
   }
+
+  async findAllWithPagination(skip: number, take: number): Promise<[TeamMember[], number]> {
+    return this.memberRepo.findAndCount({
+      skip,
+      take,
+    });
+  }
+
 
   async findOne(id: number): Promise<TeamMember | null> {
     return await this.memberRepo.findOne({ where: { id },  relations: ['firm']  });

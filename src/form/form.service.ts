@@ -1,13 +1,25 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateSubmissionDto } from './dto/create-form.dto';
 import { UpdateFormDto } from './dto/update-form.dto';
 import { Submission } from './entities/form.entity';
 import { SubmissionRepository } from './form.repository';
+import { ContactDto } from '../contact/dto/contact.dto';
+import { SubmissionDto } from './dto/form.dto';
+import { Contact } from '../contact/entities/contact.entity';
 
 
 @Injectable()
 export class FormService {
   constructor(private readonly formRepository: SubmissionRepository) {}
+
+  private mapToDto(form: Submission): SubmissionDto {
+    return {
+      id: form.id,
+      name: form.name,
+      email: form.email,
+      createdAt: form.createdAt,
+    };
+  }
 
   create(createFormDto: CreateSubmissionDto): Promise<Submission>  {
     return this.formRepository.create({
@@ -17,20 +29,46 @@ export class FormService {
     });
   }
 
-  findAll() {
-    return `This action returns all form`;
+  async findAll(): Promise<SubmissionDto[]> {
+    const forms = await this.formRepository.findAll();
+    return forms.map(this.mapToDto);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} form`;
+  async findAllWithPagination(
+    skip: number,
+    take: number,
+  ): Promise<[SubmissionDto[], number]> {
+    const [forms, total] =
+      await this.formRepository.findAllWithPagination(skip, take);
+    return [forms.map(this.mapToDto), total];
   }
 
-  update(id: number, updateFormDto: UpdateFormDto) {
-    return `This action updates a #${id} form`;
+  async findOne(id: number): Promise<SubmissionDto | null> {
+    const form = await this.formRepository.findOne(id);
+    return form ? this.mapToDto(form) : null;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} form`;
+  async apiUpdate(id: number, updateFormDto: UpdateFormDto) : Promise<SubmissionDto | null> {
+    if (await this.formRepository.existById(id)) {
+
+      await this.formRepository.update(id, {
+        name: updateFormDto.name,
+        email: updateFormDto.email,
+      });
+
+      const form = await this.formRepository.findOne(id);
+      return form ? this.mapToDto(form) : null;
+    }
+    throw new NotFoundException(`Form with ID ${id} not found`);
+  }
+
+
+  async remove(id: number): Promise<boolean> {
+    if (await this.formRepository.existById(id)) {
+      await this.formRepository.remove(id);
+      return true;
+    }
+    return false;
   }
 }
 

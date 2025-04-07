@@ -1,10 +1,12 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { Category, Service } from './entities/service.entity';
 import { ServiceRepository } from './service.repository';
 import { TeamMemberRepository } from '../member/member.repository';
 import { TeamMember } from '../member/entities/member.entity';
+import { ContactDto } from '../contact/dto/contact.dto';
+import { ServiceDto } from './dto/service.dto';
 
 @Injectable()
 export class ServiceService {
@@ -23,7 +25,6 @@ export class ServiceService {
     category: Category
   } {
     const memberIds = service.teamMembers?.map((member: TeamMember) => member.id);
-    //const teamMemberNames = this?.getMemberNamesByIds(memberIds);
     return {
       id: service.id,
       name: service.name,
@@ -32,35 +33,16 @@ export class ServiceService {
       price: service.price,
       firmId: service.firm?.id,
       requestId: service.requests?.id,
-      //teamMemberNames,
       userIds: service.users?.map(user => user.id),
     };
   }
-  //
-  // private async getTeamMemberIdsByNames(teamMemberNames: string[]): Promise<number[]> {
-  //   const teamMembers = await this.teamMemberRepository.findIdByName(teamMemberNames)
-  //   return teamMembers.map(member => member.id);
-  // }
-
-  // private async getMemberNamesByIds(memberIds: number[]): Promise<string[]> {
-  //   const members = await this.serviceRepository.findNameById(memberIds)
-  //   return members.map(member => member.name);
-  // }
 
   async create(createServiceDto: CreateServiceDto): Promise<Service> {
-    // const teamMemberIds = createServiceDto.teamMemberNames
-    //   ? await this.getTeamMemberIdsByNames(createServiceDto.teamMemberNames)
-    //   : [];
-
     return this.serviceRepository.create({
       name: createServiceDto.name,
       description: createServiceDto.description,
       category: createServiceDto.category,
       price: createServiceDto.price,
-      //firmId: createServiceDto.firmId,
-      //requestId: createServiceDto.requestId,
-      //teamMemberIds,
-      //userIds: createServiceDto.userIds,
     });
   }
 
@@ -76,6 +58,16 @@ export class ServiceService {
   }[]> {
     const services = await this.serviceRepository.findAll();
     return services.map(this.mapToDto);
+  }
+
+
+  async findAllWithPagination(
+    skip: number,
+    take: number,
+  ): Promise<[ServiceDto[], number]> {
+    const [services, total] =
+      await this.serviceRepository.findAllWithPagination(skip, take);
+    return [services.map(this.mapToDto), total];
   }
 
   async findOne(id: number): Promise<{
@@ -94,22 +86,30 @@ export class ServiceService {
 
   async update(id: number, updateServiceDto: UpdateServiceDto): Promise<boolean> {
     if (await this.serviceRepository.existById(id)) {
-    //   const teamMemberIds = updateServiceDto.teamMemberNames
-    //     ? await this.getTeamMemberIdsByNames(updateServiceDto.teamMemberNames)
-    //     : [];
       await this.serviceRepository.update(id, {
         name: updateServiceDto.name,
         description: updateServiceDto.description,
         category: updateServiceDto.category,
         price: updateServiceDto.price,
-        // firmId: updateServiceDto.firmId,
-        // requestId: updateServiceDto.requestId,
-        // teamMemberIds,
-        // userIds: updateServiceDto.userIds,
       });
       return true;
     }
     return false;
+  }
+
+
+  async apiUpdate(id: number, updateServiceDto: UpdateServiceDto): Promise<ServiceDto | null> {
+    if (await this.serviceRepository.existById(id)) {
+      await this.serviceRepository.update(id, {
+        name: updateServiceDto.name,
+        description: updateServiceDto.description,
+        category: updateServiceDto.category,
+        price: updateServiceDto.price,
+      });
+      const service = await this.serviceRepository.findOne(id);
+      return service ? this.mapToDto(service) : null;
+    }
+    throw new NotFoundException(`Service with ID ${id} not found`);
   }
 
   async remove(id: number): Promise<boolean> {

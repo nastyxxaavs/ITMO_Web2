@@ -140,22 +140,3 @@ export class FirmController {
     }
   }
 }
-
-
-  // @Delete(':id')
-  // @Render('firms')
-  // //@Redirect('/firms/:id')
-  // @HttpCode(HttpStatus.OK)
-  // @HttpCode(HttpStatus.NOT_MODIFIED)
-  // async remove(@Param('id') id: number) {
-  //   if (await this.firmService.remove(+id)){
-  //     const firms = await this.firmService.findAll();
-  //     if (!firms || firms.length === 0) {
-  //       throw new NotFoundException(`Firms are not found`);
-  //     }
-  //     return { firms,
-  //       statusCode: HttpStatus.OK };
-  //   }
-  //   return { statusCode: HttpStatus.NOT_MODIFIED };
-  // }
-

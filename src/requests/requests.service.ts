@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { ClientRequestEntity, Status } from './entities/request.entity';
@@ -7,6 +7,8 @@ import { ServiceRepository } from '../service/service.repository';
 import { Position, TeamMember } from '../member/entities/member.entity';
 import { Category } from '../service/entities/service.entity';
 import { TeamMemberRepository } from '../member/member.repository';
+import { ContactDto } from '../contact/dto/contact.dto';
+import { ClientRequestDto } from './dto/request.dto';
 
 @Injectable()
 export class RequestsService {
@@ -105,7 +107,6 @@ export class RequestsService {
   async create(
     createRequestDto: CreateRequestDto,
   ): Promise<ClientRequestEntity> {
-    //const request = new CreateRequestDto();
     const serviceRequestedId = createRequestDto.serviceRequested
       ? await this.getServiceIdByName(createRequestDto.serviceRequested)
       : null;
@@ -135,6 +136,26 @@ export class RequestsService {
     return requestEntities.map(this.mapToDto);
   }
 
+
+  async findAllWithPagination(
+    skip: number,
+    take: number,
+  ): Promise<[{
+    firmId: number | undefined;
+    contactInfo: string;
+    clientName: string;
+    requestDate: Date;
+    id: number;
+    userId: number | undefined;
+    teamMemberName: string | undefined;
+    serviceRequested: string | undefined;
+    status: Status
+  }[], number]> {
+    const [contacts, total] =
+      await this.clientRequestEntityRepository.findAllWithPagination(skip, take);
+    return [contacts.map(this.mapToDto), total];
+  }
+
   async findOne(id: number): Promise<{
     firmId: number | undefined;
     contactInfo: string;
@@ -155,19 +176,42 @@ export class RequestsService {
     updateRequestDto: UpdateRequestDto,
   ): Promise<boolean> {
     if (await this.clientRequestEntityRepository.existById(id)) {
-      // const serviceRequestedId = updateRequestDto.serviceRequested
-      //   ? await this.getServiceIdByName(updateRequestDto.serviceRequested)
-      //   : null;
 
       await this.clientRequestEntityRepository.update(id, {
         clientName: updateRequestDto.clientName,
         contactInfo: updateRequestDto.contactInfo,
         status: Status['В процессе'],
-        //serviceRequestedId,
       });
       return true;
     }
     return false;
+  }
+
+  async apiUpdate(
+    id: number,
+    updateRequestDto: UpdateRequestDto,
+  ): Promise<{
+    firmId: number | undefined;
+    contactInfo: string;
+    clientName: string;
+    requestDate: Date;
+    id: number;
+    userId: number | undefined;
+    teamMemberName: string | undefined;
+    serviceRequested: string | undefined;
+    status: Status
+  } | null> {
+    if (await this.clientRequestEntityRepository.existById(id)) {
+
+      await this.clientRequestEntityRepository.update(id, {
+        clientName: updateRequestDto.clientName,
+        contactInfo: updateRequestDto.contactInfo,
+        status: Status['В процессе'],
+      });
+      const request = await this.clientRequestEntityRepository.findOne(id);
+      return request ? this.mapToDto(request) : null;
+    }
+    throw new NotFoundException(`Request with ID ${id} not found`);
   }
 
   async remove(id: number): Promise<boolean> {

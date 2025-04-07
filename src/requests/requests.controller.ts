@@ -144,22 +144,4 @@ export class RequestsController {
       };
     }
   }
-
-//   @Delete(':id/delete')
-//   //@Redirect('/requests')
-//   @Render('requests')
-//   @HttpCode(HttpStatus.OK)
-//   @HttpCode(HttpStatus.NOT_MODIFIED)
-//   async remove(@Param('id') id: number) {
-//     if (await this.requestsService.remove(+id)){
-//       const requests = await this.requestsService.findAll();
-//       if (!requests || requests.length === 0) {
-//         throw new NotFoundException(`Requests are not found`);
-//       }
-//       return { requests,
-//         statusCode: HttpStatus.OK };
-//     }
-//     return { statusCode: HttpStatus.NOT_MODIFIED };
-//   }
-// }
 }

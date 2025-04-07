@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { TeamMember } from '../member/entities/member.entity';
+import { Contact } from '../contact/entities/contact.entity';
 
 @Injectable()
 export class ClientRequestEntityRepository {
@@ -27,6 +28,13 @@ export class ClientRequestEntityRepository {
 
   async findAll(): Promise<ClientRequestEntity[]> {
     return await this.requestRepo.find();
+  }
+
+  async findAllWithPagination(skip: number, take: number): Promise<[ClientRequestEntity[], number]> {
+    return this.requestRepo.findAndCount({
+      skip,
+      take,
+    });
   }
 
   async findOne(id: number): Promise<ClientRequestEntity | null> {

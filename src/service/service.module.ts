@@ -7,11 +7,12 @@ import { ServiceRepository } from './service.repository';
 import { TeamMemberRepository } from '../member/member.repository';
 import { MemberModule } from '../member/member.module';
 import { TeamMember } from '../member/entities/member.entity';
+import { ServiceApiController } from './service.api.controller';
 
 
 @Module({
   imports: [TypeOrmModule.forFeature([Service,TeamMember, ServiceRepository]), forwardRef(() =>MemberModule)],
-  controllers: [ServiceController],
+  controllers: [ServiceController, ServiceApiController],
   providers: [ServiceService, ServiceRepository, TeamMemberRepository],
   exports: [ServiceService, ServiceRepository],
 })

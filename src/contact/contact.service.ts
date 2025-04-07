@@ -48,15 +48,13 @@ export class ContactService {
       throw new NotFoundException('Firm not found');
     }
 
-    const contact = this.contactRepository.create({
+    return this.contactRepository.create({
       address: createContactDto.address,
       phone: createContactDto.phone,
       email: createContactDto.email,
       mapsLink: createContactDto.mapsLink,
       firm: firm,
     });
-
-    return contact;
   }
 
   async findAll(): Promise<ContactDto[]> {
@@ -64,9 +62,12 @@ export class ContactService {
     return contacts.map(this.mapToDto);
   }
 
-
-  async findAllWithPagination(skip: number, take: number): Promise<[ContactDto[], number]> {
-    const [contacts, total] = await this.contactRepository.findAllWithPagination(skip, take);
+  async findAllWithPagination(
+    skip: number,
+    take: number,
+  ): Promise<[ContactDto[], number]> {
+    const [contacts, total] =
+      await this.contactRepository.findAllWithPagination(skip, take);
     return [contacts.map(this.mapToDto), total];
   }
 
@@ -122,7 +123,7 @@ export class ContactService {
       const contact = await this.contactRepository.findOne(id);
       return contact ? this.mapToDto(contact) : null;
     }
-    throw  new NotFoundException(`Contact with ID ${id} not found`);
+    throw new NotFoundException(`Contact with ID ${id} not found`);
   }
 
   async remove(id: number): Promise<boolean> {

@@ -24,6 +24,13 @@ export class FirmRepository {
     return await this.repo.find({ relations: ['contacts'] });
   }
 
+  async findAllWithPagination(skip: number, take: number): Promise<[Firm[], number]> {
+    return this.repo.findAndCount({
+      skip,
+      take,
+    });
+  }
+
   async findOne(id: number): Promise<Firm | null> {
     return await this.repo.findOne({ where: { id }, relations: ['contacts'] });
   }

@@ -17,13 +17,4 @@ export class CreateUserDto {
   @IsEnum(Role)
   @IsOptional()
   role?: Role;
-
-  // @IsOptional()
-  // firmId?: number;
-  //
-  // @IsOptional()
-  // serviceIds?: number[];
-  //
-  // @IsOptional()
-  // requestIds?: number[];
 }

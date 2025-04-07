@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateFirmDto } from './dto/create-firm.dto';
 import { UpdateFirmDto } from './dto/update-firm.dto';
 import { Firm } from './entities/firm.entity';
@@ -6,16 +6,12 @@ import { FirmRepository } from './firm.repository';
 import { ServiceRepository } from '../service/service.repository';
 import { TeamMemberRepository } from '../member/member.repository';
 import { ContactRepository } from '../contact/contact.repository';
-import { Service } from '../service/entities/service.entity';
-import { TeamMember } from '../member/entities/member.entity';
+import { FirmDto } from './dto/firm.dto';
 
 @Injectable()
 export class FirmService {
   constructor(
     private readonly firmRepository: FirmRepository,
-    private readonly serviceRepository: ServiceRepository,
-    private readonly teamMemberRepository: TeamMemberRepository,
-    private readonly contactRepository: ContactRepository,
   ) {}
 
   private mapToDto(firm: Firm): {
@@ -26,61 +22,24 @@ export class FirmService {
     id: number;
     requestIds: number[] | undefined
   } {
-    const serviceIds = firm.services?.map((service: Service) => service.id);
-    //const serviceNames = this?.getServiceNamesByIds(serviceIds);
-    const memberIds = firm.teamMembers?.map((member: TeamMember) => member.id);
-    //const memberNames = this?.getMemberNamesByIds(memberIds);
 
     return {
       id: firm.id,
       name: firm.name,
       description: firm.description,
       contactId: firm.contacts?.map((contact) => contact.id),
-      //serviceNames: serviceNames,
-      //memberNames:memberNames,
       requestIds: firm.requests?.map((clientRequest) => clientRequest.id),
       userIds: firm.requests?.map((user) => user.id),
     };
   }
 
-  // private async getServiceIdsByNames(serviceNames: string[]): Promise<number[]> {
-  //   const services = await this.serviceRepository.findIdByName(serviceNames)
-  //   return services.map(service => service.id);
-  // }
-  //
-  // private async getServiceNamesByIds(serviceIds: number[]): Promise<string[]> {
-  //   const services = await this.serviceRepository.findNameById(serviceIds)
-  //   return services.map(service => service.name);
-  // }
-  //
-  // private async getMemberNamesByIds(memberIds: number[]): Promise<string[]> {
-  //   const members = await this.serviceRepository.findNameById(memberIds)
-  //   return members.map(member => member.name);
-  // }
-
-  // private async getTeamMemberIdsByNames(
-  //   teamMemberNames: string[],
-  // ): Promise<number[]> {
-  //   const teamMembers =
-  //     await this.teamMemberRepository.findOneByName(teamMemberNames);
-  //   return teamMembers.map((member) => member.id);
-  // }
 
 
   async create(createFirmDto: CreateFirmDto): Promise<Firm> {
-    const serviceIds = createFirmDto.serviceNames;
-    //   ? await this.getServiceIdsByNames(createFirmDto.serviceNames)
-    //   : [];
-    // const teamMemberIds = createFirmDto.teamMemberNames
-    //   ? await this.getTeamMemberIdsByNames(createFirmDto.teamMemberNames)
-    //   : [];
-    //
 
     return this.firmRepository.create({
       name: createFirmDto.name,
       description: createFirmDto.description,
-      //serviceIds,
-      ///teamMemberIds,
       userIds: createFirmDto.userIds,
       requestIds: createFirmDto.requestIds,
     });
@@ -98,6 +57,18 @@ export class FirmService {
     return firms.map(this.mapToDto);
   }
 
+  async findAllWithPagination(skip: number, take: number): Promise<[{
+    contactId: number[] | undefined;
+    userIds: number[] | undefined;
+    name: string;
+    description: string;
+    id: number;
+    requestIds: number[] | undefined
+  }[], number]> {
+    const [firms, total] = await this.firmRepository.findAllWithPagination(skip, take);
+    return [firms.map(this.mapToDto), total];
+  }
+
   async findOne(id: number): Promise<{
     contactId: number[] | undefined;
     userIds: number[] | undefined;
@@ -112,19 +83,10 @@ export class FirmService {
 
   async update(id: number, updateFirmDto: UpdateFirmDto): Promise<boolean> {
     if (await this.firmRepository.existById(id)) {
-      const serviceIds = updateFirmDto.serviceNames;
-      //   ? await this.getServiceIdsByNames(updateFirmDto.serviceNames)
-      //   : [];
-      // const teamMemberIds = updateFirmDto.teamMemberNames
-      //   ? await this.getTeamMemberIdsByNames(updateFirmDto.teamMemberNames)
-      //   : [];
-
 
       await this.firmRepository.update(id, {
         name: updateFirmDto.name,
         description: updateFirmDto.description,
-        //serviceIds,
-        //teamMemberIds,
         userIds: updateFirmDto.userIds,
         requestIds: updateFirmDto.requestIds,
       });
@@ -132,6 +94,28 @@ export class FirmService {
     }
     return false;
   }
+
+  async apiUpdate(id: number, updateFirmDto: UpdateFirmDto): Promise<{
+    contactId: number[] | undefined;
+    userIds: number[] | undefined;
+    name: string;
+    description: string;
+    id: number;
+    requestIds: number[] | undefined
+  } | null> {
+    if (await this.firmRepository.existById(id)) {
+      await this.firmRepository.update(id, {
+        name: updateFirmDto.name,
+        description: updateFirmDto.description,
+        userIds: updateFirmDto.userIds,
+        requestIds: updateFirmDto.requestIds,
+      });
+      const firm = await this.firmRepository.findOne(id);
+      return firm ? this.mapToDto(firm) : null;
+    }
+    throw new NotFoundException(`Firm with ID ${id} not found`);
+  }
+
 
   async remove(id: number): Promise<boolean> {
     if (await this.firmRepository.existById(id)) {

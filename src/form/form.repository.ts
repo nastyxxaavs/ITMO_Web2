@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { UpdateFormDto } from './dto/update-form.dto';
+import { Contact } from '../contact/entities/contact.entity';
 
 
 @Injectable()
@@ -23,6 +24,13 @@ export class SubmissionRepository {
 
   async findAll(): Promise<Submission[]> {
     return await this.formRepo.find();
+  }
+
+  async findAllWithPagination(skip: number, take: number): Promise<[Submission[], number]> {
+    return this.formRepo.findAndCount({
+      skip,
+      take,
+    });
   }
 
   async findOne(id: number): Promise<Submission | null> {
