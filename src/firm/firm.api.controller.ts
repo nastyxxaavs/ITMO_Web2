@@ -122,7 +122,7 @@ export class FirmApiController {
     return updatedFirm;
   }
 
-  @Delete('/api/contact-delete/:id')
+  @Delete('/api/firm-delete/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: number): Promise<void> {
     const removed = await this.firmService.remove(id);

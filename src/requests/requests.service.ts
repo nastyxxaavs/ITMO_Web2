@@ -9,14 +9,25 @@ import { Category } from '../service/entities/service.entity';
 import { TeamMemberRepository } from '../member/member.repository';
 import { ContactDto } from '../contact/dto/contact.dto';
 import { ClientRequestDto } from './dto/request.dto';
+import { Observable, Subject } from 'rxjs';
 
 @Injectable()
 export class RequestsService {
+  private eventStream = new Subject<any>();
   constructor(
     private readonly clientRequestEntityRepository: ClientRequestEntityRepository,
     private readonly serviceRepository: ServiceRepository,
     private readonly teamMemberRepository: TeamMemberRepository,
   ) {}
+
+  getEventStream(): Observable<any> {
+    return this.eventStream.asObservable();
+  }
+
+  notifyRequestChange(message: string): void {
+    console.log('Sending SSE:', message);
+    this.eventStream.next({ message });
+  }
 
   private mapToDto(request: ClientRequestEntity): {
     firmId: number | undefined;

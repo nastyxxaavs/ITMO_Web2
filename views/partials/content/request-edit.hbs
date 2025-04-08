@@ -1,7 +1,9 @@
 <main>
   <div class="entity-edit">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <h1>Редактирование запросов</h1>
-    <form  id="editRequestForm">
+    <form id="editRequestForm">
       <label for="clientName">Имя клиента:</label>
       <label>
         <input id="clientNameInput" type="text" name="clientName">
@@ -51,5 +53,33 @@
           console.error('Error:', error);
         });
     });
+  </script>
+
+  <script>
+    toastr.options = { positionClass: 'toast-top-right' , timeout: 5000 };
+
+    function setupEventSource() {
+      const eventSource = new EventSource('http://localhost:8082/request-events');
+
+      // Обработчик для события, которое приходит от сервера
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.message) {
+            toastr.info(data.message);
+          }
+        } catch (e) {
+          console.error('SSE parse error:', e);
+        }
+      };
+
+      // Обработчик для ошибок SSE
+      eventSource.onerror = (e) => {
+        console.error('SSE error:', e);
+        eventSource.close();
+        setTimeout(setupEventSource, 2000);
+      };
+    }
+    document.addEventListener('DOMContentLoaded', setupEventSource)
   </script>
 </main>

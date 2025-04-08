@@ -8,12 +8,15 @@ import { TeamMemberRepository } from '../member/member.repository';
 import { MemberModule } from '../member/member.module';
 import { TeamMember } from '../member/entities/member.entity';
 import { ServiceApiController } from './service.api.controller';
+import { Firm } from '../firm/entities/firm.entity';
+import { FirmModule } from '../firm/firm.module';
+import { FirmService } from '../firm/firm.service';
 
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Service,TeamMember, ServiceRepository]), forwardRef(() =>MemberModule)],
+  imports: [TypeOrmModule.forFeature([Service,TeamMember, ServiceRepository, Firm]), forwardRef(() =>MemberModule), forwardRef(() =>FirmModule)],
   controllers: [ServiceController, ServiceApiController],
-  providers: [ServiceService, ServiceRepository, TeamMemberRepository],
+  providers: [ServiceService, ServiceRepository, TeamMemberRepository, FirmService],
   exports: [ServiceService, ServiceRepository],
 })
 export class ServiceModule {}
