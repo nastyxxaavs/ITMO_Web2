@@ -15,7 +15,9 @@ import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { Status } from './entities/request.entity';
 import { interval, map, mergeWith, Observable } from 'rxjs';
+import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
 
+@ApiExcludeController()
 @Controller()
 export class RequestsController {
   constructor(private readonly requestsService: RequestsService) {

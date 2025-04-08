@@ -12,3 +12,7 @@ https://nastyxxaavs.github.io/ITMO_Web/pages/main.html
 
 ### Ссылка на репу с фронтом
 https://github.com/nastyxxaavs/ITMO_Web_Labs_5sem
+
+### OPENAPI спецификация
+http://localhost:8082/api
+(P.S. убедитесь, что приложение запущено)

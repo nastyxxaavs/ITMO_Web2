@@ -19,12 +19,25 @@ import { UpdateContactDto } from './dto/update-contact.dto';
 import { ContactDto } from './dto/contact.dto';
 import { FirmDto } from '../firm/dto/firm.dto';
 import { FirmService } from '../firm/firm.service';
+import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { NotFoundResponse } from '../response';
 
+@ApiTags('contact')
 @Controller()
 export class ContactApiController {
   constructor(private readonly contactService: ContactService, private readonly firmService: FirmService) {}
 
   @Get('/api/contacts')
+  @ApiResponse({
+    status: 200,
+    description: 'Contacts was found.',
+    type: [ContactDto],
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Contacts not found',
+    type: NotFoundResponse,
+  })
   async findAll(
     @Query('page') page = 1,
     @Query('limit') limit = 3,
@@ -61,6 +74,18 @@ export class ContactApiController {
   }
 
   @Get('/api/contacts/:id')
+  @ApiOperation({ summary: 'Get a contact by ID' })
+  @ApiParam({ name: 'id', type: Number, description: 'The contact ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The contact was found.',
+    type: ContactDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Contact not found',
+    type: NotFoundResponse,
+  })
   async findOne(@Param('id') id: number): Promise<ContactDto> {
     const contact = await this.contactService.findOne(id);
     if (!contact) {
@@ -71,6 +96,18 @@ export class ContactApiController {
 
 
   @Get('/api/contacts/:id/firm')
+  @ApiOperation({ summary: 'Get a contact`s firm by ID' })
+  @ApiParam({ name: 'id', type: Number, description: 'The contact ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The firm was found.',
+    type: FirmDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Firm not found',
+    type: NotFoundResponse,
+  })
   async findFirmForContact(@Param('id') id: number): Promise<{
     contactId: number[] | undefined;
     userIds: number[] | undefined;
@@ -94,6 +131,17 @@ export class ContactApiController {
 
   @Post('/api/contact-add')
   @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a new contact' })
+  @ApiBody({ type: CreateContactDto })
+  @ApiResponse({
+    status: 201,
+    description: 'The contact has been successfully created.',
+    type: ContactDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request',
+  })
   async create(
     @Body(ValidationPipe) createContactDto: CreateContactDto,
   ): Promise<ContactDto> {
@@ -102,6 +150,19 @@ export class ContactApiController {
 
 
   @Patch('/api/contact-edit/:id')
+  @ApiOperation({ summary: 'Update an existing contact' })
+  @ApiParam({ name: 'id', type: Number, description: 'The contact ID' })
+  @ApiBody({ type: UpdateContactDto })
+  @ApiResponse({
+    status: 200,
+    description: 'The contact has been successfully updated.',
+    type: ContactDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Contact not found',
+    type: NotFoundResponse,
+  })
   async update(
     @Param('id') id: number,
     @Body(ValidationPipe) updateContactDto: UpdateContactDto,
@@ -119,6 +180,17 @@ export class ContactApiController {
 
   @Delete('/api/contact-delete/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete an existing contact' })
+  @ApiParam({ name: 'id', type: Number, description: 'The contact ID' })
+  @ApiResponse({
+    status: 204,
+    description: 'The contact has been successfully deleted.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Contact not found',
+    type: NotFoundResponse,
+  })
   async remove(@Param('id') id: number): Promise<void> {
     const removed = await this.contactService.remove(id);
     if (!removed) {

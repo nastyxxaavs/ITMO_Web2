@@ -19,13 +19,29 @@ import { ClientRequestEntity, Status } from './entities/request.entity';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { FirmService } from '../firm/firm.service';
+import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ContactDto } from '../contact/dto/contact.dto';
+import { NotFoundResponse } from '../response';
+import { FirmDto } from '../firm/dto/firm.dto';
+import { CreateContactDto } from '../contact/dto/create-contact.dto';
+import { UpdateContactDto } from '../contact/dto/update-contact.dto';
 
-
+@ApiTags('requests')
 @Controller()
 export class RequestsApiController {
   constructor(private readonly requestsService: RequestsService, private readonly firmService: FirmService) {}
 
   @Get('/api/requests')
+  @ApiResponse({
+    status: 200,
+    description: 'Requests was found.',
+    type: [ClientRequestDto],
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Requests not found',
+    type: NotFoundResponse,
+  })
   async findAll(
     @Query('page') page = 1,
     @Query('limit') limit = 3,
@@ -77,6 +93,18 @@ export class RequestsApiController {
   }
 
   @Get('/api/requests/:id')
+  @ApiOperation({ summary: 'Get a request by ID' })
+  @ApiParam({ name: 'id', type: Number, description: 'The request ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The request was found.',
+    type: ClientRequestDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Request not found',
+    type: NotFoundResponse,
+  })
   async findOne(@Param('id') id: number): Promise<{
     firmId: number | undefined;
     contactInfo: string;
@@ -97,6 +125,18 @@ export class RequestsApiController {
 
 
   @Get('/api/requests/:id/firm')
+  @ApiOperation({ summary: 'Get a request`s firm by ID' })
+  @ApiParam({ name: 'id', type: Number, description: 'The request ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The firm was found.',
+    type: FirmDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Firm not found',
+    type: NotFoundResponse,
+  })
   async findFirmForRequest(@Param('id') id: number): Promise<{
     contactId: number[] | undefined;
     userIds: number[] | undefined;
@@ -121,6 +161,17 @@ export class RequestsApiController {
 
   @Post('/api/request-add')
   @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a new request' })
+  @ApiBody({ type: CreateRequestDto })
+  @ApiResponse({
+    status: 201,
+    description: 'The request has been successfully created.',
+    type: ClientRequestDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request',
+  })
   async create(
     @Body(ValidationPipe) createRequestsDto: CreateRequestDto,
   ): Promise<ClientRequestEntity> {
@@ -133,6 +184,19 @@ export class RequestsApiController {
 
 
   @Patch('/api/request-edit/:id')
+  @ApiOperation({ summary: 'Update an existing request' })
+  @ApiParam({ name: 'id', type: Number, description: 'The request ID' })
+  @ApiBody({ type: UpdateRequestDto })
+  @ApiResponse({
+    status: 200,
+    description: 'The request has been successfully updated.',
+    type: ClientRequestDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Request not found',
+    type: NotFoundResponse,
+  })
   async update(
     @Param('id') id: number,
     @Body(ValidationPipe) updateRequestDto: UpdateRequestDto,
@@ -159,6 +223,17 @@ export class RequestsApiController {
 
 
   @Delete('/api/request-delete/:id')
+  @ApiOperation({ summary: 'Delete an existing request' })
+  @ApiParam({ name: 'id', type: Number, description: 'The request ID' })
+  @ApiResponse({
+    status: 204,
+    description: 'The request has been successfully deleted.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Request not found',
+    type: NotFoundResponse,
+  })
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: number): Promise<void> {
     const removed = await this.requestsService.remove(id);

@@ -5,10 +5,10 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import * as path from 'node:path';
 import { engine } from 'express-handlebars';
-//import * as hbs from 'hbs';
 import express from 'express';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import session from 'express-session';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const server = express();
@@ -58,6 +58,21 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'HEAD', 'PUT'],
     allowedHeaders: 'Content-Type, Accept',
   });
+
+  const config = new DocumentBuilder()
+    .setTitle('API Documentation')
+    .setDescription('API for managing law firm')
+    .setVersion('1.0')
+    .addTag('contact')
+    .addTag('firm')
+    .addTag('form')
+    .addTag('member')
+    .addTag('requests')
+    .addTag('service')
+    .addTag('user')
+    .build();
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, documentFactory); //the path: /api
 
   const port = configService.get<number>('PORT') || 4000;
   await app.listen(port);

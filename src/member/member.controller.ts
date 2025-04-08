@@ -15,7 +15,9 @@ import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
 import { TeamMemberDto } from './dto/member.dto';
 import { Position } from './entities/member.entity';
+import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
 
+@ApiExcludeController()
 @Controller()
 export class MemberController {
   constructor(private readonly memberService: MemberService) {}

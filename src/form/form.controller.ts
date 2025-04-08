@@ -13,7 +13,9 @@ import {
 import { FormService } from './form.service';
 import { CreateSubmissionDto } from './dto/create-form.dto';
 import { UpdateFormDto } from './dto/update-form.dto';
+import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
 
+@ApiExcludeController()
 @Controller()
 export class FormController {
   constructor(private readonly formService: FormService) {}

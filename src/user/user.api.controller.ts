@@ -18,13 +18,29 @@ import { UserDto } from './dto/user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FirmService } from '../firm/firm.service';
+import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ContactDto } from '../contact/dto/contact.dto';
+import { NotFoundResponse } from '../response';
+import { FirmDto } from '../firm/dto/firm.dto';
+import { CreateContactDto } from '../contact/dto/create-contact.dto';
+import { UpdateContactDto } from '../contact/dto/update-contact.dto';
 
-
+@ApiTags('user')
 @Controller()
 export class UserApiController {
   constructor(private readonly userService: UserService, private readonly firmService: FirmService) {}
 
   @Get('/api/users')
+  @ApiResponse({
+    status: 200,
+    description: 'Users was found.',
+    type: [UserDto],
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Users not found',
+    type: NotFoundResponse,
+  })
   async findAll(
     @Query('page') page = 1,
     @Query('limit') limit = 3,
@@ -61,6 +77,18 @@ export class UserApiController {
   }
 
   @Get('/api/users/:id')
+  @ApiOperation({ summary: 'Get a user by ID' })
+  @ApiParam({ name: 'id', type: Number, description: 'The user ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The user was found.',
+    type: UserDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+    type: NotFoundResponse,
+  })
   async findOne(@Param('id') id: number): Promise<UserDto> {
     const user = await this.userService.findOne(id);
     if (!user) {
@@ -71,6 +99,18 @@ export class UserApiController {
 
 
   @Get('/api/users/:id/firm')
+  @ApiOperation({ summary: 'Get a user`s firm by ID' })
+  @ApiParam({ name: 'id', type: Number, description: 'The user ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The firm was found.',
+    type: FirmDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Firm not found',
+    type: NotFoundResponse,
+  })
   async findFirmForUser(@Param('id') id: number): Promise<{
     contactId: number[] | undefined;
     userIds: number[] | undefined;
@@ -94,6 +134,17 @@ export class UserApiController {
 
   @Post('/api/user-add')
   @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a new user' })
+  @ApiBody({ type: CreateUserDto })
+  @ApiResponse({
+    status: 201,
+    description: 'The user has been successfully created.',
+    type: UserDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request',
+  })
   async create(
     @Body(ValidationPipe) createUserDto: CreateUserDto,
   ): Promise<UserDto> {
@@ -106,6 +157,19 @@ export class UserApiController {
 
 
   @Patch('/api/user-edit/:id')
+  @ApiOperation({ summary: 'Update an existing user' })
+  @ApiParam({ name: 'id', type: Number, description: 'The user ID' })
+  @ApiBody({ type: UpdateUserDto })
+  @ApiResponse({
+    status: 200,
+    description: 'The user has been successfully updated.',
+    type: UserDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+    type: NotFoundResponse,
+  })
   async update(
     @Param('id') id: number,
     @Body(ValidationPipe) updateUserDto: UpdateUserDto,
@@ -115,7 +179,7 @@ export class UserApiController {
       updateUserDto,
     );
     if (!updatedUser) {
-      throw new NotFoundException(`Contact with ID ${id} not found`);
+      throw new NotFoundException(`User with ID ${id} not found`);
     }
     return updatedUser;
   }
@@ -123,10 +187,21 @@ export class UserApiController {
 
   @Delete('/api/user-delete/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete an existing user' })
+  @ApiParam({ name: 'id', type: Number, description: 'The user ID' })
+  @ApiResponse({
+    status: 204,
+    description: 'The user has been successfully deleted.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+    type: NotFoundResponse,
+  })
   async remove(@Param('id') id: number): Promise<void> {
     const removed = await this.userService.remove(id);
     if (!removed) {
-      throw new NotFoundException(`Contact with ID ${id} not found`);
+      throw new NotFoundException(`User with ID ${id} not found`);
     }
   }
 }

@@ -14,7 +14,9 @@ import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
 import { ContactDto } from './dto/contact.dto';
 import { interval, map, mergeWith, Observable } from 'rxjs';
+import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
 
+@ApiExcludeController()
 @Controller()
 export class ContactController {
   constructor(private readonly contactService: ContactService) {}

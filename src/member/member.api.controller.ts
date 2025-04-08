@@ -18,13 +18,26 @@ import { TeamMemberDto } from './dto/member.dto';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
 import { FirmService } from '../firm/firm.service';
+import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { FirmDto } from '../firm/dto/firm.dto';
+import { NotFoundResponse } from '../response';
 
-
+@ApiTags('member')
 @Controller()
 export class MemberApiController {
   constructor(private readonly memberService: MemberService, private readonly firmService: FirmService) {}
 
   @Get('/api/members')
+  @ApiResponse({
+    status: 200,
+    description: 'Members was found.',
+    type: [TeamMemberDto],
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Members not found',
+    type: NotFoundResponse,
+  })
   async findAll(
     @Query('page') page = 1,
     @Query('limit') limit = 3,
@@ -61,6 +74,18 @@ export class MemberApiController {
   }
 
   @Get('/api/members/:id')
+  @ApiOperation({ summary: 'Get a member by ID' })
+  @ApiParam({ name: 'id', type: Number, description: 'The member ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The member was found.',
+    type: TeamMemberDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Member not found',
+    type: NotFoundResponse,
+  })
   async findOne(@Param('id') id: number): Promise<TeamMemberDto> {
     const member = await this.memberService.findOne(id);
     if (!member) {
@@ -71,6 +96,18 @@ export class MemberApiController {
 
 
   @Get('/api/members/:id/firm')
+  @ApiOperation({ summary: 'Get a member`s firm by ID' })
+  @ApiParam({ name: 'id', type: Number, description: 'The member ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The firm was found.',
+    type: FirmDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Firm not found',
+    type: NotFoundResponse,
+  })
   async findFirmForMember(@Param('id') id: number): Promise<{
     contactId: number[] | undefined;
     userIds: number[] | undefined;
@@ -95,6 +132,17 @@ export class MemberApiController {
 
   @Post('/api/member-add')
   @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a new member' })
+  @ApiBody({ type: CreateMemberDto })
+  @ApiResponse({
+    status: 201,
+    description: 'The member has been successfully created.',
+    type: TeamMemberDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request',
+  })
   async create(
     @Body(ValidationPipe) createMemberDto: CreateMemberDto,
   ): Promise<TeamMemberDto> {
@@ -107,6 +155,19 @@ export class MemberApiController {
 
 
   @Patch('/api/member-edit/:id')
+  @ApiOperation({ summary: 'Update an existing member' })
+  @ApiParam({ name: 'id', type: Number, description: 'The member ID' })
+  @ApiBody({ type: UpdateMemberDto })
+  @ApiResponse({
+    status: 200,
+    description: 'The contact has been successfully updated.',
+    type: TeamMemberDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Member not found',
+    type: NotFoundResponse,
+  })
   async update(
     @Param('id') id: number,
     @Body(ValidationPipe) updateMemberDto: UpdateMemberDto,
@@ -124,6 +185,17 @@ export class MemberApiController {
 
   @Delete('/api/member-delete/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete an existing member' })
+  @ApiParam({ name: 'id', type: Number, description: 'The member ID' })
+  @ApiResponse({
+    status: 204,
+    description: 'The member has been successfully deleted.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Member not found',
+    type: NotFoundResponse,
+  })
   async remove(@Param('id') id: number): Promise<void> {
     const removed = await this.memberService.remove(id);
     if (!removed) {

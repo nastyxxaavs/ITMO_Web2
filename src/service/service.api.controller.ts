@@ -18,13 +18,26 @@ import { ServiceDto } from './dto/service.dto';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { FirmService } from '../firm/firm.service';
+import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { FirmDto } from '../firm/dto/firm.dto';
+import { NotFoundResponse } from '../response';
 
-
+@ApiTags('service')
 @Controller()
 export class ServiceApiController {
   constructor(private readonly serviceService: ServiceService, private readonly firmService: FirmService) {}
 
   @Get('/api/services')
+  @ApiResponse({
+    status: 200,
+    description: 'Services was found.',
+    type: [ServiceDto],
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Services not found',
+    type: NotFoundResponse,
+  })
   async findAll(
     @Query('page') page = 1,
     @Query('limit') limit = 3,
@@ -62,6 +75,18 @@ export class ServiceApiController {
 
 
   @Get('/api/services/:id')
+  @ApiOperation({ summary: 'Get a service by ID' })
+  @ApiParam({ name: 'id', type: Number, description: 'The service ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The service was found.',
+    type: ServiceDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Service not found',
+    type: NotFoundResponse,
+  })
   async findOne(@Param('id') id: number): Promise<ServiceDto> {
     const service = await this.serviceService.findOne(id);
     if (!service) {
@@ -71,6 +96,18 @@ export class ServiceApiController {
   }
 
   @Get('/api/services/:id/firm')
+  @ApiOperation({ summary: 'Get a service`s firm by ID' })
+  @ApiParam({ name: 'id', type: Number, description: 'The service ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The firm was found.',
+    type: FirmDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Firm not found',
+    type: NotFoundResponse,
+  })
   async findFirmForService(@Param('id') id: number): Promise<{
     contactId: number[] | undefined;
     userIds: number[] | undefined;
@@ -93,6 +130,17 @@ export class ServiceApiController {
   }
 
   @Post('/api/service-add')
+  @ApiOperation({ summary: 'Create a new service' })
+  @ApiBody({ type: CreateServiceDto })
+  @ApiResponse({
+    status: 201,
+    description: 'The service has been successfully created.',
+    type: ServiceDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request',
+  })
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body(ValidationPipe) createServiceDto: CreateServiceDto,
@@ -106,6 +154,19 @@ export class ServiceApiController {
 
 
   @Patch('/api/service-edit/:id')
+  @ApiOperation({ summary: 'Update an existing service' })
+  @ApiParam({ name: 'id', type: Number, description: 'The service ID' })
+  @ApiBody({ type: UpdateServiceDto })
+  @ApiResponse({
+    status: 200,
+    description: 'The service has been successfully updated.',
+    type: ServiceDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Service not found',
+    type: NotFoundResponse,
+  })
   async update(
     @Param('id') id: number,
     @Body(ValidationPipe) updateServiceDto: UpdateServiceDto,
@@ -123,6 +184,17 @@ export class ServiceApiController {
 
   @Delete('/api/service-delete/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete an existing service' })
+  @ApiParam({ name: 'id', type: Number, description: 'The service ID' })
+  @ApiResponse({
+    status: 204,
+    description: 'The service has been successfully deleted.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Service not found',
+    type: NotFoundResponse,
+  })
   async remove(@Param('id') id: number): Promise<void> {
     const removed = await this.serviceService.remove(id);
     if (!removed) {

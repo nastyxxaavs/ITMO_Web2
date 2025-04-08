@@ -1,7 +1,9 @@
 import { Body, Controller, Get, Post, Query, Redirect, Render, Req } from '@nestjs/common';
 import { AppService } from './app.service';
 import * as fs from 'fs';
+import { ApiExcludeController } from '@nestjs/swagger';
 
+@ApiExcludeController()
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}

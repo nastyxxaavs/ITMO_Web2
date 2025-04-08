@@ -17,13 +17,25 @@ import { FormService } from './form.service';
 import { SubmissionDto } from './dto/form.dto';
 import { CreateSubmissionDto } from './dto/create-form.dto';
 import { UpdateFormDto } from './dto/update-form.dto';
+import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { NotFoundResponse } from '../response';
 
-
+@ApiTags('form')
 @Controller()
 export class FormApiController {
   constructor(private readonly formService: FormService) {}
 
   @Get('/api/forms')
+  @ApiResponse({
+    status: 200,
+    description: 'Forms was found.',
+    type: [SubmissionDto],
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Forms not found',
+    type: NotFoundResponse,
+  })
   async findAll(
     @Query('page') page = 1,
     @Query('limit') limit = 3,
@@ -60,6 +72,18 @@ export class FormApiController {
   }
 
   @Get('/api/forms/:id')
+  @ApiOperation({ summary: 'Get a form by ID' })
+  @ApiParam({ name: 'id', type: Number, description: 'The form ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'The form was found.',
+    type: SubmissionDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Form not found',
+    type: NotFoundResponse,
+  })
   async findOne(@Param('id') id: number): Promise<SubmissionDto | null> {
     const form = this.formService.findOne(id);
     if (!form) {
@@ -70,6 +94,17 @@ export class FormApiController {
 
   @Post('/api/form-add')
   @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a new form' })
+  @ApiBody({ type: CreateSubmissionDto })
+  @ApiResponse({
+    status: 201,
+    description: 'The form has been successfully created.',
+    type: SubmissionDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request',
+  })
   async create(
     @Body(ValidationPipe) createFormDto: CreateSubmissionDto,
   ): Promise<SubmissionDto> {
@@ -82,6 +117,19 @@ export class FormApiController {
 
 
   @Patch('/api/form-edit/:id')
+  @ApiOperation({ summary: 'Update an existing form' })
+  @ApiParam({ name: 'id', type: Number, description: 'The form ID' })
+  @ApiBody({ type: UpdateFormDto })
+  @ApiResponse({
+    status: 200,
+    description: 'The form has been successfully updated.',
+    type: SubmissionDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Form not found',
+    type: NotFoundResponse,
+  })
   async update(
     @Param('id') id: number,
     @Body(ValidationPipe) updateFormDto: UpdateFormDto,
@@ -99,6 +147,17 @@ export class FormApiController {
 
   @Delete('/api/form-delete/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete an existing form' })
+  @ApiParam({ name: 'id', type: Number, description: 'The form ID' })
+  @ApiResponse({
+    status: 204,
+    description: 'The form has been successfully deleted.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Form not found',
+    type: NotFoundResponse,
+  })
   async remove(@Param('id') id: number): Promise<void> {
     const removed = await this.formService.remove(id);
     if (!removed) {
