@@ -133,6 +133,9 @@ export class RequestsService {
     status: Status
   }[]> {
     const requestEntities = await this.clientRequestEntityRepository.findAll();
+    if (!requestEntities){
+      throw new NotFoundException(`Requests are not found`);
+    }
     return requestEntities.map(this.mapToDto);
   }
 
@@ -168,6 +171,9 @@ export class RequestsService {
     status: Status
   } | null> {
     const request = await this.clientRequestEntityRepository.findOne(id);
+    if (!request){
+      throw new NotFoundException(`Request with ID ${id} not found`);
+    }
     return request ? this.mapToDto(request) : null;
   }
 
@@ -219,6 +225,6 @@ export class RequestsService {
       await this.clientRequestEntityRepository.remove(id);
       return true;
     }
-    return false;
+    throw new NotFoundException(`Request with ID ${id} not found`);
   }
 }

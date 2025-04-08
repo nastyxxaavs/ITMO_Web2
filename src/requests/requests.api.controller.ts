@@ -18,11 +18,12 @@ import { ClientRequestDto } from './dto/request.dto';
 import { ClientRequestEntity, Status } from './entities/request.entity';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
+import { FirmService } from '../firm/firm.service';
 
 
 @Controller()
 export class RequestsApiController {
-  constructor(private readonly requestsService: RequestsService) {}
+  constructor(private readonly requestsService: RequestsService, private readonly firmService: FirmService) {}
 
   @Get('/api/requests')
   async findAll(
@@ -93,6 +94,30 @@ export class RequestsApiController {
     }
     return request;
   }
+
+
+  @Get('/api/requests/:id/firm')
+  async findFirmForRequest(@Param('id') id: number): Promise<{
+    contactId: number[] | undefined;
+    userIds: number[] | undefined;
+    name: string;
+    description: string;
+    id: number;
+    requestIds: number[] | undefined
+  }> {
+    const request = await this.requestsService.findOne(id);
+    if (!request) {
+      throw new NotFoundException(`Request with ID ${id} not found`);
+    }
+
+    const firmId = request.firmId;
+    const firm = await this.firmService.findOne(firmId);
+    if (!firm) {
+      throw new NotFoundException(`No firm associated with request ID ${id}`);
+    }
+    return firm;
+  }
+
 
   @Post('/api/request-add')
   @HttpCode(HttpStatus.CREATED)

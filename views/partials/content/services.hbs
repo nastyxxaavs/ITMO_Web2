@@ -1,5 +1,10 @@
 <main>
     <div class="container">
+      {{#if alertMessage}}
+        <script>
+          alert("{{alertMessage}}");
+        </script>
+      {{/if}}
       <h1> Судебные споры </h1>
       <div class="litigation">
         <section>

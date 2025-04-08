@@ -57,6 +57,9 @@ export class ServiceService {
     category: Category
   }[]> {
     const services = await this.serviceRepository.findAll();
+    if (!services) {
+      throw new NotFoundException(`Services are not found`);
+    }
     return services.map(this.mapToDto);
   }
 
@@ -81,6 +84,9 @@ export class ServiceService {
     category: Category
   } | null> {
     const service = await this.serviceRepository.findOne(id);
+    if (!service){
+      throw new NotFoundException(`Service with ID ${id} not found`);
+    }
     return service ? this.mapToDto(service) : null;
   }
 
@@ -117,6 +123,6 @@ export class ServiceService {
       await this.serviceRepository.remove(id);
       return true;
     }
-    return false;
+    throw new NotFoundException(`Service with ID ${id} not found`);
   }
 }

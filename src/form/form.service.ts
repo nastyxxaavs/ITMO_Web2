@@ -31,6 +31,9 @@ export class FormService {
 
   async findAll(): Promise<SubmissionDto[]> {
     const forms = await this.formRepository.findAll();
+    if (!forms){
+      throw new NotFoundException(`Forms are not found`);
+    }
     return forms.map(this.mapToDto);
   }
 
@@ -45,6 +48,9 @@ export class FormService {
 
   async findOne(id: number): Promise<SubmissionDto | null> {
     const form = await this.formRepository.findOne(id);
+    if (!form){
+      throw new NotFoundException(`Form with ID ${id} not found`);
+    }
     return form ? this.mapToDto(form) : null;
   }
 
@@ -68,7 +74,7 @@ export class FormService {
       await this.formRepository.remove(id);
       return true;
     }
-    return false;
+    throw new NotFoundException(`Form with ID ${id} not found`);
   }
 }
 

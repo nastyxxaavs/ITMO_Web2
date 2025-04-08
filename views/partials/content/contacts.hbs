@@ -1,5 +1,10 @@
 <main>
   <div class="entities">
+    {{#if alertMessage}}
+      <script>
+        alert("{{alertMessage}}");
+      </script>
+    {{/if}}
       {{#if contacts.length}}
          <h1>Контакты компании</h1>
           <ul>

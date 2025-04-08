@@ -52,10 +52,14 @@ export class UserController {
 
   @Get('/users')
   @Render('general')
-  async findAll():Promise<{ customStyle: string; users: UserDto[]; content: string }>  {
+  async findAll():Promise<{ customStyle: string; users: UserDto[]; content: string; alertMessage?: string  }>  {
     const users = await this.userService.findAll();
     if (!users) {
-      throw new NotFoundException(`Users are not found`);
+      return {
+        users,
+        content: "users",
+        customStyle: '../styles/entities.css',
+        alertMessage: "Пользователи не найдены",};
     }
     return {users,
       content: "users",
@@ -67,7 +71,11 @@ export class UserController {
   async findOne(@Param('id') id: number){ //: Promise<{ user: UserDto}> {
     const user = await this.userService.findOne(id);
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      return {
+        content: "user",
+        customStyle: '../styles/entity-info.css',
+        alertMessage: "Пользователь не найден",
+      };
     }
     return {
       username: user.username,

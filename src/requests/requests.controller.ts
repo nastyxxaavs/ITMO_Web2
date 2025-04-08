@@ -65,12 +65,20 @@ export class RequestsController {
       status: Status
     }[];
     user: string | null;
-    content: string
+    content: string;
+    alertMessage?: string
   }> {
     const isAuthenticated = req.session.isAuthenticated;
     const requests = await this.requestsService.findAll();
     if (!requests) {
-      throw new NotFoundException(`Requests are not found`);
+      return {
+        isAuthenticated,
+        user: isAuthenticated ? 'Anastasia' : null,
+        requests,
+        content: 'requests',
+        titleContent: 'Список запросов',
+        customStyle: '../styles/entities.css',
+        alertMessage: "Запросы не найдены",};
     }
     return {
       isAuthenticated,
@@ -86,7 +94,12 @@ export class RequestsController {
   async findOne(@Param('id') id: number){
     const request = await this.requestsService.findOne(id);
     if (!request) {
-      throw new NotFoundException(`Request with ID ${id} not found`);
+      return {
+        content: 'request',
+        titleContent: 'Требуемый запрос',
+        customStyle: '../styles/entity-info.css',
+        alertMessage: "Запрос не найден",
+      };
     }
     return {
       clientName: request.clientName,

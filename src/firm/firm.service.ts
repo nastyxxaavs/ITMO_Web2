@@ -54,6 +54,9 @@ export class FirmService {
     requestIds: number[] | undefined
   }[]> {
     const firms = await this.firmRepository.findAll();
+    if (!firms || firms.length === 0) {
+      throw new NotFoundException('No firms found');
+    }
     return firms.map(this.mapToDto);
   }
 
@@ -65,11 +68,14 @@ export class FirmService {
     id: number;
     requestIds: number[] | undefined
   }[], number]> {
-    const [firms, total] = await this.firmRepository.findAllWithPagination(skip, take);
+    const [firms, total] = await this.firmRepository.findAllWithPagination(
+      skip,
+      take,
+    );
     return [firms.map(this.mapToDto), total];
   }
 
-  async findOne(id: number): Promise<{
+  async findOne(id: number | undefined): Promise<{
     contactId: number[] | undefined;
     userIds: number[] | undefined;
     name: string;
@@ -78,6 +84,25 @@ export class FirmService {
     requestIds: number[] | undefined
   } | null> {
     const firm = await this.firmRepository.findOne(id);
+    if (!firm) {
+      throw new NotFoundException(`Firm with ID ${id} not found`);
+    }
+    return firm ? this.mapToDto(firm) : null;
+  }
+
+
+  async findOneByName(name: string | undefined): Promise<{
+    contactId: number[] | undefined;
+    userIds: number[] | undefined;
+    name: string;
+    description: string;
+    id: number;
+    requestIds: number[] | undefined
+  } | null> {
+    const firm = await this.firmRepository.findOneByName(name);
+    if (!firm) {
+      throw new NotFoundException(`Firm with name ${name} not found`);
+    }
     return firm ? this.mapToDto(firm) : null;
   }
 
@@ -92,7 +117,7 @@ export class FirmService {
       });
       return true;
     }
-    return false;
+    throw new NotFoundException(`Firm with ID ${id} not found`);
   }
 
   async apiUpdate(id: number, updateFirmDto: UpdateFirmDto): Promise<{
@@ -122,6 +147,6 @@ export class FirmService {
       await this.firmRepository.remove(id);
       return true;
     }
-    return false;
+    throw new NotFoundException(`Firm with ID ${id} not found`);
   }
 }

@@ -1,5 +1,10 @@
 <main>
   <div class="entities">
+    {{#if alertMessage}}
+      <script>
+        alert("{{alertMessage}}");
+      </script>
+    {{/if}}
       {{#if members.length}}
           <h1>Команда сотрудников компании</h1>
           <ul>

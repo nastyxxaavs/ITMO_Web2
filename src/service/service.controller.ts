@@ -54,10 +54,13 @@ export class ServiceController {
 
   @Get('/all-services')
   @Render('general')
-  async findAll():Promise<{ customStyle: string; services: ServiceDto[]; content: string }> {
+  async findAll():Promise<{ customStyle: string; services: ServiceDto[]; content: string; alertMessage?: string }> {
     const services = await this.serviceService.findAll();
     if (!services) {
-      throw new NotFoundException(`Services are not found`);
+      return { services,
+        content: "all_services",
+        customStyle: '../styles/entities.css',
+        alertMessage: "Сервисы не найдены",};
     }
     return { services,
       content: "all_services",
@@ -69,7 +72,11 @@ export class ServiceController {
   async findOne(@Param('id') id: number){
     const service = await this.serviceService.findOne(id);
     if (!service) {
-      throw new NotFoundException(`Service with ID ${id} not found`);
+      return {
+        content: "service",
+        customStyle: '../styles/entity-info.css',
+        alertMessage: "Сервис не найден",
+      };
     }
     return {
       name: service.name,

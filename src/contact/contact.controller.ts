@@ -54,6 +54,7 @@ export class ContactController {
   async create(@Body(ValidationPipe) createContactDto: CreateContactDto, @Req() req) {
     const isAuthenticated = req.session.isAuthenticated;
     if (!isAuthenticated) {
+      this.contactService.notifyContactChange('Is not authenticated');
       return { statusCode: HttpStatus.UNAUTHORIZED, content: 'unauthorized' };
     }
     await this.contactService.create(createContactDto);
@@ -66,14 +67,22 @@ export class ContactController {
 
   @Get('/contacts')
   @Render('general')
-  async findAll():Promise<{ customStyle: string; contacts: ContactDto[]; content: string }> {
+  async findAll(): Promise<{ customStyle: string; contacts: ContactDto[]; content: string; alertMessage?: string }> {
     const contacts = await this.contactService.findAll();
+
     if (!contacts || contacts.length === 0) {
-      throw new NotFoundException(`Contacts are not found`);
+      return {
+        contacts,
+        content: "contacts",
+        customStyle: '../styles/entities.css',
+        alertMessage: "Контакты не найдены",
+      };
     }
-    return { contacts,
+    return {
+      contacts,
       content: "contacts",
-      customStyle: '../styles/entities.css',};
+      customStyle: '../styles/entities.css',
+    };
   }
 
   @Get('/contacts/:id')
@@ -85,7 +94,14 @@ export class ContactController {
 
     const contact = await this.contactService.findOne(id);
     if (!contact) {
-      throw new NotFoundException(`Contact with ID ${id} not found`);
+      return {
+        isAuthenticated,
+        user: isAuthenticated ? 'Anastasia' : null,
+        content: "contact",
+        titleContent: 'Контакт',
+        customStyle: '../styles/entity-info.css',
+        alertMessage: "Контакт не найден",
+      };
     }
     return {
       address: contact.address,
@@ -128,6 +144,7 @@ export class ContactController {
         statusCode: HttpStatus.OK,
       }
     }
+    this.contactService.notifyContactChange('Failed update');
       return {
         statusCode: HttpStatus.NOT_MODIFIED,
       }
@@ -158,6 +175,7 @@ export class ContactController {
         statusCode: HttpStatus.OK,
       }
     }
+    this.contactService.notifyContactChange('Failed delete');
     return { statusCode: HttpStatus.NOT_MODIFIED };
   }
 

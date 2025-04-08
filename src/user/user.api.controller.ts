@@ -17,11 +17,12 @@ import { UserService } from './user.service';
 import { UserDto } from './dto/user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { FirmService } from '../firm/firm.service';
 
 
 @Controller()
 export class UserApiController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService, private readonly firmService: FirmService) {}
 
   @Get('/api/users')
   async findAll(
@@ -66,6 +67,29 @@ export class UserApiController {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
     return user;
+  }
+
+
+  @Get('/api/users/:id/firm')
+  async findFirmForUser(@Param('id') id: number): Promise<{
+    contactId: number[] | undefined;
+    userIds: number[] | undefined;
+    name: string;
+    description: string;
+    id: number;
+    requestIds: number[] | undefined
+  }> {
+    const user = await this.userService.findOne(id);
+    if (! user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    const firmId = user.firmName;
+    const firm = await this.firmService.findOne(firmId);
+    if (!firm) {
+      throw new NotFoundException(`No firm associated with user ID ${id}`);
+    }
+    return firm;
   }
 
   @Post('/api/user-add')

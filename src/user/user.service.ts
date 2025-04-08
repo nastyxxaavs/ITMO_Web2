@@ -31,6 +31,9 @@ export class UserService {
 
   async findAll():Promise<UserDto[]> {
     const users = await this.userRepository.findAll();
+    if (!users){
+      throw new NotFoundException(`Users are not found`);
+    }
     return users.map(this.mapToDto);
   }
 
@@ -46,6 +49,9 @@ export class UserService {
 
   async findOne(id: number): Promise<UserDto | null> {
     const user = await this.userRepository.findOne(id);
+    if (!user){
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
     return user ? this.mapToDto(user) : null;
   }
 
@@ -82,6 +88,6 @@ export class UserService {
       await this.userRepository.remove(id);
       return true;
     }
-    return false;
+    throw new NotFoundException(`User with ID ${id} not found`);
   }
 }

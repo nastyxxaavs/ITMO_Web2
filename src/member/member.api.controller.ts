@@ -17,11 +17,12 @@ import { MemberService } from './member.service';
 import { TeamMemberDto } from './dto/member.dto';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
+import { FirmService } from '../firm/firm.service';
 
 
 @Controller()
 export class MemberApiController {
-  constructor(private readonly memberService: MemberService) {}
+  constructor(private readonly memberService: MemberService, private readonly firmService: FirmService) {}
 
   @Get('/api/members')
   async findAll(
@@ -67,6 +68,30 @@ export class MemberApiController {
     }
     return member;
   }
+
+
+  @Get('/api/members/:id/firm')
+  async findFirmForMember(@Param('id') id: number): Promise<{
+    contactId: number[] | undefined;
+    userIds: number[] | undefined;
+    name: string;
+    description: string;
+    id: number;
+    requestIds: number[] | undefined
+  }> {
+    const member = await this.memberService.findOne(id);
+    if (!member) {
+      throw new NotFoundException(`Member with ID ${id} not found`);
+    }
+
+    const firmName = member.firmName;
+    const firm = await this.firmService.findOneByName(firmName);
+    if (!firm) {
+      throw new NotFoundException(`No firm associated with member ID ${id}`);
+    }
+    return firm;
+  }
+
 
   @Post('/api/member-add')
   @HttpCode(HttpStatus.CREATED)

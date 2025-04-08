@@ -17,10 +17,12 @@ import { ContactService } from './contact.service';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
 import { ContactDto } from './dto/contact.dto';
+import { FirmDto } from '../firm/dto/firm.dto';
+import { FirmService } from '../firm/firm.service';
 
 @Controller()
 export class ContactApiController {
-  constructor(private readonly contactService: ContactService) {}
+  constructor(private readonly contactService: ContactService, private readonly firmService: FirmService) {}
 
   @Get('/api/contacts')
   async findAll(
@@ -65,6 +67,29 @@ export class ContactApiController {
       throw new NotFoundException(`Contact with ID ${id} not found`);
     }
     return contact;
+  }
+
+
+  @Get('/api/contacts/:id/firm')
+  async findFirmForContact(@Param('id') id: number): Promise<{
+    contactId: number[] | undefined;
+    userIds: number[] | undefined;
+    name: string;
+    description: string;
+    id: number;
+    requestIds: number[] | undefined
+  }> {
+    const contact = await this.contactService.findOne(id);
+    if (!contact) {
+      throw new NotFoundException(`Contact with ID ${id} not found`);
+    }
+
+    const firmId = contact.firmId;
+    const firm = await this.firmService.findOne(firmId);
+    if (!firm) {
+      throw new NotFoundException(`No firm associated with contact ID ${id}`);
+    }
+    return firm;
   }
 
   @Post('/api/contact-add')

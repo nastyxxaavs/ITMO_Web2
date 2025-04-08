@@ -33,7 +33,6 @@ export class MemberService {
       lastName: member.lastName,
       position: member.position,
       firmName: member.firm?.name,
-      //serviceNames: serviceNames,
       requestId: member.requests?.id,
     };
   }
@@ -62,6 +61,9 @@ export class MemberService {
   async findAll(): Promise<TeamMemberDto[]
   > {
     const members = await this.teamMemberRepository.findAll();
+    if (!members){
+      throw new NotFoundException(`Members are not found`);
+    }
     return members.map(this.mapToDto);
   }
 
@@ -76,6 +78,9 @@ export class MemberService {
 
   async findOne(id: number): Promise< TeamMemberDto| null> {
     const member = await this.teamMemberRepository.findOne(id);
+    if (!member){
+      throw new NotFoundException(`Member with ID ${id} not found`);
+    }
     return member ? this?.mapToDto(member) : null;
   }
 
@@ -97,7 +102,7 @@ export class MemberService {
       });
       return true;
     }
-    return false;
+    throw new NotFoundException(`Member with ID ${id} not found`);
   }
 
   async apiUpdate(id: number, updateMemberDto: UpdateMemberDto): Promise<TeamMemberDto | null> {
@@ -127,6 +132,6 @@ export class MemberService {
       await this.teamMemberRepository.remove(id);
       return true;
     }
-    return false;
+    throw new NotFoundException(`Member with ID ${id} not found`);
   }
 }

@@ -53,12 +53,18 @@ export class MemberController {
 
   @Get('/members')
   @Render('general')
-  async findAll(): Promise<{ customStyle: string; members: TeamMemberDto[]; content: string }> {
+  async findAll(): Promise<{ customStyle: string; members: TeamMemberDto[]; content: string; alertMessage?: string }> {
     const members = await this.memberService.findAll();
     if (!members) {
-      throw new NotFoundException(`Members are not found`);
+      return  {
+        members,
+        content: "members",
+        customStyle: '../styles/entities.css',
+        alertMessage: "Сотрудники не найдены",
+      };
     }
-    return  { members,
+    return  {
+      members,
       content: "members",
       customStyle: '../styles/entities.css',};
   }
@@ -68,7 +74,11 @@ export class MemberController {
   async findOne(@Param('id') id: number){
     const member = await this.memberService.findOne(id);
     if (!member) {
-      throw new NotFoundException(`Member with ID ${id} not found`);
+      return {
+        content: "member",
+        customStyle: '../styles/entity-info.css',
+        alertMessage: "Сотрудник не найден",
+      };
     }
 
     return {

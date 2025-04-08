@@ -50,6 +50,7 @@ export class FirmController {
   @Get('/firms')
   @Render('general')
   async findAll(): Promise<{
+    alertMessage?: string;
     customStyle: string;
     firms: {
       contactId: number[] | undefined;
@@ -63,7 +64,12 @@ export class FirmController {
   }> {
     const firms = await this.firmService.findAll();
     if (!firms || firms.length === 0) {
-      throw new NotFoundException(`Firms are not found`);
+      return {
+        firms,
+        content: "firms",
+        customStyle: '../styles/entities.css',
+        alertMessage: "Фирмы не найдены",
+      };
     }
     return {
       firms,
@@ -82,7 +88,14 @@ export class FirmController {
 
     const firm = await this.firmService.findOne(id);
     if (!firm) {
-      throw new NotFoundException(`Firm with ID ${id} not found`);
+      return{
+        isAuthenticated,
+        user: isAuthenticated ? 'Anastasia' : null,
+        titleContent: 'Фирма',
+        content: "firm",
+        customStyle: '../styles/entity-info.css',
+        alertMessage: "Фирма не найдена",
+      }
     }
     return {
       name: firm.name,

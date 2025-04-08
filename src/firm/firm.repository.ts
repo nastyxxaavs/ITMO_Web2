@@ -24,7 +24,10 @@ export class FirmRepository {
     return await this.repo.find({ relations: ['contacts'] });
   }
 
-  async findAllWithPagination(skip: number, take: number): Promise<[Firm[], number]> {
+  async findAllWithPagination(
+    skip: number,
+    take: number,
+  ): Promise<[Firm[], number]> {
     return this.repo.findAndCount({
       skip,
       take,
@@ -32,11 +35,11 @@ export class FirmRepository {
     });
   }
 
-  async findOne(id: number): Promise<Firm | null> {
+  async findOne(id: number | undefined): Promise<Firm | null> {
     return await this.repo.findOne({ where: { id }, relations: ['contacts'] });
   }
 
-  async findOneByName(name: string): Promise<Firm | null> {
+  async findOneByName(name: string | undefined): Promise<Firm | null> {
     return await this.repo.findOne({
       where: { name },
       relations: ['contacts'],

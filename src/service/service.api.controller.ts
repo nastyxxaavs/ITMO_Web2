@@ -17,11 +17,12 @@ import { ServiceService } from './service.service';
 import { ServiceDto } from './dto/service.dto';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
+import { FirmService } from '../firm/firm.service';
 
 
 @Controller()
 export class ServiceApiController {
-  constructor(private readonly serviceService: ServiceService) {}
+  constructor(private readonly serviceService: ServiceService, private readonly firmService: FirmService) {}
 
   @Get('/api/services')
   async findAll(
@@ -67,6 +68,28 @@ export class ServiceApiController {
       throw new NotFoundException(`Service with ID ${id} not found`);
     }
     return service;
+  }
+
+  @Get('/api/services/:id/firm')
+  async findFirmForService(@Param('id') id: number): Promise<{
+    contactId: number[] | undefined;
+    userIds: number[] | undefined;
+    name: string;
+    description: string;
+    id: number;
+    requestIds: number[] | undefined
+  }> {
+    const service = await this.serviceService.findOne(id);
+    if (!service) {
+      throw new NotFoundException(`Service with ID ${id} not found`);
+    }
+
+    const firmId = service.firmId;
+    const firm = await this.firmService.findOne(firmId);
+    if (!firm) {
+      throw new NotFoundException(`No firm associated with service ID ${id}`);
+    }
+    return firm;
   }
 
   @Post('/api/service-add')

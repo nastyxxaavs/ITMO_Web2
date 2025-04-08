@@ -37,9 +37,9 @@ export class FirmApiController {
       name: string;
       description: string;
       id: number;
-      requestIds: number[] | undefined
+      requestIds: number[] | undefined;
     }[];
-    page: number
+    page: number;
   }> {
     const skip = (page - 1) * limit;
     const [firms, total] = await this.firmService.findAllWithPagination(
@@ -52,8 +52,12 @@ export class FirmApiController {
     }
 
     const totalPages = Math.ceil(total / limit);
-    const prevPage = page > 1 ? `${host}/api/firms?page=${page - 1}&limit=${limit}` : null;
-    const nextPage = page < totalPages ? `${host}/api/firms?page=${page + 1}&limit=${limit}` : null;
+    const prevPage =
+      page > 1 ? `${host}/api/firms?page=${page - 1}&limit=${limit}` : null;
+    const nextPage =
+      page < totalPages
+        ? `${host}/api/firms?page=${page + 1}&limit=${limit}`
+        : null;
 
     const linkHeader: string[] = [];
     if (prevPage) {
@@ -62,8 +66,6 @@ export class FirmApiController {
     if (nextPage) {
       linkHeader.push(`<${nextPage}>; rel="next"`);
     }
-
-
 
     return {
       firms,
@@ -80,7 +82,7 @@ export class FirmApiController {
     name: string;
     description: string;
     id: number;
-    requestIds: number[] | undefined
+    requestIds: number[] | undefined;
   }> {
     const firm = await this.firmService.findOne(id);
     if (!firm) {
@@ -101,7 +103,6 @@ export class FirmApiController {
     }
   }
 
-
   @Patch('/api/firm-edit/:id')
   async update(
     @Param('id') id: number,
@@ -112,18 +113,14 @@ export class FirmApiController {
     name: string;
     description: string;
     id: number;
-    requestIds: number[] | undefined
+    requestIds: number[] | undefined;
   }> {
-    const updatedFirm = await this.firmService.apiUpdate(
-      id,
-      updateFirmDto,
-    );
+    const updatedFirm = await this.firmService.apiUpdate(id, updateFirmDto);
     if (!updatedFirm) {
       throw new NotFoundException(`Firm with ID ${id} not found`);
     }
     return updatedFirm;
   }
-
 
   @Delete('/api/contact-delete/:id')
   @HttpCode(HttpStatus.NO_CONTENT)

@@ -1,5 +1,10 @@
 <main>
   <div class="entities">
+    {{#if alertMessage}}
+      <script>
+        alert("{{alertMessage}}");
+      </script>
+    {{/if}}
     {{#if firms.length}}
       <h1> Список компаний </h1>
       <ul>

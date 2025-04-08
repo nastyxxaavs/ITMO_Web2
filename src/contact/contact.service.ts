@@ -59,6 +59,9 @@ export class ContactService {
 
   async findAll(): Promise<ContactDto[]> {
     const contacts = await this.contactRepository.findAll();
+    if (!contacts || contacts.length === 0) {
+      throw new NotFoundException('No contacts found');
+    }
     return contacts.map(this.mapToDto);
   }
 
@@ -73,6 +76,9 @@ export class ContactService {
 
   async findOne(id: number): Promise<ContactDto | null> {
     const contact = await this.contactRepository.findOne(id);
+    if (!contact) {
+      throw new NotFoundException(`Contact with ID ${id} not found`);
+    }
     return contact ? this.mapToDto(contact) : null;
   }
 
@@ -97,7 +103,7 @@ export class ContactService {
       });
       return true;
     }
-    return false;
+    throw new NotFoundException(`Contact with ID ${id} not found`);
   }
 
   async apiUpdate(
@@ -131,6 +137,6 @@ export class ContactService {
       await this.contactRepository.remove(id);
       return true;
     }
-    return false;
+    throw new NotFoundException(`Contact with ID ${id} not found`);
   }
 }

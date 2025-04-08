@@ -1,5 +1,10 @@
 <main>
   <div class="entity-info">
+    {{#if alertMessage}}
+      <script>
+        alert("{{alertMessage}}");
+      </script>
+    {{/if}}
     <p>{{name}}</p>
     <p>{{description}}</p>
     <p>{{category}}</p>
