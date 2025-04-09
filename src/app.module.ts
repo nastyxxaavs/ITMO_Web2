@@ -15,6 +15,8 @@ import { UserModule } from './user/user.module';
 import { FormModule } from './form/form.module';
 import { APP_FILTER } from '@nestjs/core';
 import { ExceptionFilterImpl } from './exceptionFilter';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 
 @Module({
   imports: [
@@ -27,6 +29,11 @@ import { ExceptionFilterImpl } from './exceptionFilter';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useClass: DatabaseConfigService,
+    }),
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: true,
+      sortSchema: true, // Сортировка схемы по имени
     }),
     FirmModule,
     ContactModule,

@@ -14,11 +14,12 @@ import { Firm } from '../firm/entities/firm.entity';
 import { RequestsApiController } from './requests.api.controller';
 import { FirmModule } from '../firm/firm.module';
 import { FirmService } from '../firm/firm.service';
+import { RequestsResolver } from './requests.resolver';
 
 @Module({
   imports: [TypeOrmModule.forFeature([ClientRequestEntity, ClientRequestEntityRepository, TeamMember, Service, Firm]), forwardRef(() =>MemberModule), forwardRef(() =>ServiceModule), FirmModule],
   controllers: [RequestsController, RequestsApiController],
-  providers: [RequestsService, ClientRequestEntityRepository, TeamMemberRepository, ServiceRepository, FirmService],
+  providers: [RequestsService, ClientRequestEntityRepository, TeamMemberRepository, ServiceRepository, FirmService, RequestsResolver],
   exports: [RequestsService, ClientRequestEntityRepository],
 })
 export class RequestsModule {}

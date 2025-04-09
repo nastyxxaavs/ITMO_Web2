@@ -14,6 +14,7 @@ import { TeamMember } from '../member/entities/member.entity';
 import { Contact } from '../contact/entities/contact.entity';
 import { Service } from '../service/entities/service.entity';
 import { FirmApiController } from './firm.api.controller';
+import { FirmResolver } from './firm.resolver';
 
 
 @Module({
@@ -21,7 +22,8 @@ import { FirmApiController } from './firm.api.controller';
   controllers: [FirmController, FirmApiController],
   providers: [FirmService, FirmRepository, TeamMemberRepository,
     ContactRepository,
-    ServiceRepository,],
+    ServiceRepository,
+    FirmResolver,],
   exports: [FirmService, FirmRepository],
 })
 export class FirmModule {}

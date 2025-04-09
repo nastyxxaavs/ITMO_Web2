@@ -1,0 +1,24 @@
+import { InputType, Field } from '@nestjs/graphql';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { Position } from '../entities/member.entity';
+
+@InputType()
+export class CreateMemberInput {
+  @Field()
+  @IsString()
+  @IsNotEmpty()
+  firstName: string;
+
+  @Field()
+  @IsString()
+  @IsNotEmpty()
+  lastName: string;
+
+  @Field(type => Position)
+  @IsEnum(Position)
+  position: Position;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  firmName?: string;
+}

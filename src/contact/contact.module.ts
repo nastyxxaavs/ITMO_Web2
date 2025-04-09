@@ -8,11 +8,12 @@ import { FirmRepository } from '../firm/firm.repository';
 import { FirmModule } from '../firm/firm.module';
 import { Firm } from '../firm/entities/firm.entity';
 import { ContactApiController } from './contact.api.controller';
+import { ContactResolver } from './contact.resolver';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Contact, Firm]), forwardRef(() =>FirmModule)],
   controllers: [ContactController, ContactApiController],
-  providers: [ContactService, ContactRepository, FirmRepository],
+  providers: [ContactService, ContactRepository, FirmRepository, ContactResolver],
   exports: [ContactService, ContactRepository],
 })
 export class ContactModule {}

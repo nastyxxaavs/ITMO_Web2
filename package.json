@@ -24,9 +24,12 @@
     "typeorm": "typeorm-ts-node-commonjs"
   },
   "dependencies": {
+    "@apollo/server": "^4.12.0",
+    "@nestjs/apollo": "^13.0.4",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.0",
     "@nestjs/core": "^11.0.12",
+    "@nestjs/graphql": "^13.0.4",
     "@nestjs/mapped-types": "^2.1.0",
     "@nestjs/platform-express": "^11.0.12",
     "@nestjs/serve-static": "^5.0.3",
@@ -38,6 +41,7 @@
     "express": "^5.0.1",
     "express-handlebars": "^8.0.1",
     "express-session": "^1.18.1",
+    "graphql": "^16.10.0",
     "handlebars": "^4.7.8",
     "hbs": "^4.2.0",
     "pg": "^8.14.1",

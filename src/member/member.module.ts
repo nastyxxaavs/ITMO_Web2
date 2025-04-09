@@ -11,11 +11,12 @@ import { ServiceModule } from '../service/service.module';
 import { Firm } from '../firm/entities/firm.entity';
 import { Service } from '../service/entities/service.entity';
 import { MemberApiController } from './member.api.controller';
+import { MemberResolver } from './member.resolver';
 
 @Module({
   imports: [TypeOrmModule.forFeature([TeamMember, TeamMemberRepository, Firm, Service]), forwardRef(() =>FirmModule), forwardRef(() =>ServiceModule)],
   controllers: [MemberController, MemberApiController],
-  providers: [MemberService, TeamMemberRepository, FirmRepository, ServiceRepository],
+  providers: [MemberService, TeamMemberRepository, FirmRepository, ServiceRepository, MemberResolver],
   exports: [MemberService, TeamMemberRepository],
 })
 export class MemberModule {}
