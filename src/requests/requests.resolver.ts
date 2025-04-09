@@ -1,4 +1,126 @@
-import { Resolver } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { RequestsService } from './requests.service';
+import { ClientRequestDto } from './dto/request.dto';
+import { CreateRequestDto } from './dto/create-request.dto';
+import { UpdateRequestDto } from './dto/update-request.dto';
+import { FirmService } from '../firm/firm.service';
+import { FirmDto } from '../firm/dto/firm.dto';
+import { NotFoundException } from '@nestjs/common';
+import { ClientRequestEntity, Status } from './entities/request.entity';
 
-@Resolver()
-export class RequestsResolver {}
+@Resolver(() => ClientRequestDto)
+export class RequestsResolver {
+  constructor(
+    private readonly requestsService: RequestsService,
+    private readonly firmService: FirmService,
+  ) {}
+
+
+  @Query(() => [ClientRequestDto], { name: 'getRequests' })
+  async getRequests(
+    @Args('page', { type: () => Int, defaultValue: 1 }) page: number,
+    @Args('limit', { type: () => Int, defaultValue: 3 }) limit: number,
+  ): Promise<{
+    firmId: number | undefined;
+    contactInfo: string;
+    clientName: string;
+    requestDate: Date;
+    id: number;
+    userId: number | undefined;
+    teamMemberName: string | undefined;
+    serviceRequested: string | undefined;
+    status: Status
+  }[]> {
+    const skip = (page - 1) * limit;
+    const [requests, total] = await this.requestsService.findAllWithPagination(skip, limit);
+
+    if (!requests || total === 0) {
+      throw new NotFoundException('No requests found');
+    }
+    return requests;
+  }
+
+
+  @Query(() => ClientRequestDto, { name: 'getRequest' })
+  async getRequest(@Args('id', { type: () => Int }) id: number): Promise<{
+    firmId: number | undefined;
+    contactInfo: string;
+    clientName: string;
+    requestDate: Date;
+    id: number;
+    userId: number | undefined;
+    teamMemberName: string | undefined;
+    serviceRequested: string | undefined;
+    status: Status
+  }> {
+    const request = await this.requestsService.findOne(id);
+    if (!request) {
+      throw new NotFoundException(`Request with ID ${id} not found`);
+    }
+    return request;
+  }
+
+
+  @Query(() => FirmDto, { name: 'getRequestFirm' })
+  async getRequestFirm(@Args('id', { type: () => Int }) id: number): Promise<{
+    contactId: number[] | undefined;
+    userIds: number[] | undefined;
+    name: string;
+    description: string;
+    id: number;
+    requestIds: number[] | undefined
+  }> {
+    const request = await this.requestsService.findOne(id);
+    if (!request) {
+      throw new NotFoundException(`Request with ID ${id} not found`);
+    }
+
+    const firm = await this.firmService.findOne(request.firmId);
+    if (!firm) {
+      throw new NotFoundException(`No firm associated with request ID ${id}`);
+    }
+
+    return firm;
+  }
+
+
+  @Mutation(() => ClientRequestDto)
+  async createRequest(
+    @Args('createRequestInput') createRequestInput: CreateRequestDto,
+  ): Promise<ClientRequestDto> {
+    return this.requestsService.create(createRequestInput);
+  }
+
+
+  @Mutation(() => ClientRequestDto)
+  async updateRequest(
+    @Args('id', { type: () => Int }) id: number,
+    @Args('updateRequestInput') updateRequestInput: UpdateRequestDto,
+  ): Promise<{
+    firmId: number | undefined;
+    contactInfo: string;
+    clientName: string;
+    requestDate: Date;
+    id: number;
+    userId: number | undefined;
+    teamMemberName: string | undefined;
+    serviceRequested: string | undefined;
+    status: Status
+  }> {
+    const updatedRequest = await this.requestsService.apiUpdate(id, updateRequestInput);
+    if (!updatedRequest) {
+      throw new NotFoundException(`Request with ID ${id} not found`);
+    }
+    return updatedRequest;
+  }
+
+
+  @Mutation(() => Boolean)
+  async removeRequest(@Args('id', { type: () => Int }) id: number): Promise<boolean> {
+    const removed = await this.requestsService.remove(id);
+    if (!removed) {
+      throw new NotFoundException(`Request with ID ${id} not found`);
+    }
+    return true;
+  }
+}
