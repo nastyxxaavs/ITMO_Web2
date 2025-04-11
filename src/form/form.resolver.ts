@@ -3,23 +3,27 @@ import { FormService } from './form.service';
 import { SubmissionDto } from './dto/form.dto';
 import { CreateSubmissionDto } from './dto/create-form.dto';
 import { UpdateFormDto } from './dto/update-form.dto';
+import { Submission } from './dto/form_gql.output';
+import { PaginatedContacts } from '../contact/dto/paginated-contact_gql.output';
+import { Contact } from '../contact/dto/contact_gql.output';
+import { PaginatedForms } from './dto/paginated-form_gql.output';
 
-@Resolver(() => SubmissionDto)
+@Resolver(() => Submission)
 export class FormResolver {
   constructor(private readonly formService: FormService) {}
 
 
-  @Query(() => [SubmissionDto], { name: 'getForms' })
+  @Query(() => PaginatedForms, { name: 'getForms' })
   async getForms(
     @Args('page', { type: () => Int, defaultValue: 1 }) page: number,
     @Args('limit', { type: () => Int, defaultValue: 3 }) limit: number,
-  ): Promise<[SubmissionDto[], number]> {
+  ): Promise<[Submission[], number]> {
     return this.formService.findAllWithPagination(page, limit);
   }
 
 
-  @Query(() => SubmissionDto, { name: 'getForm' })
-  async getForm(@Args('id', { type: () => Int }) id: number): Promise<SubmissionDto> {
+  @Query(() => Submission, { name: 'getForm' })
+  async getForm(@Args('id', { type: () => Int }) id: number): Promise<Submission> {
     const form = await this.formService.findOne(id);
     if (!form) {
       throw new Error(`Form with ID ${id} not found`);
@@ -28,19 +32,19 @@ export class FormResolver {
   }
 
 
-  @Mutation(() => SubmissionDto)
+  @Mutation(() => Submission)
   async createForm(
     @Args('createSubmissionInput') createSubmissionInput: CreateSubmissionDto,
-  ): Promise<SubmissionDto> {
+  ): Promise<Submission> {
     return this.formService.create(createSubmissionInput);
   }
 
 
-  @Mutation(() => SubmissionDto)
+  @Mutation(() => Submission)
   async updateForm(
     @Args('id', { type: () => Int }) id: number,
     @Args('updateSubmissionInput') updateSubmissionInput: UpdateFormDto,
-  ): Promise<SubmissionDto> {
+  ): Promise<Submission> {
     const updatedForm = await this.formService.apiUpdate(id, updateSubmissionInput);
     if (!updatedForm) {
       throw new Error(`Form with ID ${id} not found`);

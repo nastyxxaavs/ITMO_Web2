@@ -5,8 +5,11 @@ import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
 import { FirmService } from '../firm/firm.service';
 import { FirmDto } from '../firm/dto/firm.dto';
+import { TeamMember } from './dto/member_gql.output';
+import { PaginatedMembers } from './dto/paginated-member_gql.output';
+import { Firm } from '../firm/dto/firm_gql.output';
 
-@Resolver(() => TeamMemberDto)
+@Resolver(() => TeamMember)
 export class MemberResolver {
   constructor(
     private readonly memberService: MemberService,
@@ -14,17 +17,17 @@ export class MemberResolver {
   ) {}
 
 
-  @Query(() => [TeamMemberDto], { name: 'getMembers' })
+  @Query(() => PaginatedMembers, { name: 'getMembers' })
   async getMembers(
     @Args('page', { type: () => Int, defaultValue: 1 }) page: number,
     @Args('limit', { type: () => Int, defaultValue: 3 }) limit: number,
-  ): Promise<[TeamMemberDto[], number]> {
+  ): Promise<[TeamMember[], number]> {
     return this.memberService.findAllWithPagination(page, limit);
   }
 
 
-  @Query(() => TeamMemberDto, { name: 'getMember' })
-  async getMember(@Args('id', { type: () => Int }) id: number): Promise<TeamMemberDto> {
+  @Query(() => TeamMember, { name: 'getMember' })
+  async getMember(@Args('id', { type: () => Int }) id: number): Promise<TeamMember> {
     const member = await this.memberService.findOne(id);
     if (!member) {
       throw new Error(`Member with ID ${id} not found`);
@@ -33,15 +36,8 @@ export class MemberResolver {
   }
 
 
-  @Query(() => FirmDto, { name: 'getMemberFirm' })
-  async getMemberFirm(@Args('id', { type: () => Int }) id: number): Promise<{
-    contactId: number[] | undefined;
-    userIds: number[] | undefined;
-    name: string;
-    description: string;
-    id: number;
-    requestIds: number[] | undefined
-  }> {
+  @Query(() => Firm, { name: 'getMemberFirm' })
+  async getMemberFirm(@Args('id', { type: () => Int }) id: number) {
     const member = await this.memberService.findOne(id);
     if (!member) {
       throw new Error(`Member with ID ${id} not found`);
@@ -56,19 +52,19 @@ export class MemberResolver {
   }
 
 
-  @Mutation(() => TeamMemberDto)
+  @Mutation(() => TeamMember)
   async createMember(
     @Args('createMemberInput') createMemberInput: CreateMemberDto,
-  ): Promise<TeamMemberDto> {
+  ): Promise<TeamMember> {
     return this.memberService.create(createMemberInput);
   }
 
 
-  @Mutation(() => TeamMemberDto)
+  @Mutation(() => TeamMember)
   async updateMember(
     @Args('id', { type: () => Int }) id: number,
     @Args('updateMemberInput') updateMemberInput: UpdateMemberDto,
-  ): Promise<TeamMemberDto> {
+  ): Promise<TeamMember> {
     const updatedMember = await this.memberService.apiUpdate(id, updateMemberInput);
     if (!updatedMember) {
       throw new Error(`Member with ID ${id} not found`);

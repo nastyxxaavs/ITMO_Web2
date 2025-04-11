@@ -3,19 +3,16 @@ import { ContactService } from './contact.service';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
 import { ContactDto } from './dto/contact.dto';
+import { PaginatedContacts } from './dto/paginated-contact_gql.output';
+import { Contact } from './dto/contact_gql.output';
 
-@Resolver(() => ContactDto)
+@Resolver(() => Contact)
 export class ContactResolver {
   constructor(private readonly contactService: ContactService) {}
 
-  @Query(() => [ContactDto], { name: 'getContacts' })
-  async getContacts(): Promise<ContactDto[]> {
-    return this.contactService.findAll();
-  }
 
-
-  @Query(() => ContactDto, { name: 'getContact' })
-  async getContact(@Args('id', { type: () => Int }) id: number): Promise<ContactDto> {
+  @Query(() => Contact, { name: 'getContact' })
+  async getContact(@Args('id', { type: () => Int }) id: number): Promise<Contact> {
     const contact = await this.contactService.findOne(id);
     if (!contact) {
       throw new Error('Contact not found');
@@ -24,19 +21,44 @@ export class ContactResolver {
   }
 
 
-  @Mutation(() => ContactDto)
+  @Query(() => PaginatedContacts, { name: 'getContacts' })
+  async getContacts(
+    @Args('page', { type: () => Int, defaultValue: 1 }) page: number,
+    @Args('limit', { type: () => Int, defaultValue: 3 }) limit: number,
+  ): Promise<{ total: number; links: string | null; page: number; contacts: Contact[] }> {
+    const skip = (page - 1) * limit;
+    const [contacts, total] = await this.contactService.findAllWithPagination(skip, limit);
+
+    const totalPages = Math.ceil(total / limit);
+    const prevPage = page > 1 ? `?page=${page - 1}&limit=${limit}` : null;
+    const nextPage = page < totalPages ? `?page=${page + 1}&limit=${limit}` : null;
+
+    const links: string[] = [];
+    if (prevPage) links.push(`<${prevPage}>; rel="prev"`);
+    if (nextPage) links.push(`<${nextPage}>; rel="next"`);
+
+    return {
+      contacts,
+      total,
+      page,
+      links: links.length ? links.join(', ') : null,
+    };
+  }
+
+
+  @Mutation(() => Contact)
   async createContact(
     @Args('createContactInput') createContactInput: CreateContactDto,
-  ): Promise<ContactDto> {
+  ): Promise<Contact> {
     return this.contactService.create(createContactInput);
   }
 
 
-  @Mutation(() => ContactDto)
+  @Mutation(() => Contact)
   async updateContact(
     @Args('id', { type: () => Int }) id: number,
     @Args('updateContactInput') updateContactInput: UpdateContactDto,
-  ): Promise<ContactDto> {
+  ): Promise<Contact> {
     const updatedContact = await this.contactService.apiUpdate(id, updateContactInput);
     if (!updatedContact) {
       throw new Error('Failed to update contact');

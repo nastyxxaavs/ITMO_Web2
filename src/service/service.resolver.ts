@@ -6,8 +6,11 @@ import { UpdateServiceDto } from './dto/update-service.dto';
 import { FirmService } from '../firm/firm.service';
 import { FirmDto } from '../firm/dto/firm.dto';
 import { NotFoundException } from '@nestjs/common';
+import { Service } from './dto/service_gql.output';
+import { PaginatedServices } from './dto/paginatec-service_gql.output';
+import { Firm } from '../firm/dto/firm_gql.output';
 
-@Resolver(() => ServiceDto)
+@Resolver(() => Service)
 export class ServiceResolver {
   constructor(
     private readonly serviceService: ServiceService,
@@ -15,11 +18,11 @@ export class ServiceResolver {
   ) {}
 
 
-  @Query(() => [ServiceDto], { name: 'getServices' })
+  @Query(() => PaginatedServices, { name: 'getServices' })
   async getServices(
     @Args('page', { type: () => Int, defaultValue: 1 }) page: number,
     @Args('limit', { type: () => Int, defaultValue: 3 }) limit: number,
-  ): Promise<ServiceDto[]> {
+  ): Promise<Service[]> {
     const skip = (page - 1) * limit;
     const [services, total] = await this.serviceService.findAllWithPagination(skip, limit);
 
@@ -30,8 +33,8 @@ export class ServiceResolver {
   }
 
 
-  @Query(() => ServiceDto, { name: 'getService' })
-  async getService(@Args('id', { type: () => Int }) id: number): Promise<ServiceDto> {
+  @Query(() => Service, { name: 'getService' })
+  async getService(@Args('id', { type: () => Int }) id: number): Promise<Service> {
     const service = await this.serviceService.findOne(id);
     if (!service) {
       throw new NotFoundException(`Service with ID ${id} not found`);
@@ -40,15 +43,8 @@ export class ServiceResolver {
   }
 
 
-  @Query(() => FirmDto, { name: 'getServiceFirm' })
-  async getServiceFirm(@Args('id', { type: () => Int }) id: number): Promise<{
-    contactId: number[] | undefined;
-    userIds: number[] | undefined;
-    name: string;
-    description: string;
-    id: number;
-    requestIds: number[] | undefined
-  }> {
+  @Query(() => Firm, { name: 'getServiceFirm' })
+  async getServiceFirm(@Args('id', { type: () => Int }) id: number) {
     const service = await this.serviceService.findOne(id);
     if (!service) {
       throw new NotFoundException(`Service with ID ${id} not found`);
@@ -63,19 +59,19 @@ export class ServiceResolver {
   }
 
 
-  @Mutation(() => ServiceDto)
+  @Mutation(() => Service)
   async createService(
     @Args('createServiceInput') createServiceInput: CreateServiceDto,
-  ): Promise<ServiceDto> {
+  ): Promise<Service> {
     return this.serviceService.create(createServiceInput);
   }
 
 
-  @Mutation(() => ServiceDto)
+  @Mutation(() => Service)
   async updateService(
     @Args('id', { type: () => Int }) id: number,
     @Args('updateServiceInput') updateServiceInput: UpdateServiceDto,
-  ): Promise<ServiceDto> {
+  ): Promise<Service> {
     const updatedService = await this.serviceService.apiUpdate(id, updateServiceInput);
     if (!updatedService) {
       throw new NotFoundException(`Service with ID ${id} not found`);

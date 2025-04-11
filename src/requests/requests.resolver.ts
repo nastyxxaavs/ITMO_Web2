@@ -7,8 +7,11 @@ import { FirmService } from '../firm/firm.service';
 import { FirmDto } from '../firm/dto/firm.dto';
 import { NotFoundException } from '@nestjs/common';
 import { ClientRequestEntity, Status } from './entities/request.entity';
+import { ClientRequest } from './dto/request_gql.output';
+import { PaginatedRequests } from './dto/paginated-requests_gql.output';
+import { Firm } from '../firm/dto/firm_gql.output';
 
-@Resolver(() => ClientRequestDto)
+@Resolver(() => ClientRequest)
 export class RequestsResolver {
   constructor(
     private readonly requestsService: RequestsService,
@@ -16,21 +19,11 @@ export class RequestsResolver {
   ) {}
 
 
-  @Query(() => [ClientRequestDto], { name: 'getRequests' })
+  @Query(() => PaginatedRequests, { name: 'getRequests' })
   async getRequests(
     @Args('page', { type: () => Int, defaultValue: 1 }) page: number,
     @Args('limit', { type: () => Int, defaultValue: 3 }) limit: number,
-  ): Promise<{
-    firmId: number | undefined;
-    contactInfo: string;
-    clientName: string;
-    requestDate: Date;
-    id: number;
-    userId: number | undefined;
-    teamMemberName: string | undefined;
-    serviceRequested: string | undefined;
-    status: Status
-  }[]> {
+  ) {
     const skip = (page - 1) * limit;
     const [requests, total] = await this.requestsService.findAllWithPagination(skip, limit);
 
@@ -41,18 +34,8 @@ export class RequestsResolver {
   }
 
 
-  @Query(() => ClientRequestDto, { name: 'getRequest' })
-  async getRequest(@Args('id', { type: () => Int }) id: number): Promise<{
-    firmId: number | undefined;
-    contactInfo: string;
-    clientName: string;
-    requestDate: Date;
-    id: number;
-    userId: number | undefined;
-    teamMemberName: string | undefined;
-    serviceRequested: string | undefined;
-    status: Status
-  }> {
+  @Query(() => ClientRequest, { name: 'getRequest' })
+  async getRequest(@Args('id', { type: () => Int }) id: number){
     const request = await this.requestsService.findOne(id);
     if (!request) {
       throw new NotFoundException(`Request with ID ${id} not found`);
@@ -61,15 +44,8 @@ export class RequestsResolver {
   }
 
 
-  @Query(() => FirmDto, { name: 'getRequestFirm' })
-  async getRequestFirm(@Args('id', { type: () => Int }) id: number): Promise<{
-    contactId: number[] | undefined;
-    userIds: number[] | undefined;
-    name: string;
-    description: string;
-    id: number;
-    requestIds: number[] | undefined
-  }> {
+  @Query(() => Firm, { name: 'getRequestFirm' })
+  async getRequestFirm(@Args('id', { type: () => Int }) id: number) {
     const request = await this.requestsService.findOne(id);
     if (!request) {
       throw new NotFoundException(`Request with ID ${id} not found`);
@@ -84,29 +60,19 @@ export class RequestsResolver {
   }
 
 
-  @Mutation(() => ClientRequestDto)
+  @Mutation(() => ClientRequest)
   async createRequest(
     @Args('createRequestInput') createRequestInput: CreateRequestDto,
-  ): Promise<ClientRequestDto> {
+  ): Promise<ClientRequestEntity> {
     return this.requestsService.create(createRequestInput);
   }
 
 
-  @Mutation(() => ClientRequestDto)
+  @Mutation(() => ClientRequest)
   async updateRequest(
     @Args('id', { type: () => Int }) id: number,
     @Args('updateRequestInput') updateRequestInput: UpdateRequestDto,
-  ): Promise<{
-    firmId: number | undefined;
-    contactInfo: string;
-    clientName: string;
-    requestDate: Date;
-    id: number;
-    userId: number | undefined;
-    teamMemberName: string | undefined;
-    serviceRequested: string | undefined;
-    status: Status
-  }> {
+  ) {
     const updatedRequest = await this.requestsService.apiUpdate(id, updateRequestInput);
     if (!updatedRequest) {
       throw new NotFoundException(`Request with ID ${id} not found`);
