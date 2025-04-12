@@ -1,13 +1,12 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent } from '@nestjs/graphql';
 import { MemberService } from './member.service';
-import { TeamMemberDto } from './dto/member.dto';
-import { CreateMemberDto } from './dto/create-member.dto';
-import { UpdateMemberDto } from './dto/update-member.dto';
 import { FirmService } from '../firm/firm.service';
-import { FirmDto } from '../firm/dto/firm.dto';
 import { TeamMember } from './dto/member_gql.output';
 import { PaginatedMembers } from './dto/paginated-member_gql.output';
 import { Firm } from '../firm/dto/firm_gql.output';
+import { UpdateMemberInput } from './dto/update-member_gql.input';
+import { CreateMemberInput } from './dto/create-member_gql.input';
+import { Contact } from '../contact/dto/contact_gql.output';
 
 @Resolver(() => TeamMember)
 export class MemberResolver {
@@ -51,11 +50,26 @@ export class MemberResolver {
     return firm;
   }
 
+  @ResolveField(() => Firm, { name: 'firm', nullable: true })
+  async getFirm(@Parent() member: TeamMember): Promise<{
+    contactId: number[] | undefined;
+    userIds: number[] | undefined;
+    name: string;
+    description: string;
+    id: number;
+    requestIds: number[] | undefined
+  } | null> {
+    if (!member.firmName) return null;
+
+    const firm = await this.firmService.findOneByName(member.firmName);
+    return firm || null;
+  }
+
 
   @Mutation(() => TeamMember)
   async createMember(
-    @Args('createMemberInput') createMemberInput: CreateMemberDto,
-  ): Promise<TeamMember> {
+    @Args('createMemberInput') createMemberInput: CreateMemberInput,
+  ) {
     return this.memberService.create(createMemberInput);
   }
 
@@ -63,7 +77,7 @@ export class MemberResolver {
   @Mutation(() => TeamMember)
   async updateMember(
     @Args('id', { type: () => Int }) id: number,
-    @Args('updateMemberInput') updateMemberInput: UpdateMemberDto,
+    @Args('updateMemberInput') updateMemberInput: UpdateMemberInput,
   ): Promise<TeamMember> {
     const updatedMember = await this.memberService.apiUpdate(id, updateMemberInput);
     if (!updatedMember) {
@@ -81,4 +95,21 @@ export class MemberResolver {
     }
     return true;
   }
+
+  @Mutation(() => TeamMember)
+  async assignFirmToMember(
+    @Args('memberId', { type: () => Int }) memberId: number,
+    @Args('firmName', { type: () => String }) firmName: string,
+  ) {
+    return this.memberService.assignFirm(memberId, firmName);
+  }
+
+  @Mutation(() => TeamMember)
+  async removeFirmFromMember(
+    @Args('memberId', { type: () => Int }) memberId: number,
+  ) {
+    return this.memberService.removeFirm(memberId);
+  }
+
+
 }

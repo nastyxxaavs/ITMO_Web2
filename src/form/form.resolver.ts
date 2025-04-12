@@ -7,6 +7,8 @@ import { Submission } from './dto/form_gql.output';
 import { PaginatedContacts } from '../contact/dto/paginated-contact_gql.output';
 import { Contact } from '../contact/dto/contact_gql.output';
 import { PaginatedForms } from './dto/paginated-form_gql.output';
+import { UpdateFirmInput } from '../firm/dto/update-firm_gql.input';
+import { CreateSubmissionInput } from './dto/create-form_gql.input';
 
 @Resolver(() => Submission)
 export class FormResolver {
@@ -34,7 +36,7 @@ export class FormResolver {
 
   @Mutation(() => Submission)
   async createForm(
-    @Args('createSubmissionInput') createSubmissionInput: CreateSubmissionDto,
+    @Args('createSubmissionInput') createSubmissionInput: CreateSubmissionInput,
   ): Promise<Submission> {
     return this.formService.create(createSubmissionInput);
   }
@@ -43,7 +45,7 @@ export class FormResolver {
   @Mutation(() => Submission)
   async updateForm(
     @Args('id', { type: () => Int }) id: number,
-    @Args('updateSubmissionInput') updateSubmissionInput: UpdateFormDto,
+    @Args('updateSubmissionInput') updateSubmissionInput: UpdateFirmInput,
   ): Promise<Submission> {
     const updatedForm = await this.formService.apiUpdate(id, updateSubmissionInput);
     if (!updatedForm) {

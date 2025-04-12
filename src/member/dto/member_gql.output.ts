@@ -1,5 +1,6 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Position } from '../entities/member.entity';
+import { Firm } from '../../firm/dto/firm_gql.output';
 
 @ObjectType()
 export class TeamMember {
@@ -23,4 +24,7 @@ export class TeamMember {
 
   @Field(type => Int, { nullable: true })
   requestId?: number;
+
+  @Field(() => Firm, { nullable: true })
+  firm?: Firm;
 }

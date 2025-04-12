@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent } from '@nestjs/graphql';
 import { ServiceService } from './service.service';
 import { ServiceDto } from './dto/service.dto';
 import { CreateServiceDto } from './dto/create-service.dto';
@@ -9,6 +9,9 @@ import { NotFoundException } from '@nestjs/common';
 import { Service } from './dto/service_gql.output';
 import { PaginatedServices } from './dto/paginatec-service_gql.output';
 import { Firm } from '../firm/dto/firm_gql.output';
+import { CreateServiceInput } from './dto/create-service_gql.input';
+import { UpdateServiceInput } from './dto/update-service_gql.input';
+import { Contact } from '../contact/dto/contact_gql.output';
 
 @Resolver(() => Service)
 export class ServiceResolver {
@@ -42,27 +45,43 @@ export class ServiceResolver {
     return service;
   }
 
+  //
+  // @Query(() => Firm, { name: 'getServiceFirm' })
+  // async getServiceFirm(@Args('id', { type: () => Int }) id: number) {
+  //   const service = await this.serviceService.findOne(id);
+  //   if (!service) {
+  //     throw new NotFoundException(`Service with ID ${id} not found`);
+  //   }
+  //
+  //   const firm = await this.firmService.findOne(service.firmId);
+  //   if (!firm) {
+  //     throw new NotFoundException(`No firm associated with service ID ${id}`);
+  //   }
+  //
+  //   return firm;
+  // }
 
-  @Query(() => Firm, { name: 'getServiceFirm' })
-  async getServiceFirm(@Args('id', { type: () => Int }) id: number) {
-    const service = await this.serviceService.findOne(id);
-    if (!service) {
-      throw new NotFoundException(`Service with ID ${id} not found`);
-    }
+
+  @ResolveField(() => Firm, { name: 'firm', nullable: true })
+  async getFirm(@Parent() service: Service): Promise<{
+    contactId: number[] | undefined;
+    userIds: number[] | undefined;
+    name: string;
+    description: string;
+    id: number;
+    requestIds: number[] | undefined
+  } | null> {
+    if (!service.firmId) return null;
 
     const firm = await this.firmService.findOne(service.firmId);
-    if (!firm) {
-      throw new NotFoundException(`No firm associated with service ID ${id}`);
-    }
-
-    return firm;
+    return firm || null;
   }
 
 
   @Mutation(() => Service)
   async createService(
-    @Args('createServiceInput') createServiceInput: CreateServiceDto,
-  ): Promise<Service> {
+    @Args('createServiceInput') createServiceInput: CreateServiceInput,
+  ) {
     return this.serviceService.create(createServiceInput);
   }
 
@@ -70,7 +89,7 @@ export class ServiceResolver {
   @Mutation(() => Service)
   async updateService(
     @Args('id', { type: () => Int }) id: number,
-    @Args('updateServiceInput') updateServiceInput: UpdateServiceDto,
+    @Args('updateServiceInput') updateServiceInput: UpdateServiceInput,
   ): Promise<Service> {
     const updatedService = await this.serviceService.apiUpdate(id, updateServiceInput);
     if (!updatedService) {

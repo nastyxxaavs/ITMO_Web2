@@ -10,6 +10,10 @@ import { TeamMemberRepository } from '../member/member.repository';
 import { ContactDto } from '../contact/dto/contact.dto';
 import { ClientRequestDto } from './dto/request.dto';
 import { Observable, Subject } from 'rxjs';
+import { Repository } from 'typeorm';
+import { ClientRequest } from './dto/request_gql.output';
+import { Firm } from '../firm/dto/firm_gql.output';
+import { FirmRepository } from '../firm/firm.repository';
 
 @Injectable()
 export class RequestsService {
@@ -18,6 +22,7 @@ export class RequestsService {
     private readonly clientRequestEntityRepository: ClientRequestEntityRepository,
     private readonly serviceRepository: ServiceRepository,
     private readonly teamMemberRepository: TeamMemberRepository,
+    private readonly firmRepository: FirmRepository
   ) {}
 
   getEventStream(): Observable<any> {
@@ -54,6 +59,35 @@ export class RequestsService {
       ),
     };
   }
+
+
+  async transformToGraphQL(clientRequestEntity: ClientRequestEntity): Promise<{
+    firm: Promise<Firm | null>;
+    firmId: number | undefined;
+    contactInfo: string;
+    clientName: string;
+    requestDate: Date;
+    id: number;
+    userId: number | undefined;
+    teamMemberName: string | undefined;
+    serviceRequested: string | undefined;
+    status: Status
+  }> {
+    return {
+      id: clientRequestEntity.id,
+      clientName: clientRequestEntity.clientName,
+      contactInfo: clientRequestEntity.contactInfo,
+      serviceRequested: clientRequestEntity.serviceRequested?.name ,
+      requestDate: clientRequestEntity.requestDate,
+      status: clientRequestEntity.status,
+      firmId: clientRequestEntity.firm?.id,
+      userId: clientRequestEntity.users?.id,
+      teamMemberName: clientRequestEntity.teamMembers?.firstName.concat(
+        clientRequestEntity.teamMembers.lastName),
+      firm: this.firmRepository.findOne(clientRequestEntity.firm?.id),
+    };
+  }
+
 
   private async getServiceIdByName(name: string): Promise<number | null> {
     const service = await this.serviceRepository.findOneByName(name);
@@ -238,4 +272,17 @@ export class RequestsService {
     }
     throw new NotFoundException(`Request with ID ${id} not found`);
   }
+
+  async updateStatus(id: number, status: Status) {
+    const request = await this.findOne(id);
+    if (!request) {
+      return null;
+    }
+
+    request.status = status;
+
+    await this.clientRequestEntityRepository.update(id,request);
+  }
+
+
 }

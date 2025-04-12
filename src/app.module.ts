@@ -17,6 +17,8 @@ import { APP_FILTER } from '@nestjs/core';
 import { ExceptionFilterImpl } from './exceptionFilter';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { GraphQLRequestContext } from '@apollo/server';
+import { fieldExtensionsEstimator, getComplexity, simpleEstimator } from 'graphql-query-complexity';
 
 @Module({
   imports: [
@@ -34,6 +36,37 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
       driver: ApolloDriver,
       autoSchemaFile: true,
       sortSchema: true, // Сортировка схемы по имени
+      playground: true,
+      plugins: [
+        {
+          async requestDidStart() {
+            return {
+              async didResolveOperation({ request, document, schema }: GraphQLRequestContext<any>) {
+                const complexity = getComplexity({
+                  schema,
+                  operationName: request.operationName,
+                  query: document!,
+                  variables: request.variables,
+                  estimators: [
+                    fieldExtensionsEstimator(),
+                    simpleEstimator({ defaultComplexity: 5 }),
+                  ],
+                });
+
+                const MAX_COMPLEXITY = 20;
+
+                if (complexity > MAX_COMPLEXITY) {
+                  throw new Error(
+                    `Запрос слишком сложный: ${complexity}. Максимально допустимая сложность: ${MAX_COMPLEXITY}`,
+                  );
+                }
+
+                console.log(`Сложность запроса: ${complexity}`);
+              },
+            };
+          },
+        }
+      ]
     }),
     FirmModule,
     ContactModule,

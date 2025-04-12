@@ -9,6 +9,8 @@ import { Firm } from '../firm/entities/firm.entity';
 import { TeamMemberDto } from './dto/member.dto';
 import { Contact } from '../contact/entities/contact.entity';
 import { ContactDto } from '../contact/dto/contact.dto';
+import { Repository } from 'typeorm';
+import { FirmService } from '../firm/firm.service';
 
 @Injectable()
 export class MemberService {
@@ -17,6 +19,8 @@ export class MemberService {
     private readonly firmRepository: FirmRepository,
     @Inject(forwardRef(() => ServiceRepository))
     private serviceRepository: ServiceRepository,
+    private memberRepo: Repository<TeamMember>,
+    private readonly  firmService: FirmService,
   ) {}
 
   private mapToDto(member: TeamMember): {
@@ -134,4 +138,24 @@ export class MemberService {
     }
     throw new NotFoundException(`Member with ID ${id} not found`);
   }
+
+  async assignFirm(memberId: number, firmName: string): Promise<TeamMember> {
+    const member = await this.findOne(memberId);
+    if (!member) throw new Error('Member not found');
+
+    const firm = await this.firmService.findOneByName(firmName);
+    if (!firm) throw new Error('Firm not found');
+
+    member.firmName = firm.name;
+    return this.memberRepo.save(member);
+  }
+
+  async removeFirm(memberId: number): Promise<TeamMember> {
+    const member = await this.findOne(memberId);
+    if (!member) throw new Error('Member not found');
+
+    member.firmName = '';
+    return this.memberRepo.save(member);
+  }
+
 }

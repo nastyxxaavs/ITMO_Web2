@@ -1,14 +1,16 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent } from '@nestjs/graphql';
 import { ContactService } from './contact.service';
-import { CreateContactDto } from './dto/create-contact.dto';
-import { UpdateContactDto } from './dto/update-contact.dto';
-import { ContactDto } from './dto/contact.dto';
 import { PaginatedContacts } from './dto/paginated-contact_gql.output';
 import { Contact } from './dto/contact_gql.output';
+import { FirmService } from '../firm/firm.service';
+import { Firm } from '../firm/dto/firm_gql.output';
+import { CreateContactInput } from './dto/create-contact_gql.input';
+import { UpdateContactInput } from './dto/update-contact_gql.input';
 
 @Resolver(() => Contact)
 export class ContactResolver {
-  constructor(private readonly contactService: ContactService) {}
+  constructor(private readonly contactService: ContactService,
+              private readonly firmService: FirmService,) {}
 
 
   @Query(() => Contact, { name: 'getContact' })
@@ -20,6 +22,20 @@ export class ContactResolver {
     return contact;
   }
 
+  @ResolveField(() => Firm, { name: 'firm', nullable: true })
+  async getFirm(@Parent() contact: Contact): Promise<{
+    contactId: number[] | undefined;
+    userIds: number[] | undefined;
+    name: string;
+    description: string;
+    id: number;
+    requestIds: number[] | undefined
+  } | null> {
+    if (!contact.firmId) return null;
+
+    const firm = await this.firmService.findOne(contact.firmId);
+    return firm || null;
+  }
 
   @Query(() => PaginatedContacts, { name: 'getContacts' })
   async getContacts(
@@ -48,8 +64,8 @@ export class ContactResolver {
 
   @Mutation(() => Contact)
   async createContact(
-    @Args('createContactInput') createContactInput: CreateContactDto,
-  ): Promise<Contact> {
+    @Args('createContactInput') createContactInput: CreateContactInput,
+  ) {
     return this.contactService.create(createContactInput);
   }
 
@@ -57,7 +73,7 @@ export class ContactResolver {
   @Mutation(() => Contact)
   async updateContact(
     @Args('id', { type: () => Int }) id: number,
-    @Args('updateContactInput') updateContactInput: UpdateContactDto,
+    @Args('updateContactInput') updateContactInput: UpdateContactInput,
   ): Promise<Contact> {
     const updatedContact = await this.contactService.apiUpdate(id, updateContactInput);
     if (!updatedContact) {

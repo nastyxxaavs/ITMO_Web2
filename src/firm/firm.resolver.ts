@@ -7,6 +7,8 @@ import { PaginatedContacts } from '../contact/dto/paginated-contact_gql.output';
 import { Contact } from '../contact/dto/contact_gql.output';
 import { PaginatedFirms } from './dto/paginated-firm_gql.output';
 import { Firm } from './dto/firm_gql.output';
+import { CreateFirmInput } from './dto/create-firm_gql.input';
+import { UpdateFirmInput } from './dto/update-firm_gql.input';
 
 
 @Resolver(() => Firm)
@@ -64,7 +66,7 @@ export class FirmResolver {
 
   @Mutation(() => Firm)
   async createFirm(
-    @Args('createFirmInput') createFirmInput: CreateFirmDto,
+    @Args('createFirmInput') createFirmInput: CreateFirmInput,
   ): Promise<Firm> {
     return this.firmService.create(createFirmInput);
   }
@@ -73,7 +75,7 @@ export class FirmResolver {
   @Mutation(() => Firm)
   async updateFirm(
     @Args('id', { type: () => Int }) id: number,
-    @Args('updateFirmInput') updateFirmInput: UpdateFirmDto,
+    @Args('updateFirmInput') updateFirmInput: UpdateFirmInput,
   ) {
     const updatedFirm = await this.firmService.apiUpdate(id, updateFirmInput);
     if (!updatedFirm) {
