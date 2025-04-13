@@ -31,7 +31,9 @@ export class UserResolver {
     if (!users || total === 0) {
       throw new NotFoundException('No users found');
     }
-    return users;
+    return {
+      users: users ?? []
+    };
   }
 
 

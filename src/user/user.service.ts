@@ -5,12 +5,10 @@ import { AuthStatus, Role, User } from './entities/user.entity';
 import { UserRepository } from './user.repository';
 import { UserDto } from './dto/user.dto';
 import { ContactDto } from '../contact/dto/contact.dto';
-import { Repository } from 'typeorm';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly userRepository: UserRepository,
-  private userRepo: Repository<User>) {}
+  constructor(private readonly userRepository: UserRepository) {}
 
   private mapToDto(user: User): UserDto {
     return {
@@ -91,9 +89,5 @@ export class UserService {
       return true;
     }
     throw new NotFoundException(`User with ID ${id} not found`);
-  }
-
-  async save(user: User): Promise<User> {
-    return this.userRepo.save(user);
   }
 }

@@ -14,7 +14,7 @@ export class UpdateServiceInput {
   @IsNotEmpty()
   description: string;
 
-  @Field(type => Category)
+  @Field(() => Category)
   @IsEnum(Category)
   @IsNotEmpty()
   category: Category;

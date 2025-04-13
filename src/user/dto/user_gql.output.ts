@@ -13,19 +13,19 @@ export class User {
   @Field()
   email: string;
 
-  @Field(type => AuthStatus)
+  @Field(() => AuthStatus)
   status: AuthStatus;
 
-  @Field(type => Role)
+  @Field(() => Role)
   role: Role;
 
   @Field({ nullable: true })
   firmName?: string;
 
-  @Field(type => [Int], { nullable: true })
+  @Field(() => [Int], { nullable: true })
   serviceNames?: number[];
 
-  @Field(type => [Int], { nullable: true })
+  @Field(() => [Int], { nullable: true })
   requestIds?: number[];
 
   @Field(() => Firm, { nullable: true })

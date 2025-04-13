@@ -4,7 +4,7 @@ import { Firm } from '../../firm/dto/firm_gql.output';
 
 @ObjectType()
 export class TeamMember {
-  @Field(type => Int)
+  @Field(() => Int)
   id: number;
 
   @Field()
@@ -13,16 +13,16 @@ export class TeamMember {
   @Field()
   lastName: string;
 
-  @Field(type => Position)
+  @Field(() => Position)
   position: Position;
 
   @Field({ nullable: true })
   firmName?: string;
 
-  @Field(type => [String], { nullable: true })
+  @Field(() => [String], { nullable: true })
   serviceNames?: string[];
 
-  @Field(type => Int, { nullable: true })
+  @Field(() => Int, { nullable: true })
   requestId?: number;
 
   @Field(() => Firm, { nullable: true })

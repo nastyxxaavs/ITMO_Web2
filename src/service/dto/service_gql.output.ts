@@ -13,22 +13,22 @@ export class Service {
   @Field()
   description: string;
 
-  @Field(type => Category)
+  @Field(() => Category)
   category: Category;
 
-  @Field(type => Int)
+  @Field(() => Int)
   price: number;
 
-  @Field(type => Int, { nullable: true })
+  @Field(() => Int, { nullable: true })
   firmId?: number;
 
-  @Field(type => Int, { nullable: true })
+  @Field(() => Int, { nullable: true })
   requestId?: number;
 
-  @Field(type => [String], { nullable: true })
+  @Field(() => [String], { nullable: true })
   teamMemberNames?: string[];
 
-  @Field(type => [Int], { nullable: true })
+  @Field(() => [Int], { nullable: true })
   userIds?: number[];
 
   @Field(() => Firm, { nullable: true })

@@ -4,7 +4,7 @@ import { Firm } from '../../firm/dto/firm_gql.output';
 
 @ObjectType()
 export class ClientRequest {
-  @Field(type => Int)
+  @Field(() => Int)
   id: number;
 
   @Field()
@@ -22,10 +22,10 @@ export class ClientRequest {
   @Field()
   status: Status;
 
-  @Field(type => Int, { nullable: true })
+  @Field(() => Int, { nullable: true })
   firmId?: number;
 
-  @Field(type => Int, { nullable: true })
+  @Field(() => Int, { nullable: true })
   userId?: number;
 
   @Field({ nullable: true })

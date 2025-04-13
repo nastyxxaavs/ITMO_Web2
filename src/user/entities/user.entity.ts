@@ -3,6 +3,7 @@ import { Firm } from '../../firm/entities/firm.entity';
 import { Service } from '../../service/entities/service.entity';
 import { ClientRequestEntity } from '../../requests/entities/request.entity';
 import { TeamMember } from '../../member/entities/member.entity';
+import { registerEnumType } from '@nestjs/graphql';
 
 
 export enum AuthStatus{
@@ -10,11 +11,19 @@ export enum AuthStatus{
   UNAUTHORIZED = 'UNAUTHORIZED',
 }
 
+registerEnumType(AuthStatus, {
+  name: 'AuthStatus',
+});
+
 export enum Role {
   CLIENT = 'CLIENT',
   ADMIN = 'ADMIN',
   EMPLOYEE = 'EMPLOYEE',
 }
+
+registerEnumType(Role, {
+  name: 'Role',
+});
 
 @Entity()
 export class User {

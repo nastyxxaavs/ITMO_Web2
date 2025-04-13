@@ -11,15 +11,15 @@ export class CreateFirmInput {
   @IsString()
   description: string;
 
-  @Field(type => [String], { nullable: true })
+  @Field(() => [String], { nullable: true })
   @IsOptional()
   serviceNames?: string[];
 
-  @Field(type => [String], { nullable: true })
+  @Field(() => [String], { nullable: true })
   @IsOptional()
   teamMemberNames?: string[];
 
-  @Field(type => [Int], { nullable: true })
+  @Field(() => [Int], { nullable: true })
   @IsOptional()
   userIds?: number[];
 
@@ -27,7 +27,7 @@ export class CreateFirmInput {
   @IsOptional()
   contact?: string;
 
-  @Field(type => [Int], { nullable: true })
+  @Field(() => [Int], { nullable: true })
   @IsOptional()
   requestIds?: number[];
 }

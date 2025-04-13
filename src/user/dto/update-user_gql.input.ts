@@ -14,12 +14,12 @@ export class UpdateUserInput {
   @IsNotEmpty()
   email: string;
 
-  @Field(type => AuthStatus, { nullable: true })
+  @Field(() => AuthStatus, { nullable: true })
   @IsEnum(AuthStatus)
   @IsOptional()
   status?: AuthStatus;
 
-  @Field(type => Role, { nullable: true })
+  @Field(() => Role, { nullable: true })
   @IsEnum(Role)
   @IsOptional()
   role?: Role;

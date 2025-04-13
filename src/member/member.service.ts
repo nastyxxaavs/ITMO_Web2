@@ -19,7 +19,6 @@ export class MemberService {
     private readonly firmRepository: FirmRepository,
     @Inject(forwardRef(() => ServiceRepository))
     private serviceRepository: ServiceRepository,
-    private memberRepo: Repository<TeamMember>,
     private readonly  firmService: FirmService,
   ) {}
 
@@ -147,7 +146,7 @@ export class MemberService {
     if (!firm) throw new Error('Firm not found');
 
     member.firmName = firm.name;
-    return this.memberRepo.save(member);
+    return this.teamMemberRepository.save(member);
   }
 
   async removeFirm(memberId: number): Promise<TeamMember> {
@@ -155,7 +154,7 @@ export class MemberService {
     if (!member) throw new Error('Member not found');
 
     member.firmName = '';
-    return this.memberRepo.save(member);
+    return this.teamMemberRepository.save(member);
   }
 
 }

@@ -1,17 +1,24 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToOne, ManyToMany } from 'typeorm';
 import { Firm } from '../../firm/entities/firm.entity';
 import { ClientRequestEntity } from '../../requests/entities/request.entity';
-import { TeamMember } from '../../member/entities/member.entity';
+import { Position, TeamMember } from '../../member/entities/member.entity';
 import { User } from '../../user/entities/user.entity';
+import { registerEnumType } from '@nestjs/graphql';
 
 export enum Category{
-  'Арбитраж/третейские суды',
-  'Споры с таможней',
-  'Трудовые споры',
-  'Контракты',
-  'Локализация бизнеса',
-  'Консультирование сельхозпроизводителей',
+  ARBITRATION = 'Арбитраж/третейские суды',
+  CUSTOMS_DISPUTES = 'Споры с таможней',
+  LABOR_DISPUTES = 'Трудовые споры',
+  CONTRACTS = 'Контракты',
+  BUSINESS_LOCALIZATION = 'Локализация бизнеса',
+  AGRICULTURE_CONSULTING = 'Консультирование сельхозпроизводителей',
 }
+
+
+registerEnumType(Category, {
+  name: 'Category',
+});
+
 
 @Entity()
 export class Service {

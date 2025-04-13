@@ -14,7 +14,7 @@ export class UpdateMemberInput {
   @IsNotEmpty()
   lastName: string;
 
-  @Field(type => Position)
+  @Field(() => Position)
   @IsEnum(Position)
   position: Position;
 

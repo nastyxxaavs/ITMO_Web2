@@ -3,7 +3,7 @@ import { Firm } from '../../firm/dto/firm_gql.output';
 
 @ObjectType()
 export class Contact {
-  @Field(type => Int)
+  @Field(() => Int)
   id: number;
 
   @Field()
@@ -18,7 +18,7 @@ export class Contact {
   @Field()
   mapsLink: string;
 
-  @Field(type => Int, { nullable: true })
+  @Field(() => Int, { nullable: true })
   firmId?: number;
 
   @Field(() => Firm, { nullable: true })

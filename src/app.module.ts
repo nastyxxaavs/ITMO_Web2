@@ -42,26 +42,44 @@ import { fieldExtensionsEstimator, getComplexity, simpleEstimator } from 'graphq
           async requestDidStart() {
             return {
               async didResolveOperation({ request, document, schema }: GraphQLRequestContext<any>) {
-                const complexity = getComplexity({
-                  schema,
-                  operationName: request.operationName,
-                  query: document!,
-                  variables: request.variables,
-                  estimators: [
-                    fieldExtensionsEstimator(),
-                    simpleEstimator({ defaultComplexity: 5 }),
-                  ],
-                });
+                if (!document) return;
 
-                const MAX_COMPLEXITY = 20;
+                // Пропуск интроспекционных запросов (загрузка схемы)
+                const isIntrospection = document.definitions.some(
+                  (def: any) =>
+                    def.kind === 'OperationDefinition' &&
+                    def.selectionSet.selections.some(
+                      (selection: any) =>
+                        selection.name && selection.name.value.startsWith('__')
+                    )
+                );
+                if (isIntrospection) return;
 
-                if (complexity > MAX_COMPLEXITY) {
-                  throw new Error(
-                    `Запрос слишком сложный: ${complexity}. Максимально допустимая сложность: ${MAX_COMPLEXITY}`,
-                  );
+                try {
+                  const complexity = getComplexity({
+                    schema,
+                    operationName: request.operationName,
+                    query: document!,
+                    variables: request.variables,
+                    estimators: [
+                      fieldExtensionsEstimator(),
+                      simpleEstimator({ defaultComplexity: 5 }),
+                    ],
+                  });
+
+                  const MAX_COMPLEXITY = 100;
+
+                  if (complexity > MAX_COMPLEXITY) {
+                    throw new Error(
+                      `Запрос слишком сложный: ${complexity}. Максимально допустимая сложность: ${MAX_COMPLEXITY}`,
+                    );
+                  }
+
+                  console.log(`Сложность запроса: ${complexity}`);
                 }
-
-                console.log(`Сложность запроса: ${complexity}`);
+                catch (err) {
+                  console.error('Ошибка в плагине сложности:', err);
+                }
               },
             };
           },

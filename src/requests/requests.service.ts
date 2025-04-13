@@ -106,39 +106,39 @@ export class RequestsService {
     let teamMember: TeamMember | null = null;
 
     switch (service.category) {
-      case Category['Арбитраж/третейские суды']:
+      case Category['ARBITRATION']:
         teamMember = await this.teamMemberRepository.findOneByPosition(
-          Position['Руководитель практики'],
+          Position['PRACTICE_HEAD'],
         );
         break;
 
-      case Category['Споры с таможней']:
+      case Category['CUSTOMS_DISPUTES']:
         teamMember = await this.teamMemberRepository.findOneByPosition(
-          Position['Ведущий юрист'],
+          Position['SENIOR_LAWYER'],
         );
         break;
 
-      case Category['Трудовые споры']:
+      case Category['LABOR_DISPUTES']:
         teamMember = await this.teamMemberRepository.findOneByPosition(
-          Position['Младший юрист'],
+          Position['JUNIOR_LAWYER'],
         );
         break;
 
-      case Category['Контракты']:
+      case Category['CONTRACTS']:
         teamMember = await this.teamMemberRepository.findOneByPosition(
-          Position['Главный бухгалтер'],
+          Position['CHIEF_ACCOUNTANT'],
         );
         break;
 
-      case Category['Локализация бизнеса']:
+      case Category['BUSINESS_LOCALIZATION']:
         teamMember = await this.teamMemberRepository.findOneByPosition(
-          Position['Генеральный директор'],
+          Position['CEO'],
         );
         break;
 
-      case Category['Консультирование сельхозпроизводителей']:
+      case Category['AGRICULTURE_CONSULTING']:
         teamMember = await this.teamMemberRepository.findOneByPosition(
-          Position['Помощник юриста'],
+          Position['LEGAL_ASSISTANT'],
         );
         break;
 

@@ -9,6 +9,7 @@ import express from 'express';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import session from 'express-session';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { renderPlaygroundPage } from 'graphql-playground-html';
 
 async function bootstrap() {
   const server = express();
@@ -23,7 +24,7 @@ async function bootstrap() {
       secret: 'your-secret-key', // Секрет для шифрования сессий
       resave: false,
       saveUninitialized: false,
-      cookie: { secure: false }, // Установите на true в продакшн для HTTPS
+      cookie: { secure: false }, // Установить на true в продакшн для HTTPS
     }),
   );
 
@@ -73,6 +74,11 @@ async function bootstrap() {
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory); //the path: /api
+
+  app.getHttpAdapter().getInstance().get('/graphql', (req, res) => {
+    res.setHeader('Content-Type', 'text/html');
+    res.send(renderPlaygroundPage({ endpoint: '/graphql' }));
+  });
 
   const port = configService.get<number>('PORT') || 4000;
   await app.listen(port);

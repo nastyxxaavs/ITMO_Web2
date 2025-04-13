@@ -2,7 +2,7 @@ import { ObjectType, Field, Int } from '@nestjs/graphql';
 
 @ObjectType()
 export class Firm {
-  @Field(type => Int)
+  @Field(() => Int)
   id: number;
 
   @Field()
@@ -11,18 +11,18 @@ export class Firm {
   @Field()
   description: string;
 
-  @Field(type => [String], { nullable: true })
+  @Field(() => [String], { nullable: true })
   serviceNames?: string[];
 
-  @Field(type => [String], { nullable: true })
+  @Field(() => [String], { nullable: true })
   memberNames?: string[];
 
-  @Field(type => [Int], { nullable: true })
+  @Field(() => [Int], { nullable: true })
   userIds?: number[];
 
-  @Field(type => Int, { nullable: true })
+  @Field(() => Int, { nullable: true })
   contactId?: number;
 
-  @Field(type => [Int], { nullable: true })
+  @Field(() => [Int], { nullable: true })
   requestIds?: number[];
 }
