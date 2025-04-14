@@ -1,14 +1,12 @@
 import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent } from '@nestjs/graphql';
 import { UserService } from './user.service';
 import { FirmService } from '../firm/firm.service';
-import { FirmDto } from '../firm/dto/firm.dto';
 import { NotFoundException } from '@nestjs/common';
 import { User } from './dto/user_gql.output';
 import { PaginatedUsers } from './dto/paginated-user_gql.output';
 import { Firm } from '../firm/dto/firm_gql.output';
 import { UpdateUserInput } from './dto/update-user_gql.input';
 import { CreateUserInput } from './dto/create-user_gql.input';
-import { Contact } from '../contact/dto/contact_gql.output';
 import { AuthStatus, Role } from './entities/user.entity';
 
 @Resolver(() => User)
@@ -45,23 +43,6 @@ export class UserResolver {
     }
     return user;
   }
-
-
-  // @Query(() => Firm, { name: 'getUserFirm' })
-  // async getUserFirm(@Args('id', { type: () => Int }) id: number){
-  //   const user = await this.userService.findOne(id);
-  //   if (!user) {
-  //     throw new NotFoundException(`User with ID ${id} not found`);
-  //   }
-  //
-  //   const firm = await this.firmService.findOne(user.firmName);
-  //   if (!firm) {
-  //     throw new NotFoundException(`No firm associated with user ID ${id}`);
-  //   }
-  //
-  //   return firm;
-  // }
-
 
 
   @ResolveField(() => Firm, { name: 'firm', nullable: true })

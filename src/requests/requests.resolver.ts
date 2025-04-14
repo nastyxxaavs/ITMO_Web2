@@ -1,15 +1,13 @@
 import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent } from '@nestjs/graphql';
 import { RequestsService } from './requests.service';
 import { FirmService } from '../firm/firm.service';
-import { FirmDto } from '../firm/dto/firm.dto';
 import { NotFoundException } from '@nestjs/common';
-import { ClientRequestEntity, Status } from './entities/request.entity';
+import { Status } from './entities/request.entity';
 import { ClientRequest } from './dto/request_gql.output';
 import { PaginatedRequests } from './dto/paginated-requests_gql.output';
 import { Firm } from '../firm/dto/firm_gql.output';
 import { CreateRequestInput } from './dto/create-request_gql.input';
 import { UpdateRequestInput } from './dto/update-request_gql.input';
-import { Contact } from '../contact/dto/contact_gql.output';
 
 @Resolver(() => ClientRequest)
 export class RequestsResolver {
@@ -42,22 +40,6 @@ export class RequestsResolver {
     }
     return request;
   }
-
-  //
-  // @Query(() => Firm, { name: 'getRequestFirm' })
-  // async getRequestFirm(@Args('id', { type: () => Int }) id: number) {
-  //   const request = await this.requestsService.findOne(id);
-  //   if (!request) {
-  //     throw new NotFoundException(`Request with ID ${id} not found`);
-  //   }
-  //
-  //   const firm = await this.firmService.findOne(request.firmId);
-  //   if (!firm) {
-  //     throw new NotFoundException(`No firm associated with request ID ${id}`);
-  //   }
-  //
-  //   return firm;
-  // }
 
 
   @ResolveField(() => Firm, { name: 'firm', nullable: true })

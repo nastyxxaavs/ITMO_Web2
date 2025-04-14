@@ -45,21 +45,6 @@ export class ServiceResolver {
     return service;
   }
 
-  //
-  // @Query(() => Firm, { name: 'getServiceFirm' })
-  // async getServiceFirm(@Args('id', { type: () => Int }) id: number) {
-  //   const service = await this.serviceService.findOne(id);
-  //   if (!service) {
-  //     throw new NotFoundException(`Service with ID ${id} not found`);
-  //   }
-  //
-  //   const firm = await this.firmService.findOne(service.firmId);
-  //   if (!firm) {
-  //     throw new NotFoundException(`No firm associated with service ID ${id}`);
-  //   }
-  //
-  //   return firm;
-  // }
 
 
   @ResolveField(() => Firm, { name: 'firm', nullable: true })

@@ -6,7 +6,6 @@ import { PaginatedMembers } from './dto/paginated-member_gql.output';
 import { Firm } from '../firm/dto/firm_gql.output';
 import { UpdateMemberInput } from './dto/update-member_gql.input';
 import { CreateMemberInput } from './dto/create-member_gql.input';
-import { Contact } from '../contact/dto/contact_gql.output';
 
 @Resolver(() => TeamMember)
 export class MemberResolver {
