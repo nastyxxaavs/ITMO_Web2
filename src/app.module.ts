@@ -14,7 +14,7 @@ import { ServiceModule } from './service/service.module';
 import { UserModule } from './user/user.module';
 import { FormModule } from './form/form.module';
 import { APP_FILTER } from '@nestjs/core';
-import { ExceptionFilterImpl } from './exceptionFilter';
+import { ExceptionFilterImpl } from './common/exceptionFilter';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { GraphQLRequestContext } from '@apollo/server';
@@ -35,6 +35,7 @@ import { fieldExtensionsEstimator, getComplexity, simpleEstimator } from 'graphq
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: true,
+      context: ({ req, res }) => ({ req, res }),
       sortSchema: true, // Сортировка схемы по имени
       playground: true,
       plugins: [

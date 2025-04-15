@@ -20,7 +20,7 @@ import { ContactDto } from './dto/contact.dto';
 import { FirmDto } from '../firm/dto/firm.dto';
 import { FirmService } from '../firm/firm.service';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { NotFoundResponse } from '../response';
+import { NotFoundResponse } from '../common/response';
 
 @ApiTags('contact')
 @Controller()

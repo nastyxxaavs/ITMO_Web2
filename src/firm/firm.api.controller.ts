@@ -18,7 +18,7 @@ import { FirmDto } from './dto/firm.dto';
 import { CreateFirmDto } from './dto/create-firm.dto';
 import { UpdateFirmDto } from './dto/update-firm.dto';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { NotFoundResponse } from '../response';
+import { NotFoundResponse } from '../common/response';
 
 @ApiTags('firm')
 @Controller()

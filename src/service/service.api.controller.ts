@@ -20,7 +20,7 @@ import { UpdateServiceDto } from './dto/update-service.dto';
 import { FirmService } from '../firm/firm.service';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FirmDto } from '../firm/dto/firm.dto';
-import { NotFoundResponse } from '../response';
+import { NotFoundResponse } from '../common/response';
 
 @ApiTags('service')
 @Controller()

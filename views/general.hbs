@@ -27,6 +27,23 @@
   <!-- content  -->
     {{> line}}
     {{> footer}}
+
+  <p class="server-time">
+    Сервер: {{elapsedTime}} | Клиент: <span id="client-time"></span>
+  </p>
+
+  <script>
+    const [navigation] = performance.getEntriesByType("navigation");
+
+    if (navigation) {
+      const clientTime = Math.round(navigation.duration);
+      document.getElementById('client-time').textContent = `${clientTime}ms`;
+    } else {
+      // fallback
+      const fallbackTime = Math.round(performance.now());
+      document.getElementById('client-time').textContent = `${fallbackTime}ms`;
+    }
+  </script>
 </div>
 </body>
 </html>

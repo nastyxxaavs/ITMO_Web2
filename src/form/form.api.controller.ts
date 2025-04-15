@@ -18,7 +18,7 @@ import { SubmissionDto } from './dto/form.dto';
 import { CreateSubmissionDto } from './dto/create-form.dto';
 import { UpdateFormDto } from './dto/update-form.dto';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { NotFoundResponse } from '../response';
+import { NotFoundResponse } from '../common/response';
 
 @ApiTags('form')
 @Controller()

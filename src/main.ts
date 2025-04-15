@@ -10,6 +10,7 @@ import { ExpressAdapter } from '@nestjs/platform-express';
 import session from 'express-session';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { renderPlaygroundPage } from 'graphql-playground-html';
+import { ElapsedTimeInterceptor } from './common/elapsed-time.interceptor';
 
 async function bootstrap() {
   const server = express();
@@ -79,6 +80,9 @@ async function bootstrap() {
     res.setHeader('Content-Type', 'text/html');
     res.send(renderPlaygroundPage({ endpoint: '/graphql' }));
   });
+
+
+  app.useGlobalInterceptors(new ElapsedTimeInterceptor());
 
   const port = configService.get<number>('PORT') || 4000;
   await app.listen(port);

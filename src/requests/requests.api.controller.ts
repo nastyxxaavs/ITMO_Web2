@@ -21,7 +21,7 @@ import { UpdateRequestDto } from './dto/update-request.dto';
 import { FirmService } from '../firm/firm.service';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ContactDto } from '../contact/dto/contact.dto';
-import { NotFoundResponse } from '../response';
+import { NotFoundResponse } from '../common/response';
 import { FirmDto } from '../firm/dto/firm.dto';
 import { CreateContactDto } from '../contact/dto/create-contact.dto';
 import { UpdateContactDto } from '../contact/dto/update-contact.dto';
