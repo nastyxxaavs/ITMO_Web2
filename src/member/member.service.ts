@@ -11,6 +11,7 @@ import { Contact } from '../contact/entities/contact.entity';
 import { ContactDto } from '../contact/dto/contact.dto';
 import { Repository } from 'typeorm';
 import { FirmService } from '../firm/firm.service';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
 export class MemberService {
@@ -20,6 +21,7 @@ export class MemberService {
     @Inject(forwardRef(() => ServiceRepository))
     private serviceRepository: ServiceRepository,
     private readonly  firmService: FirmService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   private mapToDto(member: TeamMember): {
@@ -74,10 +76,24 @@ export class MemberService {
     skip: number,
     take: number,
   ): Promise<[TeamMemberDto[], number]> {
-    const [members, total] =
-      await this.teamMemberRepository.findAllWithPagination(skip, take);
-    return [members.map(this.mapToDto), total];
+    const cacheKey = `members-page-${skip}-${take}`;
+
+    const cached = await this.cacheManager.get<[TeamMemberDto[], number]>(cacheKey);
+    if (cached) {
+      console.log('✅ From cache:', cacheKey);
+      return cached;
+    }
+
+    const [members, total] = await this.teamMemberRepository.findAllWithPagination(skip, take);
+    const mapped = members.map(this.mapToDto);
+
+    await this.cacheManager.set(cacheKey, [mapped, total], 60);
+
+    console.log('📦 Not from cache (fetched from DB):', cacheKey);
+
+    return [mapped, total];
   }
+
 
   async findOne(id: number): Promise< TeamMemberDto| null> {
     const member = await this.teamMemberRepository.findOne(id);
@@ -133,6 +149,7 @@ export class MemberService {
   async remove(id: number): Promise<boolean> {
     if (await this.teamMemberRepository.existById(id)) {
       await this.teamMemberRepository.remove(id);
+      await this.cacheManager.clear();
       return true;
     }
     throw new NotFoundException(`Member with ID ${id} not found`);

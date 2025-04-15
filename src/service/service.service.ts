@@ -7,12 +7,14 @@ import { TeamMemberRepository } from '../member/member.repository';
 import { TeamMember } from '../member/entities/member.entity';
 import { ContactDto } from '../contact/dto/contact.dto';
 import { ServiceDto } from './dto/service.dto';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
 export class ServiceService {
   constructor(private readonly serviceRepository: ServiceRepository,
               @Inject(forwardRef(() => TeamMemberRepository))
-              private teamMemberRepository: TeamMemberRepository) {}
+              private teamMemberRepository: TeamMemberRepository,
+              @Inject(CACHE_MANAGER) private cacheManager: Cache,) {}
 
   private mapToDto(service: Service): {
     firmId: number | undefined;
@@ -68,10 +70,23 @@ export class ServiceService {
     skip: number,
     take: number,
   ): Promise<[ServiceDto[], number]> {
+    const cacheKey = `services-page-${skip}-${take}`;
+    const cached = await this.cacheManager.get<[ServiceDto[], number]>(cacheKey);
+    if (cached) {
+      console.log('✅ From cache:', cacheKey);
+      return cached;
+    }
+
     const [services, total] =
       await this.serviceRepository.findAllWithPagination(skip, take);
-    return [services.map(this.mapToDto), total];
+    const mappedServices = services.map(this.mapToDto);
+
+    await this.cacheManager.set(cacheKey, [mappedServices, total], 60);
+    console.log('📦 Not from cache (fetched from DB):', cacheKey);
+
+    return [mappedServices, total];
   }
+
 
   async findOne(id: number): Promise<{
     firmId: number | undefined;
@@ -121,6 +136,7 @@ export class ServiceService {
   async remove(id: number): Promise<boolean> {
     if (await this.serviceRepository.existById(id)){
       await this.serviceRepository.remove(id);
+      await this.cacheManager.clear();
       return true;
     }
     throw new NotFoundException(`Service with ID ${id} not found`);

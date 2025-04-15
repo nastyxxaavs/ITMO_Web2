@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { ClientRequestEntity, Status } from './entities/request.entity';
@@ -14,6 +14,7 @@ import { Repository } from 'typeorm';
 import { ClientRequest } from './dto/request_gql.output';
 import { Firm } from '../firm/dto/firm_gql.output';
 import { FirmRepository } from '../firm/firm.repository';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
 export class RequestsService {
@@ -22,7 +23,8 @@ export class RequestsService {
     private readonly clientRequestEntityRepository: ClientRequestEntityRepository,
     private readonly serviceRepository: ServiceRepository,
     private readonly teamMemberRepository: TeamMemberRepository,
-    private readonly firmRepository: FirmRepository
+    private readonly firmRepository: FirmRepository,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   getEventStream(): Observable<any> {
@@ -199,10 +201,24 @@ export class RequestsService {
     serviceRequested: string | undefined;
     status: Status
   }[], number]> {
-    const [contacts, total] =
+    const cacheKey = `requests-page-${skip}-${take}`;
+
+    const cached = await this.cacheManager.get<[ReturnType<typeof this.mapToDto>[], number]>(cacheKey);
+    if (cached) {
+      console.log('✅ From cache:', cacheKey);
+      return cached;
+    }
+
+    const [requests, total] =
       await this.clientRequestEntityRepository.findAllWithPagination(skip, take);
-    return [contacts.map(this.mapToDto), total];
+    const mapped = requests.map(this.mapToDto);
+
+    await this.cacheManager.set(cacheKey, [mapped, total], 60);
+    console.log('📦 Not from cache (fetched from DB):', cacheKey);
+
+    return [mapped, total];
   }
+
 
   async findOne(id: number): Promise<{
     firmId: number | undefined;
@@ -268,6 +284,7 @@ export class RequestsService {
   async remove(id: number): Promise<boolean> {
     if (await this.clientRequestEntityRepository.existById(id)) {
       await this.clientRequestEntityRepository.remove(id);
+      await this.cacheManager.clear();
       return true;
     }
     throw new NotFoundException(`Request with ID ${id} not found`);

@@ -1,17 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateFirmDto } from './dto/create-firm.dto';
 import { UpdateFirmDto } from './dto/update-firm.dto';
 import { Firm } from './entities/firm.entity';
 import { FirmRepository } from './firm.repository';
-import { ServiceRepository } from '../service/service.repository';
-import { TeamMemberRepository } from '../member/member.repository';
-import { ContactRepository } from '../contact/contact.repository';
-import { FirmDto } from './dto/firm.dto';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
 export class FirmService {
   constructor(
     private readonly firmRepository: FirmRepository,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   private mapToDto(firm: Firm): {
@@ -59,20 +57,31 @@ export class FirmService {
     }
     return firms.map(this.mapToDto);
   }
-
   async findAllWithPagination(skip: number, take: number): Promise<[{
     contactId: number[] | undefined;
     userIds: number[] | undefined;
     name: string;
     description: string;
     id: number;
-    requestIds: number[] | undefined
+    requestIds: number[] | undefined;
   }[], number]> {
-    const [firms, total] = await this.firmRepository.findAllWithPagination(
-      skip,
-      take,
-    );
-    return [firms.map(this.mapToDto), total];
+    const cacheKey = `firms-page-${skip}-${take}`;
+
+    const cached = await this.cacheManager.get<[ReturnType<typeof this.mapToDto>[], number]>(cacheKey);
+    if (cached) {
+      console.log('✅ From cache:', cacheKey);
+      return cached;
+    }
+
+    const [firms, total] = await this.firmRepository.findAllWithPagination(skip, take);
+    const mapped = firms.map(this.mapToDto);
+
+
+    await this.cacheManager.set(cacheKey, [mapped, total], 60);
+
+    console.log('📦 Not from cache (fetched from DB):', cacheKey);
+
+    return [mapped, total];
   }
 
   async findOne(id: number | undefined): Promise<{
@@ -145,6 +154,7 @@ export class FirmService {
   async remove(id: number): Promise<boolean> {
     if (await this.firmRepository.existById(id)) {
       await this.firmRepository.remove(id);
+      await this.cacheManager.clear();
       return true;
     }
     throw new NotFoundException(`Firm with ID ${id} not found`);

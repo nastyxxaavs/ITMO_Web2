@@ -1,14 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthStatus, Role, User } from './entities/user.entity';
 import { UserRepository } from './user.repository';
 import { UserDto } from './dto/user.dto';
 import { ContactDto } from '../contact/dto/contact.dto';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(private readonly userRepository: UserRepository,
+              @Inject(CACHE_MANAGER) private cacheManager: Cache,) {}
 
   private mapToDto(user: User): UserDto {
     return {
@@ -41,10 +43,25 @@ export class UserService {
     skip: number,
     take: number,
   ): Promise<[UserDto[], number]> {
-    const [users, total] =
-      await this.userRepository.findAllWithPagination(skip, take);
-    return [users.map(this.mapToDto), total];
+    const cacheKey = `users-page-${skip}-${take}`;
+
+
+    const cached = await this.cacheManager.get<[UserDto[], number]>(cacheKey);
+    if (cached) {
+      console.log('✅ From cache:', cacheKey);
+      return cached;
+    }
+
+    const [users, total] = await this.userRepository.findAllWithPagination(skip, take);
+    const mappedUsers = users.map(this.mapToDto);
+
+
+    await this.cacheManager.set(cacheKey, [mappedUsers, total], 60);
+    console.log('📦 Not from cache (fetched from DB):', cacheKey);
+
+    return [mappedUsers, total];
   }
+
 
 
   async findOne(id: number): Promise<UserDto | null> {
@@ -86,6 +103,7 @@ export class UserService {
   async remove(id: number): Promise<boolean> {
     if (await this.userRepository.existById(id)){
       await this.userRepository.remove(id);
+      await this.cacheManager.clear();
       return true;
     }
     throw new NotFoundException(`User with ID ${id} not found`);

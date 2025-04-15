@@ -19,6 +19,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { GraphQLRequestContext } from '@apollo/server';
 import { fieldExtensionsEstimator, getComplexity, simpleEstimator } from 'graphql-query-complexity';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -86,6 +87,11 @@ import { fieldExtensionsEstimator, getComplexity, simpleEstimator } from 'graphq
           },
         }
       ]
+    }),
+    CacheModule.register({
+      ttl: 60,
+      max: 100,        // Максимум записей в кэше
+      isGlobal: true,
     }),
     FirmModule,
     ContactModule,

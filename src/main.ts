@@ -11,6 +11,7 @@ import session from 'express-session';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { renderPlaygroundPage } from 'graphql-playground-html';
 import { ElapsedTimeInterceptor } from './common/elapsed-time.interceptor';
+import { ETagInterceptor } from './common/etag.interceptor';
 
 async function bootstrap() {
   const server = express();
@@ -83,6 +84,7 @@ async function bootstrap() {
 
 
   app.useGlobalInterceptors(new ElapsedTimeInterceptor());
+  app.useGlobalInterceptors(new ETagInterceptor());
 
   const port = configService.get<number>('PORT') || 4000;
   await app.listen(port);

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateContactDto } from './dto/update-contact.dto';
 import { ContactDto } from './dto/contact.dto';
 import { CreateContactDto } from './dto/create-contact.dto';
@@ -7,6 +7,7 @@ import { Contact } from './entities/contact.entity';
 import { ContactRepository } from './contact.repository';
 import { FirmRepository } from '../firm/firm.repository';
 import { Observable, Subject } from 'rxjs';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 @Injectable()
 export class ContactService {
@@ -14,6 +15,7 @@ export class ContactService {
   constructor(
     private readonly contactRepository: ContactRepository,
     private readonly firmRepository: FirmRepository,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   getEventStream(): Observable<any> {
@@ -69,10 +71,23 @@ export class ContactService {
     skip: number,
     take: number,
   ): Promise<[ContactDto[], number]> {
+    const cacheKey = `contacts-page-${skip}-${take}`;
+
+    const cached = await this.cacheManager.get<[ContactDto[], number]>(cacheKey);
+    if (cached) {
+      console.log('✅ From cache:', cacheKey);
+      return cached;
+    }
+
     const [contacts, total] =
       await this.contactRepository.findAllWithPagination(skip, take);
-    return [contacts.map(this.mapToDto), total];
+     const mapped =  contacts.map(this.mapToDto);
+
+    await this.cacheManager.set(cacheKey, [mapped, total], 60);
+    console.log('📦 Not from cache (fetched from DB):', cacheKey);
+    return [mapped, total];
   }
+
 
   async findOne(id: number): Promise<ContactDto | null> {
     const contact = await this.contactRepository.findOne(id);
@@ -135,6 +150,7 @@ export class ContactService {
   async remove(id: number): Promise<boolean> {
     if (await this.contactRepository.existById(id)) {
       await this.contactRepository.remove(id);
+      await this.cacheManager.clear();
       return true;
     }
     throw new NotFoundException(`Contact with ID ${id} not found`);
