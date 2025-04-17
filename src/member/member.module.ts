@@ -13,11 +13,12 @@ import { Service } from '../service/entities/service.entity';
 import { MemberApiController } from './member.api.controller';
 import { MemberResolver } from './member.resolver';
 import { FirmService } from '../firm/firm.service';
+import { UploadService } from '../common/upload.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([TeamMember, TeamMemberRepository, Firm, Service]), forwardRef(() =>FirmModule), forwardRef(() =>ServiceModule)],
   controllers: [MemberController, MemberApiController],
-  providers: [MemberService, TeamMemberRepository, FirmRepository, ServiceRepository, MemberResolver, FirmService],
+  providers: [MemberService, TeamMemberRepository, FirmRepository, ServiceRepository, MemberResolver, FirmService, UploadService],
   exports: [MemberService, TeamMemberRepository],
 })
 export class MemberModule {}

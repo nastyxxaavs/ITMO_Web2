@@ -33,17 +33,14 @@
   </p>
 
   <script>
-    const [navigation] = performance.getEntriesByType("navigation");
+    const start = performance.now();
 
-    if (navigation) {
-      const clientTime = Math.round(navigation.duration);
-      document.getElementById('client-time').textContent = `${clientTime}ms`;
-    } else {
-      // fallback
-      const fallbackTime = Math.round(performance.now());
-      document.getElementById('client-time').textContent = `${fallbackTime}ms`;
-    }
+    window.addEventListener('load', () => {
+      const duration = Math.round(performance.now() - start);
+      document.getElementById('client-time').textContent = `${duration}ms`;
+    });
   </script>
+
 </div>
 </body>
 </html>

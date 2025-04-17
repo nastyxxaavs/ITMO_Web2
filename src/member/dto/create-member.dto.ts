@@ -27,5 +27,5 @@ export class CreateMemberDto {
   @IsOptional()
   @ApiProperty({description: 'Firm name'})
   firmName?: string;
-
+  photoUrl?: string;
 }

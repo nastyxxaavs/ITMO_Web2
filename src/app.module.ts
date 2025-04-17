@@ -20,6 +20,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { GraphQLRequestContext } from '@apollo/server';
 import { fieldExtensionsEstimator, getComplexity, simpleEstimator } from 'graphql-query-complexity';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ElapsedTimeApolloPlugin } from './common/apollo.plugin';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { CacheModule } from '@nestjs/cache-manager';
       sortSchema: true, // Сортировка схемы по имени
       playground: true,
       plugins: [
+        ElapsedTimeApolloPlugin(),
         {
           async requestDidStart() {
             return {

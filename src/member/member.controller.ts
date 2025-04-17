@@ -8,7 +8,7 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
-  ValidationPipe, NotFoundException, Render, Req,
+  ValidationPipe, NotFoundException, Render, Req, UseInterceptors, UploadedFile,
 } from '@nestjs/common';
 import { MemberService } from './member.service';
 import { CreateMemberDto } from './dto/create-member.dto';
@@ -16,11 +16,13 @@ import { UpdateMemberDto } from './dto/update-member.dto';
 import { TeamMemberDto } from './dto/member.dto';
 import { Position } from './entities/member.entity';
 import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UploadService } from '../common/upload.service';
 
 @ApiExcludeController()
 @Controller()
 export class MemberController {
-  constructor(private readonly memberService: MemberService) {}
+  constructor(private readonly memberService: MemberService, private readonly uploadService: UploadService,) {}
 
   @Get('/member-add')
   @Render('general')
@@ -40,11 +42,17 @@ export class MemberController {
 
   @Post('/member-add')
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body(ValidationPipe) createMemberDto: CreateMemberDto, @Req() req) {
+  @UseInterceptors(FileInterceptor('photo'))
+  async create(@UploadedFile() file: Express.Multer.File,@Body(ValidationPipe) createMemberDto: CreateMemberDto, @Req() req) {
     const isAuthenticated = req.session.isAuthenticated;
     if (!isAuthenticated) {
       return { statusCode: HttpStatus.UNAUTHORIZED, content: 'unauthorized' };
     }
+
+    if (file) {
+      createMemberDto.photoUrl = await this.uploadService.uploadFile(file);
+    }
+
 
     await this.memberService.create(createMemberDto);
     return {

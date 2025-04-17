@@ -33,7 +33,7 @@ export class ElapsedTimeInterceptor implements NestInterceptor {
       tap(() => {
         const elapsed = Date.now() - now;
 
-        if (response?.setHeader) {
+        if (response?.setHeader && !response.headersSent) {
           response.setHeader('X-Elapsed-Time', `${elapsed}ms`);
         }
 

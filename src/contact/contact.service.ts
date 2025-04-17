@@ -73,8 +73,11 @@ export class ContactService {
   ): Promise<[ContactDto[], number]> {
     const cacheKey = `contacts-page-${skip}-${take}`;
 
-    const cached = await this.cacheManager.get<[ContactDto[], number]>(cacheKey);
-    if (cached) {
+    const cachedRaw = await this.cacheManager.get<string>(cacheKey);
+    console.log('🧠 Set to cache:', cacheKey);
+    console.log('CacheManager:', this.cacheManager);
+    if (cachedRaw) {
+      const cached: [ContactDto[], number] = JSON.parse(cachedRaw);
       console.log('✅ From cache:', cacheKey);
       return cached;
     }
