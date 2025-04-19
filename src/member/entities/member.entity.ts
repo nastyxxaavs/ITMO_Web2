@@ -37,6 +37,9 @@ export class TeamMember {
   })
   position: Position;
 
+  @Column({ nullable: true })
+  photoUrl?: string;
+
   @ManyToOne(() => Firm, (firm) => firm.teamMembers, {nullable: true})
   firm: Firm | null;
 

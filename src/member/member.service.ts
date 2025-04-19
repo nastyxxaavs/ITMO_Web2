@@ -27,10 +27,11 @@ export class MemberService {
   private mapToDto(member: TeamMember): {
     firstName: string;
     lastName: string;
+    photoUrl: string | undefined;
     requestId: number | undefined;
     firmName: string | undefined;
     id: number;
-    position: Position;
+    position: Position
   } {
     return {
       id: member.id,
@@ -39,6 +40,7 @@ export class MemberService {
       position: member.position,
       firmName: member.firm?.name,
       requestId: member.requests?.id,
+      photoUrl: member.photoUrl,
     };
   }
 
@@ -59,7 +61,7 @@ export class MemberService {
       lastName: createMemberDto.lastName,
       position: createMemberDto.position,
       firm: firm,
-
+      photoUrl: createMemberDto.photoUrl,
     });
   }
 
@@ -117,7 +119,7 @@ export class MemberService {
         lastName: updateMemberDto.lastName,
         position: updateMemberDto.position,
         firm: firm,
-
+        photoUrl: updateMemberDto.photoUrl,
       });
       return true;
     }
@@ -138,7 +140,7 @@ export class MemberService {
         lastName: updateMemberDto.lastName,
         position: updateMemberDto.position,
         firm: firm,
-
+        photoUrl: updateMemberDto.photoUrl,
       });
       const member = await this.teamMemberRepository.findOne(id);
       return member ? this?.mapToDto(member) : null;

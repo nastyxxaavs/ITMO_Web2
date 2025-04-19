@@ -1,6 +1,6 @@
 <main>
   <div class="entity-add">
-      <form action="/member-add" method="post">
+      <form action="/member-add" method="post" enctype="multipart/form-data">
         <label for="firstName">Имя:</label>
         <label>
           <input type="text" name="firstName">
@@ -17,9 +17,11 @@
         <label>
           <input type="text" name="firm" >
         </label>
-        <button type="submit">Создать</button>
         <label for="photo">Фото:</label>
-        <input type="file" name="photo" accept="image/*">
+        <label>
+          <input type="file" name="photo" accept="image/*">
+        </label>
+        <button type="submit">Создать</button>
       </form>
   </div>
 </main>

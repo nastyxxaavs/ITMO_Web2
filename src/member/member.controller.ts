@@ -8,7 +8,12 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
-  ValidationPipe, NotFoundException, Render, Req, UseInterceptors, UploadedFile,
+  ValidationPipe,
+  NotFoundException,
+  Render,
+  Req,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { MemberService } from './member.service';
 import { CreateMemberDto } from './dto/create-member.dto';
@@ -22,7 +27,10 @@ import { UploadService } from '../common/upload.service';
 @ApiExcludeController()
 @Controller()
 export class MemberController {
-  constructor(private readonly memberService: MemberService, private readonly uploadService: UploadService,) {}
+  constructor(
+    private readonly memberService: MemberService,
+    private readonly uploadService: UploadService,
+  ) {}
 
   @Get('/member-add')
   @Render('general')
@@ -34,7 +42,7 @@ export class MemberController {
     return {
       isAuthenticated,
       user: isAuthenticated ? 'Anastasia' : null,
-      content: "member-add",
+      content: 'member-add',
       titleContent: 'Добавить сотрудника',
       customStyle: '../styles/entity-add.css',
     };
@@ -42,52 +50,81 @@ export class MemberController {
 
   @Post('/member-add')
   @HttpCode(HttpStatus.CREATED)
-  @UseInterceptors(FileInterceptor('photo'))
-  async create(@UploadedFile() file: Express.Multer.File,@Body(ValidationPipe) createMemberDto: CreateMemberDto, @Req() req) {
+  @UseInterceptors(
+    FileInterceptor('photo', {
+      limits: { fileSize: 5 * 1024 * 1024 },
+      fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+          cb(null, true);
+        } else {
+          cb(new Error('Only image files are allowed!'), false);
+        }
+      },
+    }),
+  )
+  async create(
+    @UploadedFile() file: Express.Multer.File,
+    @Body(ValidationPipe) createMemberDto: CreateMemberDto,
+    @Req() req,
+  ) {
     const isAuthenticated = req.session.isAuthenticated;
     if (!isAuthenticated) {
-      return { statusCode: HttpStatus.UNAUTHORIZED, content: 'unauthorized' };
+      return { statusCode: HttpStatus.UNAUTHORIZED, content: 'Unauthorized' };
     }
-
     if (file) {
-      createMemberDto.photoUrl = await this.uploadService.uploadFile(file);
+      try {
+        createMemberDto.photoUrl = await this.uploadService.uploadFile(file);
+        console.log('File uploaded successfully:', createMemberDto.photoUrl);
+      } catch (err) {
+        console.error('Error uploading file:', err);
+        return { statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: 'Error uploading file' };
+      }
     }
-
+    if (!file) {
+      console.error('No file uploaded');
+      return { statusCode: HttpStatus.BAD_REQUEST, message: 'No file uploaded' };
+    }
 
     await this.memberService.create(createMemberDto);
     return {
       statusCode: HttpStatus.CREATED,
-       isAuthenticated,
+      isAuthenticated,
     };
   }
 
   @Get('/members')
   @Render('general')
-  async findAll(): Promise<{ customStyle: string; members: TeamMemberDto[]; content: string; alertMessage?: string }> {
+  async findAll(): Promise<{
+    customStyle: string;
+    members: TeamMemberDto[];
+    content: string;
+    alertMessage?: string;
+  }> {
     const members = await this.memberService.findAll();
     if (!members) {
-      return  {
+      return {
         members,
-        content: "members",
+        content: 'members',
         customStyle: '../styles/entities.css',
-        alertMessage: "Сотрудники не найдены",
+        alertMessage: 'Сотрудники не найдены',
       };
     }
-    return  {
+    return {
       members,
-      content: "members",
-      customStyle: '../styles/entities.css',};
+      content: 'members',
+      customStyle: '../styles/entities.css',
+    };
   }
 
   @Get('/members/:id')
   @Render('general')
-  async findOne(@Param('id') id: number){
+  async findOne(@Param('id') id: number) {
     const member = await this.memberService.findOne(id);
     if (!member) {
       return {
-        content: "member",
+        content: 'member',
         customStyle: '../styles/entity-info.css',
-        alertMessage: "Сотрудник не найден",
+        alertMessage: 'Сотрудник не найден',
       };
     }
 
@@ -95,7 +132,7 @@ export class MemberController {
       firstName: member.firstName,
       lastName: member.lastName,
       position: member.position,
-      content: "member",
+      content: 'member',
       customStyle: '../styles/entity-info.css',
     };
   }
@@ -111,7 +148,7 @@ export class MemberController {
       id,
       isAuthenticated,
       user: isAuthenticated ? 'Anastasia' : null,
-      content: "member-edit",
+      content: 'member-edit',
       titleContent: 'Редактировать сотрудника',
       customStyle: '../styles/entity-edit.css',
     };
@@ -120,7 +157,8 @@ export class MemberController {
   @Patch('/member-edit/:id')
   @HttpCode(HttpStatus.OK)
   async update(@Param('id') id: number, @Body() updateMemberDto: UpdateMemberDto) {
-    if( await this.memberService.update(+id, updateMemberDto)){
+    const updated = await this.memberService.update(+id, updateMemberDto);
+    if (updated) {
       return { statusCode: HttpStatus.OK };
     }
     return { statusCode: HttpStatus.NOT_MODIFIED };
@@ -128,17 +166,17 @@ export class MemberController {
 
   @Get('/member-delete/:id')
   @HttpCode(HttpStatus.OK)
-  async removeViaGet(@Param('id') id: number): Promise<{ success: boolean; message: string }> {
+  async remove(@Param('id') id: number): Promise<{ success: boolean; message: string }> {
     const isRemoved = await this.memberService.remove(+id);
     if (isRemoved) {
       return {
         success: true,
-        message: 'Contact deleted successfully'
+        message: 'Сотрудник удален успешно',
       };
     } else {
       return {
         success: false,
-        message: 'Contact not found or already deleted'
+        message: 'Сотрудник не найден или уже удален',
       };
     }
   }

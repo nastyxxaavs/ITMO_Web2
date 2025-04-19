@@ -21,4 +21,8 @@ export class CreateMemberInput {
   @Field({ nullable: true })
   @IsOptional()
   firmName?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  photoUrl?: string;
 }

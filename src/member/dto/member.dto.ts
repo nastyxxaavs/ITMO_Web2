@@ -21,4 +21,5 @@ export class TeamMemberDto {
   firmName?: string;
   serviceNames?: string[];
   requestId?: number;
+  photoUrl?: string;
 }

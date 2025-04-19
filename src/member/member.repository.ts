@@ -20,6 +20,7 @@ export class TeamMemberRepository {
     firstName: string;
     lastName: string;
     firm: Firm | null;
+    photoUrl: string | undefined;
     position: Position;
   }): Promise<TeamMember> {
     const teamMember = this.memberRepo.create(createMemberDto);
@@ -62,6 +63,7 @@ export class TeamMemberRepository {
       lastName: string | undefined;
       firm: Firm | null;
       position: Position | undefined;
+      photoUrl: string | undefined;
     },
   ): Promise<TeamMember | null> {
     await this.memberRepo.update(id, updateMemberDto);

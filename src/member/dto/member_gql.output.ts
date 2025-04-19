@@ -1,6 +1,7 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Position } from '../entities/member.entity';
 import { Firm } from '../../firm/dto/firm_gql.output';
+import { IsOptional } from 'class-validator';
 
 @ObjectType()
 export class TeamMember {
@@ -18,6 +19,9 @@ export class TeamMember {
 
   @Field({ nullable: true })
   firmName?: string;
+
+  @Field({ nullable: true })
+  photoUrl?: string;
 
   @Field(() => [String], { nullable: true })
   serviceNames?: string[];

@@ -17,12 +17,20 @@ export class UploadService {
 
   async uploadFile(file: Express.Multer.File): Promise<string> {
     const key = `${randomUUID()}-${file.originalname}`;
-    await this.s3.send(new PutObjectCommand({
-      Bucket: this.bucket,
-      Key: key,
-      Body: file.buffer,
-      ContentType: file.mimetype,
-    }));
+    try {
+      const response = await this.s3.send(
+        new PutObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+          Body: file.buffer,
+          ContentType: file.mimetype,
+        }),
+      );
+      console.log('File uploaded to Yandex Cloud:', response);
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      throw new Error('Error uploading file');
+    }
     return `https://storage.yandexcloud.net/${this.bucket}/${key}`;
   }
 }
