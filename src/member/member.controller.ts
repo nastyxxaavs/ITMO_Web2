@@ -51,16 +51,7 @@ export class MemberController {
   @Post('/member-add')
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(
-    FileInterceptor('photo', {
-      limits: { fileSize: 5 * 1024 * 1024 },
-      fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image/')) {
-          cb(null, true);
-        } else {
-          cb(new Error('Only image files are allowed!'), false);
-        }
-      },
-    }),
+    FileInterceptor('photo'),
   )
   async create(
     @UploadedFile() file: Express.Multer.File,
