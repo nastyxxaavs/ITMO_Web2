@@ -21,6 +21,7 @@ import { GraphQLRequestContext } from '@apollo/server';
 import { fieldExtensionsEstimator, getComplexity, simpleEstimator } from 'graphql-query-complexity';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ElapsedTimeApolloPlugin } from './common/apollo.plugin';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -102,6 +103,7 @@ import { ElapsedTimeApolloPlugin } from './common/apollo.plugin';
     ServiceModule,
     UserModule,
     FormModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService,  {
