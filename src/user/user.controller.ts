@@ -9,49 +9,47 @@ import {
   Redirect,
   HttpStatus,
   HttpCode,
-  NotFoundException, ValidationPipe, Render, Req,
+  NotFoundException, ValidationPipe, Render, Req, UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDto } from './dto/user.dto';
 import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
+import { PublicAccess } from '../auth/public-access.decorator';
 
 @ApiExcludeController()
 @Controller()
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @UseGuards(AuthGuard)
   @Get('/user-add')
   @Render('general')
   showUser(@Req() req) {
-    console.log('Incoming request:', req.url);
-    const isAuthenticated = req.session.isAuthenticated;
-    console.log('isAuthenticated:', isAuthenticated);
-
     return {
-      isAuthenticated,
-      user: isAuthenticated ? 'Anastasia' : null,
+      isAuthenticated: req.session.isAuthenticated,
+      user: req.session.user?.username,
       content: "user-add",
       titleContent: 'Добавить пользователя',
       customStyle: '../styles/entity-add.css',
     };
   }
 
+  @UseGuards(AuthGuard)
   @Post('/user-add')
   @HttpCode(HttpStatus.CREATED)
   async create(@Body(ValidationPipe) createUserDto: CreateUserDto, @Req() req) {
-    const isAuthenticated = req.session.isAuthenticated;
-    if (!isAuthenticated) {
-      return { statusCode: HttpStatus.UNAUTHORIZED, content: 'unauthorized' };
-    }
     await this.userService.create(createUserDto);
     return {
       statusCode: HttpStatus.CREATED,
-    isAuthenticated,
+      isAuthenticated: req.session.isAuthenticated,
+      user: req.session.user?.username,
     };
   }
 
+  @PublicAccess()
   @Get('/users')
   @Render('general')
   async findAll():Promise<{ customStyle: string; users: UserDto[]; content: string; alertMessage?: string  }>  {
@@ -68,6 +66,8 @@ export class UserController {
       customStyle: '../styles/entities.css',};
   }
 
+
+  @PublicAccess()
   @Get('/users/:id')
   @Render('general')
   async findOne(@Param('id') id: number){ //: Promise<{ user: UserDto}> {
@@ -89,24 +89,21 @@ export class UserController {
     };
   }
 
+  @UseGuards(AuthGuard)
   @Get('/user-edit/:id')
   @Render('general')
   showContactEdit(@Req() req, @Param('id') id: string) {
-    console.log('Incoming request:', req.url);
-    const isAuthenticated = req.session.isAuthenticated;
-    console.log('isAuthenticated:', isAuthenticated);
-
     return {
       id,
-      isAuthenticated,
-      user: isAuthenticated ? 'Anastasia' : null,
+      isAuthenticated: req.session.isAuthenticated,
+      user: req.session.user?.username,
       content: "user-edit",
       titleContent: 'Редактировать пользователя',
       customStyle: '../styles/entity-edit.css',
     };
   }
 
-
+  @UseGuards(AuthGuard)
   @Patch('/user-edit/:id')
   @HttpCode(HttpStatus.OK)
   async update(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
@@ -116,7 +113,7 @@ export class UserController {
     return { statusCode: HttpStatus.NOT_MODIFIED };
   }
 
-
+  @UseGuards(AuthGuard)
   @Get('/user-delete/:id')
   @HttpCode(HttpStatus.OK)
   async removeViaGet(@Param('id') id: number): Promise<{ success: boolean; message: string }> {
@@ -133,20 +130,4 @@ export class UserController {
       };
     }
   }
-
-//   @Delete(':id')
-//   //@Redirect('/users')
-//   @Render('users')
-//   @HttpCode(HttpStatus.OK)
-//   @HttpCode(HttpStatus.NOT_MODIFIED)
-//   async remove(@Param('id') id: number) {
-//     if (await this.userService.remove(+id)){
-//       const users = await this.userService.findAll();
-//       if (!users || users.length === 0) {}
-//       return {
-//         users,
-//         statusCode: HttpStatus.OK };
-//     }
-//     return { statusCode: HttpStatus.NOT_MODIFIED };
-//   }
 }

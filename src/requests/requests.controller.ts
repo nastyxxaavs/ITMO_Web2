@@ -8,7 +8,7 @@ import {
   Delete,
   ValidationPipe,
   HttpCode,
-  HttpStatus, NotFoundException, Render, Req, Sse, Res,
+  HttpStatus, NotFoundException, Render, Req, Sse, Res, UseGuards,
 } from '@nestjs/common';
 import { RequestsService } from './requests.service';
 import { CreateRequestDto } from './dto/create-request.dto';
@@ -16,6 +16,8 @@ import { UpdateRequestDto } from './dto/update-request.dto';
 import { Status } from './entities/request.entity';
 import { interval, map, mergeWith, Observable } from 'rxjs';
 import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
+import { PublicAccess } from '../auth/public-access.decorator';
 
 @ApiExcludeController()
 @Controller()
@@ -37,15 +39,13 @@ export class RequestsController {
       ))
   }
 
+  @PublicAccess()
   @Get('/request-add')
   @Render('general')
   showForm(@Req() req) {
-    const isAuthenticated = req.session.isAuthenticated;
-    console.log('isAuthenticated:', isAuthenticated);
-
     const result = {
-      isAuthenticated,
-      user: isAuthenticated ? 'Anastasia' : null,
+      isAuthenticated: req.session.isAuthenticated,
+      user: req.session.user?.username,
       content: "request-add",
       titleContent: 'Добавить запрос',
       customStyle: '../styles/entity-add.css',
@@ -54,18 +54,20 @@ export class RequestsController {
     return result
   }
 
+  @PublicAccess()
   @Post('/request-add')
   @HttpCode(HttpStatus.CREATED)
   async create(@Body(ValidationPipe) createRequestDto: CreateRequestDto, @Req() req) {
-    const isAuthenticated = req.session.isAuthenticated;
     await this.requestsService.create(createRequestDto);
     this.requestsService.notifyRequestChange('Request added'); //SSE
     return {
       statusCode: HttpStatus.CREATED,
-      isAuthenticated,
+      isAuthenticated: req.session.isAuthenticated,
+      user: req.session.user?.username,
     };
   }
 
+  @PublicAccess()
   @Get('/requests')
   @Render('general')
   async findAll(@Req() req):Promise<{
@@ -108,6 +110,7 @@ export class RequestsController {
       customStyle: '../styles/entities.css', };
   }
 
+  @PublicAccess()
   @Get('/requests/:id')
   @Render('general')
   async findOne(@Param('id') id: number){
@@ -132,14 +135,14 @@ export class RequestsController {
     };
   }
 
+  @PublicAccess()
   @Get('/request-edit/:id')
   @Render('general')
   showEditForm(@Req() req, @Param('id') id: string){
-    const isAuthenticated = req.session.isAuthenticated;
     return {
       id,
-      isAuthenticated,
-      user: isAuthenticated ? 'Anastasia' : null,
+      isAuthenticated: req.session.isAuthenticated,
+      user: req.session.user?.username,
       content: 'request-edit',
       titleContent: 'Редактировать запрос',
       customStyle: '../styles/entity-edit.css',
@@ -147,6 +150,7 @@ export class RequestsController {
   }
 
 
+  @PublicAccess()
   @Patch('/request-edit/:id')
   @HttpCode(HttpStatus.OK)
   async update(@Param('id') id: number, @Body() updateRequestDto: UpdateRequestDto) {
@@ -162,22 +166,20 @@ export class RequestsController {
     }
   }
 
+  @PublicAccess()
   @Get('/request-delete/:id')
   @Render('general')
   async showDeleteOpportunity(@Req() req, @Param('id') id: string) {
-    console.log('Incoming request:', req.url);
-    const isAuthenticated = req.session.isAuthenticated;
-    console.log('isAuthenticated:', isAuthenticated);
-
     return {
       id,
-      isAuthenticated,
-      user: isAuthenticated ? 'Anastasia' : null,
+      isAuthenticated:req.session.isAuthenticated,
+      user: req.session.user?.username,
       content: "request-delete",
       titleContent: 'Удалить запрос',
       customStyle: '../styles/entity-edit.css',};
   }
 
+  @PublicAccess()
   @Delete('/request-delete/:id')
   @HttpCode(HttpStatus.OK)
   async remove(@Param('id') id: number) {
@@ -190,21 +192,4 @@ export class RequestsController {
     this.requestsService.notifyRequestChange('Failed delete');
     return { statusCode: HttpStatus.NOT_MODIFIED };
   }
-
-  // @Get('/request-delete/:id')
-  // @HttpCode(HttpStatus.OK)
-  // async removeViaGet(@Param('id') id: number): Promise<{ success: boolean; message: string }> {
-  //   const isRemoved = await this.requestsService.remove(+id);
-  //   if (isRemoved) {
-  //     return {
-  //       success: true,
-  //       message: 'Contact deleted successfully'
-  //     };
-  //   } else {
-  //     return {
-  //       success: false,
-  //       message: 'Contact not found or already deleted'
-  //     };
-  //   }
-  // }
 }

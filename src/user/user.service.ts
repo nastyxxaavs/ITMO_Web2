@@ -63,13 +63,20 @@ export class UserService {
   }
 
 
-
   async findOne(id: number): Promise<UserDto | null> {
     const user = await this.userRepository.findOne(id);
     if (!user){
       throw new NotFoundException(`User with ID ${id} not found`);
     }
     return user ? this.mapToDto(user) : null;
+  }
+
+  async findByName(username: string): Promise<User | null> {
+    const user = await this.userRepository.findOneByName(username);
+    if (!user){
+      throw new NotFoundException(`User with name ${username} not found`);
+    }
+    return user;
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<boolean> {
@@ -107,5 +114,13 @@ export class UserService {
       return true;
     }
     throw new NotFoundException(`User with ID ${id} not found`);
+  }
+
+  async validateUser(username: string, password: string): Promise<User | null> {
+    const user = await this.findByName(username);
+    if (user && user.password === password) {
+      return user;
+    }
+    return null;
   }
 }

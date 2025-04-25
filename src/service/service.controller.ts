@@ -9,7 +9,7 @@ import {
   Redirect,
   HttpCode,
   HttpStatus,
-  ValidationPipe, NotFoundException, Render, Req,
+  ValidationPipe, NotFoundException, Render, Req, UseGuards,
 } from '@nestjs/common';
 import { ServiceService } from './service.service';
 import { CreateServiceDto } from './dto/create-service.dto';
@@ -17,43 +17,40 @@ import { UpdateServiceDto } from './dto/update-service.dto';
 import { Category } from './entities/service.entity';
 import { ServiceDto } from './dto/service.dto';
 import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
+import { PublicAccess } from '../auth/public-access.decorator';
 
 @ApiExcludeController()
 @Controller()
 export class ServiceController {
   constructor(private readonly serviceService: ServiceService) {}
 
+  @UseGuards(AuthGuard)
   @Get('/service-add')
   @Render('general')
   showContact(@Req() req) {
-    console.log('Incoming request:', req.url);
-    const isAuthenticated = req.session.isAuthenticated;
-    console.log('isAuthenticated:', isAuthenticated);
-
     return {
-      isAuthenticated,
-      user: isAuthenticated ? 'Anastasia' : null,
+      isAuthenticated: req.session.isAuthenticated,
+      user: req.session.user?.username,
       content: "service-add",
       titleContent: 'Добавить сервис',
       customStyle: '../styles/entity-add.css',
     };
   }
 
+  @UseGuards(AuthGuard)
   @Post('/service-add')
   @HttpCode(HttpStatus.CREATED)
   async create(@Body(ValidationPipe) createServiceDto: CreateServiceDto, @Req() req) {
-    const isAuthenticated = req.session.isAuthenticated;
-    if (!isAuthenticated) {
-      return { statusCode: HttpStatus.UNAUTHORIZED, content: 'unauthorized' };
-    }
-
     await this.serviceService.create(createServiceDto);
     return {
       statusCode: HttpStatus.CREATED,
-    isAuthenticated,
+      isAuthenticated: req.session.isAuthenticated,
+      user: req.session.user?.username,
     };
   }
 
+  @PublicAccess()
   @Get('/all-services')
   @Render('general')
   async findAll():Promise<{ customStyle: string; services: ServiceDto[]; content: string; alertMessage?: string }> {
@@ -69,6 +66,7 @@ export class ServiceController {
       customStyle: '../styles/entities.css'};
   }
 
+  @PublicAccess()
   @Get('/services/:id')
   @Render('general')
   async findOne(@Param('id') id: number){
@@ -91,23 +89,22 @@ export class ServiceController {
   }
 
 
+  @UseGuards(AuthGuard)
   @Get('/service-edit/:id')
   @Render('general')
   showContactEdit(@Req() req, @Param('id') id: string) {
-    console.log('Incoming request:', req.url);
-    const isAuthenticated = req.session.isAuthenticated;
-    console.log('isAuthenticated:', isAuthenticated);
 
     return {
       id,
-      isAuthenticated,
-      user: isAuthenticated ? 'Anastasia' : null,
+      isAuthenticated: req.session.isAuthenticated,
+      user: req.session.user?.username,
       content: "service-edit",
       titleContent: 'Редактировать сервис',
       customStyle: '../styles/entity-edit.css',
     };
   }
 
+  @UseGuards(AuthGuard)
   @Patch('/service-edit/:id')
   @HttpCode(HttpStatus.OK)
   async update(@Param('id') id: number, @Body() updateServiceDto: UpdateServiceDto) {
@@ -117,6 +114,7 @@ export class ServiceController {
     return { statusCode: HttpStatus.NOT_MODIFIED };
   }
 
+  @UseGuards(AuthGuard)
   @Get('/service-delete/:id')
   @HttpCode(HttpStatus.OK)
   async removeViaGet(@Param('id') id: number): Promise<{ success: boolean; message: string }> {

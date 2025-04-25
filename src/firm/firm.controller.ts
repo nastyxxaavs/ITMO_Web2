@@ -7,12 +7,14 @@ import {
   Param,
   HttpCode,
   HttpStatus,
-  ValidationPipe, NotFoundException, Render, Query, Req,
+  ValidationPipe, NotFoundException, Render, Query, Req, UseGuards,
 } from '@nestjs/common';
 import { FirmService } from './firm.service';
 import { CreateFirmDto } from './dto/create-firm.dto';
 import { UpdateFirmDto } from './dto/update-firm.dto';
 import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
+import { PublicAccess } from '../auth/public-access.decorator';
 
 @ApiExcludeController()
 @Controller()
@@ -20,35 +22,32 @@ export class FirmController {
   constructor(private readonly firmService: FirmService) {
   }
 
+  @UseGuards(AuthGuard)
   @Get('/firm-add')
   @Render('general')
   showFirm(@Req() req) {
-    console.log('Incoming request:', req.url);
-    const isAuthenticated = req.session.isAuthenticated;
     return {
-      isAuthenticated,
-      user: isAuthenticated ? 'Anastasia' : null,
+      isAuthenticated: req.session.isAuthenticated,
+      user: req.session.user?.username,
       content: "firm-add",
       titleContent: 'Добавить фирму',
       customStyle: '../styles/entity-add.css',
     };
   }
 
+  @UseGuards(AuthGuard)
   @Post('/firm-add')
   @HttpCode(HttpStatus.CREATED)
   async create(@Body(ValidationPipe) createFirmDto: CreateFirmDto, @Req() req) {
-    const isAuthenticated = req.session.isAuthenticated;
-    if (!isAuthenticated) {
-      return { statusCode: HttpStatus.UNAUTHORIZED, content: 'unauthorized' };
-    }
     await this.firmService.create(createFirmDto);
     return {
       statusCode: HttpStatus.CREATED,
-      isAuthenticated,
+      isAuthenticated: req.session.isAuthenticated,
+      user: req.session.user?.username,
     }
   }
 
-
+  @PublicAccess()
   @Get('/firms')
   @Render('general')
   async findAll(): Promise<{
@@ -80,19 +79,15 @@ export class FirmController {
     };
   }
 
+  @PublicAccess()
   @Get('/firms/:id')
   @Render('general')
   async findOne(@Param('id') id: number, @Req() req) {
-    console.log('Incoming request:', req.url);
-    const isAuthenticated = req.session.isAuthenticated;
-    console.log('isAuthenticated:', isAuthenticated);
-
-
     const firm = await this.firmService.findOne(id);
     if (!firm) {
       return{
-        isAuthenticated,
-        user: isAuthenticated ? 'Anastasia' : null,
+        isAuthenticated: req.session.isAuthenticated,
+        user: req.session.user?.username,
         titleContent: 'Фирма',
         content: "firm",
         customStyle: '../styles/entity-info.css',
@@ -103,31 +98,29 @@ export class FirmController {
       name: firm.name,
       description: firm.description,
       contact: firm.contactId,
-      isAuthenticated,
-      user: isAuthenticated ? 'Anastasia' : null,
+      isAuthenticated: req.session.isAuthenticated,
+      user: req.session.user?.username,
       titleContent: 'Фирма',
       content: "firm",
       customStyle: '../styles/entity-info.css',
     };
   }
 
+  @UseGuards(AuthGuard)
   @Get('/firm-edit/:id')
   @Render('general')
   showContactEdit(@Req() req, @Param('id') id: string) {
-    console.log('Incoming request:', req.url);
-    const isAuthenticated = req.session.isAuthenticated;
-    console.log('isAuthenticated:', isAuthenticated);
-
     return {
       id,
-      isAuthenticated,
-      user: isAuthenticated ? 'Anastasia' : null,
+      isAuthenticated: req.session.isAuthenticated,
+      user: req.session.user?.username,
       content: "firm-edit",
       titleContent: 'Редактировать фирму',
       customStyle: '../styles/entity-edit.css',
     };
   }
 
+  @UseGuards(AuthGuard)
   @Patch('/firm-edit/:id')
   @HttpCode(HttpStatus.OK)
   async update(@Param('id') id: number, @Body() updateFirmDto: UpdateFirmDto) {
@@ -138,6 +131,7 @@ export class FirmController {
   }
 
 
+  @UseGuards(AuthGuard)
   @Get('/firm-delete/:id')
   @HttpCode(HttpStatus.OK)
   async removeViaGet(@Param('id') id: number): Promise<{ success: boolean; message: string }> {

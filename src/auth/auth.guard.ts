@@ -1,19 +1,24 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext} from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
+import { PUBLIC_ACCESS_KEY } from './public-access.decorator';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
+  constructor(private reflector: Reflector) {}
+
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
+    const isPublic = this.reflector.get<boolean>(PUBLIC_ACCESS_KEY, context.getHandler());
 
-    // Проверка наличия авторизации в request (например, токен в заголовке)
-    // Реализуйте вашу логику аутентификации на основе токенов или сессий SuperTokens
-    if (request.user) {
-      return true;
+    if (isPublic) {
+      return true; // Если маршрут публичный, разрешаем доступ
     }
 
-    return false; // Неавторизованный доступ
+    const isAuthenticated = request.session?.isAuthenticated;
+
+    return !!isAuthenticated;
   }
 }

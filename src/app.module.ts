@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -22,6 +22,10 @@ import { fieldExtensionsEstimator, getComplexity, simpleEstimator } from 'graphq
 import { CacheModule } from '@nestjs/cache-manager';
 import { ElapsedTimeApolloPlugin } from './common/apollo.plugin';
 import { AuthModule } from './auth/auth.module';
+import { AuthMiddleware } from './auth/auth.middleware';
+import { User } from './user/entities/user.entity';
+import { UserService } from './user/user.service';
+
 
 @Module({
   imports: [
@@ -96,19 +100,21 @@ import { AuthModule } from './auth/auth.module';
       max: 100,        // Максимум записей в кэше
       isGlobal: true,
     }),
+    TypeOrmModule.forFeature([User]),
     FirmModule,
     ContactModule,
     MemberModule,
     RequestsModule,
     ServiceModule,
-    UserModule,
+    //UserModule,
     FormModule,
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService,  {
+  providers: [AppService, UserService, {
     provide: APP_FILTER,
     useClass: ExceptionFilterImpl
   }],
+  exports: [UserService]
 })
 export class AppModule {}

@@ -13,7 +13,7 @@ import {
   Render,
   Req,
   UseInterceptors,
-  UploadedFile,
+  UploadedFile, UseGuards,
 } from '@nestjs/common';
 import { MemberService } from './member.service';
 import { CreateMemberDto } from './dto/create-member.dto';
@@ -23,6 +23,8 @@ import { Position } from './entities/member.entity';
 import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from '../common/upload.service';
+import { AuthGuard } from '@nestjs/passport';
+import { PublicAccess } from '../auth/public-access.decorator';
 
 @ApiExcludeController()
 @Controller()
@@ -32,22 +34,20 @@ export class MemberController {
     private readonly uploadService: UploadService,
   ) {}
 
+  @UseGuards(AuthGuard)
   @Get('/member-add')
   @Render('general')
   showMember(@Req() req) {
-    console.log('Incoming request:', req.url);
-    const isAuthenticated = req.session.isAuthenticated;
-    console.log('isAuthenticated:', isAuthenticated);
-
-    return {
-      isAuthenticated,
-      user: isAuthenticated ? 'Anastasia' : null,
+   return {
+     isAuthenticated: req.session.isAuthenticated,
+     user: req.session.user?.username,
       content: 'member-add',
       titleContent: 'Добавить сотрудника',
       customStyle: '../styles/entity-add.css',
     };
   }
 
+  @UseGuards(AuthGuard)
   @Post('/member-add')
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(
@@ -58,10 +58,6 @@ export class MemberController {
     @Body(ValidationPipe) createMemberDto: CreateMemberDto,
     @Req() req,
   ) {
-    const isAuthenticated = req.session.isAuthenticated;
-    if (!isAuthenticated) {
-      return { statusCode: HttpStatus.UNAUTHORIZED, content: 'Unauthorized' };
-    }
     if (file) {
       try {
         createMemberDto.photoUrl = await this.uploadService.uploadFile(file);
@@ -79,10 +75,12 @@ export class MemberController {
     await this.memberService.create(createMemberDto);
     return {
       statusCode: HttpStatus.CREATED,
-      isAuthenticated,
+      isAuthenticated: req.session.isAuthenticated,
+      user: req.session.user?.username,
     };
   }
 
+  @PublicAccess()
   @Get('/members')
   @Render('general')
   async findAll(): Promise<{
@@ -107,6 +105,8 @@ export class MemberController {
     };
   }
 
+
+  @PublicAccess()
   @Get('/members/:id')
   @Render('general')
   async findOne(@Param('id') id: number) {
@@ -128,23 +128,21 @@ export class MemberController {
     };
   }
 
+  @UseGuards(AuthGuard)
   @Get('/member-edit/:id')
   @Render('general')
   showContactEdit(@Req() req, @Param('id') id: string) {
-    console.log('Incoming request:', req.url);
-    const isAuthenticated = req.session.isAuthenticated;
-    console.log('isAuthenticated:', isAuthenticated);
-
     return {
       id,
-      isAuthenticated,
-      user: isAuthenticated ? 'Anastasia' : null,
+      isAuthenticated: req.session.isAuthenticated,
+      user: req.session.user?.username,
       content: 'member-edit',
       titleContent: 'Редактировать сотрудника',
       customStyle: '../styles/entity-edit.css',
     };
   }
 
+  @UseGuards(AuthGuard)
   @Patch('/member-edit/:id')
   @HttpCode(HttpStatus.OK)
   async update(@Param('id') id: number, @Body() updateMemberDto: UpdateMemberDto) {
@@ -155,6 +153,7 @@ export class MemberController {
     return { statusCode: HttpStatus.NOT_MODIFIED };
   }
 
+  @UseGuards(AuthGuard)
   @Get('/member-delete/:id')
   @HttpCode(HttpStatus.OK)
   async remove(@Param('id') id: number): Promise<{ success: boolean; message: string }> {

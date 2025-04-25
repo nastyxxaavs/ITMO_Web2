@@ -14,12 +14,14 @@ import { FormService } from './form.service';
 import { CreateSubmissionDto } from './dto/create-form.dto';
 import { UpdateFormDto } from './dto/update-form.dto';
 import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
+import { PublicAccess } from '../auth/public-access.decorator';
 
 @ApiExcludeController()
 @Controller()
 export class FormController {
   constructor(private readonly formService: FormService) {}
 
+  @PublicAccess()
   @Post('/form-add')
   @HttpCode(HttpStatus.CREATED)
   async create(@Body(ValidationPipe) createFormDto: CreateSubmissionDto)  {

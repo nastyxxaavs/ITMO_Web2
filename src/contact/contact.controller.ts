@@ -7,7 +7,7 @@ import {
   Param,
   HttpCode,
   HttpStatus,
-  ValidationPipe, NotFoundException, Render, Req, Sse, Res, Delete,
+  ValidationPipe, Render, Req, Sse, Res, Delete, UseGuards,
 } from '@nestjs/common';
 import { ContactService } from './contact.service';
 import { CreateContactDto } from './dto/create-contact.dto';
@@ -15,6 +15,8 @@ import { UpdateContactDto } from './dto/update-contact.dto';
 import { ContactDto } from './dto/contact.dto';
 import { interval, map, mergeWith, Observable } from 'rxjs';
 import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
+import { PublicAccess } from '../auth/public-access.decorator';
 
 @ApiExcludeController()
 @Controller()
@@ -35,16 +37,13 @@ export class ContactController {
       ))
   }
 
+  @UseGuards(AuthGuard)
   @Get('/contact-add')
   @Render('general')
   showContact(@Req() req) {
-    console.log('Incoming request:', req.url);
-    const isAuthenticated = req.session.isAuthenticated;
-    console.log('isAuthenticated:', isAuthenticated);
-
     return {
-      isAuthenticated,
-      user: isAuthenticated ? 'Anastasia' : null,
+      isAuthenticated: req.session.isAuthenticated,
+      user: req.session.user?.username,
       content: "contact-add",
       titleContent: 'Добавить контакт',
       customStyle: '../styles/entity-add.css',
@@ -52,21 +51,19 @@ export class ContactController {
   }
 
   @Post('/contact-add')
+  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.CREATED)
   async create(@Body(ValidationPipe) createContactDto: CreateContactDto, @Req() req) {
-    const isAuthenticated = req.session.isAuthenticated;
-    if (!isAuthenticated) {
-      this.contactService.notifyContactChange('Is not authenticated');
-      return { statusCode: HttpStatus.UNAUTHORIZED, content: 'unauthorized' };
-    }
     await this.contactService.create(createContactDto);
     this.contactService.notifyContactChange('Contact added'); //SSE
     return {
       statusCode: HttpStatus.CREATED,
-    isAuthenticated,
+    isAuthenticated: req.session.isAuthenticated,
+      user: req.session.user?.username,
     };
   }
 
+  @PublicAccess()
   @Get('/contacts')
   @Render('general')
   async findAll(): Promise<{ customStyle: string; contacts: ContactDto[]; content: string; alertMessage?: string }> {
@@ -87,18 +84,15 @@ export class ContactController {
     };
   }
 
+  @PublicAccess()
   @Get('/contacts/:id')
   @Render('general')
   async findOne(@Param('id') id: number, @Req() req) {
-    console.log('Incoming request:', req.url);
-    const isAuthenticated = req.session.isAuthenticated;
-    console.log('isAuthenticated:', isAuthenticated);
-
     const contact = await this.contactService.findOne(id);
     if (!contact) {
       return {
-        isAuthenticated,
-        user: isAuthenticated ? 'Anastasia' : null,
+        isAuthenticated: req.session.isAuthenticated,
+        user: req.session.user?.username,
         content: "contact",
         titleContent: 'Контакт',
         customStyle: '../styles/entity-info.css',
@@ -111,8 +105,8 @@ export class ContactController {
       email: contact.email,
       mapsLink: contact.mapsLink,
       firmName: contact.firmId,
-      isAuthenticated,
-      user: isAuthenticated ? 'Anastasia' : null,
+      isAuthenticated: req.session.isAuthenticated,
+      user: req.session.user?.username,
       content: "contact",
       titleContent: 'Контакт',
       customStyle: '../styles/entity-info.css',
@@ -120,23 +114,21 @@ export class ContactController {
   }
 
 
+  @UseGuards(AuthGuard)
   @Get('/contact-edit/:id')
   @Render('general')
   showContactEdit(@Req() req, @Param('id') id: string) {
-    console.log('Incoming request:', req.url);
-    const isAuthenticated = req.session.isAuthenticated;
-    console.log('isAuthenticated:', isAuthenticated);
-
     return {
       id,
-      isAuthenticated,
-      user: isAuthenticated ? 'Anastasia' : null,
+      isAuthenticated: req.session.isAuthenticated,
+      user: req.session.user?.username,
       content: "contact-edit",
       titleContent: 'Редактировать контакт',
       customStyle: '../styles/entity-edit.css',
     };
   }
 
+  @UseGuards(AuthGuard)
   @Patch('/contact-edit/:id')
   @HttpCode(HttpStatus.OK)
   async update(@Param('id') id: number, @Body() updateContactDto: UpdateContactDto) {
@@ -152,22 +144,20 @@ export class ContactController {
       }
     }
 
+  @UseGuards(AuthGuard)
   @Get('/contact-delete/:id')
   @Render('general')
   async showDeleteOpportunity(@Req() req, @Param('id') id: string) {
-    console.log('Incoming request:', req.url);
-    const isAuthenticated = req.session.isAuthenticated;
-    console.log('isAuthenticated:', isAuthenticated);
-
     return {
       id,
-      isAuthenticated,
-      user: isAuthenticated ? 'Anastasia' : null,
+      isAuthenticated:req.session.isAuthenticated,
+      user: req.session.user?.username,
       content: "contact-delete",
       titleContent: 'Удалить контакт',
       customStyle: '../styles/entity-edit.css',};
   }
 
+  @UseGuards(AuthGuard)
   @Delete('/contact-delete/:id')
   @HttpCode(HttpStatus.OK)
   async remove(@Param('id') id: number) {
@@ -181,22 +171,5 @@ export class ContactController {
     return { statusCode: HttpStatus.NOT_MODIFIED };
   }
 
-    // @Get('/contact-delete/:id')
-    // @HttpCode(HttpStatus.OK)
-    // async removeViaGet(@Param('id') id: number): Promise<{ success: boolean; message: string }> {
-    //   const isRemoved = await this.contactService.remove(+id);
-    //   if (isRemoved) {
-    //     this.contactService.notifyContactChange('Contact deleted'); //SSE
-    //     return {
-    //       success: true,
-    //       message: 'Contact deleted successfully'
-    //     };
-    //   } else {
-    //     return {
-    //       success: false,
-    //       message: 'Contact not found or already deleted'
-    //     };
-    //   }
-    // }
 }
 
