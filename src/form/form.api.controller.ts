@@ -3,7 +3,8 @@ import {
   Body,
   Controller,
   Delete,
-  Get, Headers,
+  Get,
+  Headers,
   HttpCode,
   HttpStatus,
   NotFoundException,
@@ -11,20 +12,33 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
 import { FormService } from './form.service';
 import { SubmissionDto } from './dto/form.dto';
 import { CreateSubmissionDto } from './dto/create-form.dto';
 import { UpdateFormDto } from './dto/update-form.dto';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { NotFoundResponse } from '../common/response';
+import { AuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../user/entities/user.entity';
 
 @ApiTags('form')
 @Controller()
 export class FormApiController {
   constructor(private readonly formService: FormService) {}
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Get('/api/forms')
   @ApiResponse({
     status: 200,
@@ -40,7 +54,12 @@ export class FormApiController {
     @Query('page') page = 1,
     @Query('limit') limit = 3,
     @Headers('host') host: string,
-  ): Promise<{ total: number; links: string | null; page: number; forms: SubmissionDto[] }> {
+  ): Promise<{
+    total: number;
+    links: string | null;
+    page: number;
+    forms: SubmissionDto[];
+  }> {
     const skip = (page - 1) * limit;
     const [forms, total] = await this.formService.findAllWithPagination(
       skip,
@@ -52,8 +71,12 @@ export class FormApiController {
     }
 
     const totalPages = Math.ceil(total / limit);
-    const prevPage = page > 1 ? `${host}/api/forms?page=${page - 1}&limit=${limit}` : null;
-    const nextPage = page < totalPages ? `${host}/api/forms?page=${page + 1}&limit=${limit}` : null;
+    const prevPage =
+      page > 1 ? `${host}/api/forms?page=${page - 1}&limit=${limit}` : null;
+    const nextPage =
+      page < totalPages
+        ? `${host}/api/forms?page=${page + 1}&limit=${limit}`
+        : null;
 
     const linkHeader: string[] = [];
     if (prevPage) {
@@ -71,6 +94,8 @@ export class FormApiController {
     };
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Get('/api/forms/:id')
   @ApiOperation({ summary: 'Get a form by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The form ID' })
@@ -92,6 +117,9 @@ export class FormApiController {
     return form;
   }
 
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Post('/api/form-add')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new form' })
@@ -116,6 +144,8 @@ export class FormApiController {
   }
 
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Patch('/api/form-edit/:id')
   @ApiOperation({ summary: 'Update an existing form' })
   @ApiParam({ name: 'id', type: Number, description: 'The form ID' })
@@ -134,10 +164,7 @@ export class FormApiController {
     @Param('id') id: number,
     @Body(ValidationPipe) updateFormDto: UpdateFormDto,
   ): Promise<SubmissionDto> {
-    const updatedForm = await this.formService.apiUpdate(
-      id,
-      updateFormDto,
-    );
+    const updatedForm = await this.formService.apiUpdate(id, updateFormDto);
     if (!updatedForm) {
       throw new NotFoundException(`Form with ID ${id} not found`);
     }
@@ -145,6 +172,8 @@ export class FormApiController {
   }
 
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Delete('/api/form-delete/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete an existing form' })

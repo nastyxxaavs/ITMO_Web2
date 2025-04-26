@@ -1,9 +1,9 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
-  Get, Headers,
+  Get,
+  Headers,
   HttpCode,
   HttpStatus,
   NotFoundException,
@@ -11,6 +11,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
 import { ContactService } from './contact.service';
@@ -19,14 +20,29 @@ import { UpdateContactDto } from './dto/update-contact.dto';
 import { ContactDto } from './dto/contact.dto';
 import { FirmDto } from '../firm/dto/firm.dto';
 import { FirmService } from '../firm/firm.service';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { NotFoundResponse } from '../common/response';
+import { AuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../user/entities/user.entity';
 
 @ApiTags('contact')
 @Controller()
 export class ContactApiController {
-  constructor(private readonly contactService: ContactService, private readonly firmService: FirmService) {}
+  constructor(
+    private readonly contactService: ContactService,
+    private readonly firmService: FirmService,
+  ) {}
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Get('/api/contacts')
   @ApiResponse({
     status: 200,
@@ -42,7 +58,12 @@ export class ContactApiController {
     @Query('page') page = 1,
     @Query('limit') limit = 3,
     @Headers('host') host: string,
-  ): Promise<{ total: number; links: string | null; page: number; contacts: ContactDto[] }> {
+  ): Promise<{
+    total: number;
+    links: string | null;
+    page: number;
+    contacts: ContactDto[];
+  }> {
     const skip = (page - 1) * limit;
     const [contacts, total] = await this.contactService.findAllWithPagination(
       skip,
@@ -54,8 +75,12 @@ export class ContactApiController {
     }
 
     const totalPages = Math.ceil(total / limit);
-    const prevPage = page > 1 ? `${host}/api/contacts?page=${page - 1}&limit=${limit}` : null;
-    const nextPage = page < totalPages ? `${host}/api/contacts?page=${page + 1}&limit=${limit}` : null;
+    const prevPage =
+      page > 1 ? `${host}/api/contacts?page=${page - 1}&limit=${limit}` : null;
+    const nextPage =
+      page < totalPages
+        ? `${host}/api/contacts?page=${page + 1}&limit=${limit}`
+        : null;
 
     const linkHeader: string[] = [];
     if (prevPage) {
@@ -73,6 +98,8 @@ export class ContactApiController {
     };
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Get('/api/contacts/:id')
   @ApiOperation({ summary: 'Get a contact by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The contact ID' })
@@ -94,7 +121,8 @@ export class ContactApiController {
     return contact;
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Get('/api/contacts/:id/firm')
   @ApiOperation({ summary: 'Get a contact`s firm by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The contact ID' })
@@ -114,7 +142,7 @@ export class ContactApiController {
     name: string;
     description: string;
     id: number;
-    requestIds: number[] | undefined
+    requestIds: number[] | undefined;
   }> {
     const contact = await this.contactService.findOne(id);
     if (!contact) {
@@ -129,6 +157,8 @@ export class ContactApiController {
     return firm;
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Post('/api/contact-add')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new contact' })
@@ -145,10 +175,11 @@ export class ContactApiController {
   async create(
     @Body(ValidationPipe) createContactDto: CreateContactDto,
   ): Promise<ContactDto> {
-      return await this.contactService.create(createContactDto);
+    return await this.contactService.create(createContactDto);
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Patch('/api/contact-edit/:id')
   @ApiOperation({ summary: 'Update an existing contact' })
   @ApiParam({ name: 'id', type: Number, description: 'The contact ID' })
@@ -177,7 +208,8 @@ export class ContactApiController {
     return updatedContact;
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Delete('/api/contact-delete/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete an existing contact' })

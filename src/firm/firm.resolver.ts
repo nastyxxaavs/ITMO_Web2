@@ -1,22 +1,21 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { FirmService } from './firm.service';
-import { CreateFirmDto } from './dto/create-firm.dto';
-import { UpdateFirmDto } from './dto/update-firm.dto';
-import { FirmDto } from './dto/firm.dto';
-import { PaginatedContacts } from '../contact/dto/paginated-contact_gql.output';
-import { Contact } from '../contact/dto/contact_gql.output';
 import { PaginatedFirms } from './dto/paginated-firm_gql.output';
 import { Firm } from './dto/firm_gql.output';
 import { CreateFirmInput } from './dto/create-firm_gql.input';
 import { UpdateFirmInput } from './dto/update-firm_gql.input';
-
+import { UseGuards } from '@nestjs/common';
+import { AuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../user/entities/user.entity';
 
 @Resolver(() => Firm)
 export class FirmResolver {
   constructor(private readonly firmService: FirmService) {}
 
-
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Query(() => PaginatedFirms, { name: 'getFirms' })
   async getFirms(
     @Args('page', { type: () => Int, defaultValue: 1 }) page: number,
@@ -30,16 +29,20 @@ export class FirmResolver {
       name: string;
       description: string;
       id: number;
-      requestIds: number[] | undefined
+      requestIds: number[] | undefined;
     }[];
-    page: number
+    page: number;
   }> {
     const skip = (page - 1) * limit;
-    const [firms, total] = await this.firmService.findAllWithPagination(skip, limit);
+    const [firms, total] = await this.firmService.findAllWithPagination(
+      skip,
+      limit,
+    );
 
     const totalPages = Math.ceil(total / limit);
     const prevPage = page > 1 ? `?page=${page - 1}&limit=${limit}` : null;
-    const nextPage = page < totalPages ? `?page=${page + 1}&limit=${limit}` : null;
+    const nextPage =
+      page < totalPages ? `?page=${page + 1}&limit=${limit}` : null;
 
     const links: string[] = [];
     if (prevPage) links.push(`<${prevPage}>; rel="prev"`);
@@ -53,7 +56,8 @@ export class FirmResolver {
     };
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Query(() => Firm, { name: 'getFirm' })
   async getFirm(@Args('id', { type: () => Int }) id: number) {
     const firm = await this.firmService.findOne(id);
@@ -63,7 +67,8 @@ export class FirmResolver {
     return firm;
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => Firm)
   async createFirm(
     @Args('createFirmInput') createFirmInput: CreateFirmInput,
@@ -72,6 +77,8 @@ export class FirmResolver {
   }
 
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => Firm)
   async updateFirm(
     @Args('id', { type: () => Int }) id: number,
@@ -85,8 +92,12 @@ export class FirmResolver {
   }
 
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => Boolean)
-  async removeFirm(@Args('id', { type: () => Int }) id: number): Promise<boolean> {
+  async removeFirm(
+    @Args('id', { type: () => Int }) id: number,
+  ): Promise<boolean> {
     const removed = await this.firmService.remove(id);
     if (!removed) {
       throw new Error(`Firm with ID ${id} not found`);

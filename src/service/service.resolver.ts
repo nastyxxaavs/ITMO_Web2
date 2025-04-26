@@ -1,17 +1,24 @@
-import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent } from '@nestjs/graphql';
+import {
+  Args,
+  Int,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql';
 import { ServiceService } from './service.service';
-import { ServiceDto } from './dto/service.dto';
-import { CreateServiceDto } from './dto/create-service.dto';
-import { UpdateServiceDto } from './dto/update-service.dto';
 import { FirmService } from '../firm/firm.service';
-import { FirmDto } from '../firm/dto/firm.dto';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, UseGuards } from '@nestjs/common';
 import { Service } from './dto/service_gql.output';
 import { PaginatedServices } from './dto/paginatec-service_gql.output';
 import { Firm } from '../firm/dto/firm_gql.output';
 import { CreateServiceInput } from './dto/create-service_gql.input';
 import { UpdateServiceInput } from './dto/update-service_gql.input';
-import { Contact } from '../contact/dto/contact_gql.output';
+import { AuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../user/entities/user.entity';
 
 @Resolver(() => Service)
 export class ServiceResolver {
@@ -20,14 +27,18 @@ export class ServiceResolver {
     private readonly firmService: FirmService,
   ) {}
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Query(() => PaginatedServices, { name: 'getServices' })
   async getServices(
     @Args('page', { type: () => Int, defaultValue: 1 }) page: number,
     @Args('limit', { type: () => Int, defaultValue: 3 }) limit: number,
   ): Promise<Service[]> {
     const skip = (page - 1) * limit;
-    const [services, total] = await this.serviceService.findAllWithPagination(skip, limit);
+    const [services, total] = await this.serviceService.findAllWithPagination(
+      skip,
+      limit,
+    );
 
     if (!services || total === 0) {
       throw new NotFoundException('No services found');
@@ -35,9 +46,12 @@ export class ServiceResolver {
     return services;
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Query(() => Service, { name: 'getService' })
-  async getService(@Args('id', { type: () => Int }) id: number): Promise<Service> {
+  async getService(
+    @Args('id', { type: () => Int }) id: number,
+  ): Promise<Service> {
     const service = await this.serviceService.findOne(id);
     if (!service) {
       throw new NotFoundException(`Service with ID ${id} not found`);
@@ -45,8 +59,8 @@ export class ServiceResolver {
     return service;
   }
 
-
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @ResolveField(() => Firm, { name: 'firm', nullable: true })
   async getFirm(@Parent() service: Service): Promise<{
     contactId: number[] | undefined;
@@ -54,7 +68,7 @@ export class ServiceResolver {
     name: string;
     description: string;
     id: number;
-    requestIds: number[] | undefined
+    requestIds: number[] | undefined;
   } | null> {
     if (!service.firmId) return null;
 
@@ -63,6 +77,8 @@ export class ServiceResolver {
   }
 
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => Service)
   async createService(
     @Args('createServiceInput') createServiceInput: CreateServiceInput,
@@ -71,12 +87,17 @@ export class ServiceResolver {
   }
 
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => Service)
   async updateService(
     @Args('id', { type: () => Int }) id: number,
     @Args('updateServiceInput') updateServiceInput: UpdateServiceInput,
   ): Promise<Service> {
-    const updatedService = await this.serviceService.apiUpdate(id, updateServiceInput);
+    const updatedService = await this.serviceService.apiUpdate(
+      id,
+      updateServiceInput,
+    );
     if (!updatedService) {
       throw new NotFoundException(`Service with ID ${id} not found`);
     }
@@ -84,8 +105,12 @@ export class ServiceResolver {
   }
 
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => Boolean)
-  async removeService(@Args('id', { type: () => Int }) id: number): Promise<boolean> {
+  async removeService(
+    @Args('id', { type: () => Int }) id: number,
+  ): Promise<boolean> {
     const removed = await this.serviceService.remove(id);
     if (!removed) {
       throw new NotFoundException(`Service with ID ${id} not found`);

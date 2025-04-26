@@ -3,7 +3,8 @@ import {
   Body,
   Controller,
   Delete,
-  Get, Headers,
+  Get,
+  Headers,
   HttpCode,
   HttpStatus,
   NotFoundException,
@@ -11,6 +12,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
 import { ServiceService } from './service.service';
@@ -18,15 +20,30 @@ import { ServiceDto } from './dto/service.dto';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { FirmService } from '../firm/firm.service';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { FirmDto } from '../firm/dto/firm.dto';
 import { NotFoundResponse } from '../common/response';
+import { AuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../user/entities/user.entity';
 
 @ApiTags('service')
 @Controller()
 export class ServiceApiController {
-  constructor(private readonly serviceService: ServiceService, private readonly firmService: FirmService) {}
+  constructor(
+    private readonly serviceService: ServiceService,
+    private readonly firmService: FirmService,
+  ) {}
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Get('/api/services')
   @ApiResponse({
     status: 200,
@@ -42,7 +59,12 @@ export class ServiceApiController {
     @Query('page') page = 1,
     @Query('limit') limit = 3,
     @Headers('host') host: string,
-  ): Promise<{ total: number; links: string | null; services: ServiceDto[]; page: number }> {
+  ): Promise<{
+    total: number;
+    links: string | null;
+    services: ServiceDto[];
+    page: number;
+  }> {
     const skip = (page - 1) * limit;
     const [services, total] = await this.serviceService.findAllWithPagination(
       skip,
@@ -54,8 +76,12 @@ export class ServiceApiController {
     }
 
     const totalPages = Math.ceil(total / limit);
-    const prevPage = page > 1 ? `${host}/api/services?page=${page - 1}&limit=${limit}` : null;
-    const nextPage = page < totalPages ? `${host}/api/services?page=${page + 1}&limit=${limit}` : null;
+    const prevPage =
+      page > 1 ? `${host}/api/services?page=${page - 1}&limit=${limit}` : null;
+    const nextPage =
+      page < totalPages
+        ? `${host}/api/services?page=${page + 1}&limit=${limit}`
+        : null;
 
     const linkHeader: string[] = [];
     if (prevPage) {
@@ -73,7 +99,8 @@ export class ServiceApiController {
     };
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Get('/api/services/:id')
   @ApiOperation({ summary: 'Get a service by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The service ID' })
@@ -95,6 +122,8 @@ export class ServiceApiController {
     return service;
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Get('/api/services/:id/firm')
   @ApiOperation({ summary: 'Get a service`s firm by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The service ID' })
@@ -114,7 +143,7 @@ export class ServiceApiController {
     name: string;
     description: string;
     id: number;
-    requestIds: number[] | undefined
+    requestIds: number[] | undefined;
   }> {
     const service = await this.serviceService.findOne(id);
     if (!service) {
@@ -129,6 +158,8 @@ export class ServiceApiController {
     return firm;
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Post('/api/service-add')
   @ApiOperation({ summary: 'Create a new service' })
   @ApiBody({ type: CreateServiceDto })
@@ -152,7 +183,8 @@ export class ServiceApiController {
     }
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Patch('/api/service-edit/:id')
   @ApiOperation({ summary: 'Update an existing service' })
   @ApiParam({ name: 'id', type: Number, description: 'The service ID' })
@@ -182,6 +214,8 @@ export class ServiceApiController {
   }
 
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Delete('/api/service-delete/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete an existing service' })

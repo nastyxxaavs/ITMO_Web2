@@ -3,7 +3,8 @@ import {
   Body,
   Controller,
   Delete,
-  Get, Headers,
+  Get,
+  Headers,
   HttpCode,
   HttpStatus,
   NotFoundException,
@@ -11,6 +12,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
@@ -18,18 +20,30 @@ import { UserDto } from './dto/user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FirmService } from '../firm/firm.service';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ContactDto } from '../contact/dto/contact.dto';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { NotFoundResponse } from '../common/response';
 import { FirmDto } from '../firm/dto/firm.dto';
-import { CreateContactDto } from '../contact/dto/create-contact.dto';
-import { UpdateContactDto } from '../contact/dto/update-contact.dto';
+import { AuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from './entities/user.entity';
 
 @ApiTags('user')
 @Controller()
 export class UserApiController {
-  constructor(private readonly userService: UserService, private readonly firmService: FirmService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly firmService: FirmService,
+  ) {}
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Get('/api/users')
   @ApiResponse({
     status: 200,
@@ -45,7 +59,12 @@ export class UserApiController {
     @Query('page') page = 1,
     @Query('limit') limit = 3,
     @Headers('host') host: string,
-  ): Promise<{ total: number; links: string | null; page: number; users: UserDto[] }> {
+  ): Promise<{
+    total: number;
+    links: string | null;
+    page: number;
+    users: UserDto[];
+  }> {
     const skip = (page - 1) * limit;
     const [users, total] = await this.userService.findAllWithPagination(
       skip,
@@ -57,8 +76,12 @@ export class UserApiController {
     }
 
     const totalPages = Math.ceil(total / limit);
-    const prevPage = page > 1 ? `${host}/api/users?page=${page - 1}&limit=${limit}` : null;
-    const nextPage = page < totalPages ? `${host}/api/users?page=${page + 1}&limit=${limit}` : null;
+    const prevPage =
+      page > 1 ? `${host}/api/users?page=${page - 1}&limit=${limit}` : null;
+    const nextPage =
+      page < totalPages
+        ? `${host}/api/users?page=${page + 1}&limit=${limit}`
+        : null;
 
     const linkHeader: string[] = [];
     if (prevPage) {
@@ -76,6 +99,8 @@ export class UserApiController {
     };
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Get('/api/users/:id')
   @ApiOperation({ summary: 'Get a user by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The user ID' })
@@ -97,7 +122,8 @@ export class UserApiController {
     return user;
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Get('/api/users/:id/firm')
   @ApiOperation({ summary: 'Get a user`s firm by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The user ID' })
@@ -117,10 +143,10 @@ export class UserApiController {
     name: string;
     description: string;
     id: number;
-    requestIds: number[] | undefined
+    requestIds: number[] | undefined;
   }> {
     const user = await this.userService.findOne(id);
-    if (! user) {
+    if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
@@ -132,6 +158,8 @@ export class UserApiController {
     return firm;
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Post('/api/user-add')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new user' })
@@ -155,7 +183,8 @@ export class UserApiController {
     }
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Patch('/api/user-edit/:id')
   @ApiOperation({ summary: 'Update an existing user' })
   @ApiParam({ name: 'id', type: Number, description: 'The user ID' })
@@ -174,10 +203,7 @@ export class UserApiController {
     @Param('id') id: number,
     @Body(ValidationPipe) updateUserDto: UpdateUserDto,
   ): Promise<UserDto> {
-    const updatedUser = await this.userService.apiUpdate(
-      id,
-      updateUserDto,
-    );
+    const updatedUser = await this.userService.apiUpdate(id, updateUserDto);
     if (!updatedUser) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
@@ -185,6 +211,8 @@ export class UserApiController {
   }
 
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Delete('/api/user-delete/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete an existing user' })

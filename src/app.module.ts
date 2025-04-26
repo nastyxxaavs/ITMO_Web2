@@ -106,7 +106,7 @@ import { UserService } from './user/user.service';
     MemberModule,
     RequestsModule,
     ServiceModule,
-    //UserModule,
+    UserModule,
     FormModule,
     AuthModule,
   ],

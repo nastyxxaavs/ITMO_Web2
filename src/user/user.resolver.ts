@@ -1,40 +1,55 @@
-import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent } from '@nestjs/graphql';
+import {
+  Args,
+  Int,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql';
 import { UserService } from './user.service';
 import { FirmService } from '../firm/firm.service';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, UseGuards } from '@nestjs/common';
 import { User } from './dto/user_gql.output';
 import { PaginatedUsers } from './dto/paginated-user_gql.output';
 import { Firm } from '../firm/dto/firm_gql.output';
 import { UpdateUserInput } from './dto/update-user_gql.input';
 import { CreateUserInput } from './dto/create-user_gql.input';
 import { AuthStatus, Role } from './entities/user.entity';
+import { AuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 
 @Resolver(() => User)
 export class UserResolver {
   constructor(
     private readonly userService: UserService,
     private readonly firmService: FirmService,
-
   ) {}
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Query(() => PaginatedUsers, { name: 'getUsers' })
   async getUsers(
     @Args('page', { type: () => Int, defaultValue: 1 }) page: number,
     @Args('limit', { type: () => Int, defaultValue: 3 }) limit: number,
-  ){
+  ) {
     const skip = (page - 1) * limit;
-    const [users, total] = await this.userService.findAllWithPagination(skip, limit);
+    const [users, total] = await this.userService.findAllWithPagination(
+      skip,
+      limit,
+    );
 
     if (!users || total === 0) {
       throw new NotFoundException('No users found');
     }
     return {
-      users: users ?? []
+      users: users ?? [],
     };
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Query(() => User, { name: 'getUser' })
   async getUser(@Args('id', { type: () => Int }) id: number) {
     const user = await this.userService.findOne(id);
@@ -44,7 +59,8 @@ export class UserResolver {
     return user;
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @ResolveField(() => Firm, { name: 'firm', nullable: true })
   async getFirm(@Parent() user: User): Promise<{
     contactId: number[] | undefined;
@@ -52,7 +68,7 @@ export class UserResolver {
     name: string;
     description: string;
     id: number;
-    requestIds: number[] | undefined
+    requestIds: number[] | undefined;
   } | null> {
     if (!user.firmName) return null;
 
@@ -61,14 +77,16 @@ export class UserResolver {
   }
 
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => User)
-  async createUser(
-    @Args('createUserInput') createUserInput: CreateUserInput,
-  ) {
+  async createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
     return this.userService.create(createUserInput);
   }
 
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => User)
   async updateUser(
     @Args('id', { type: () => Int }) id: number,
@@ -82,8 +100,12 @@ export class UserResolver {
   }
 
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => Boolean)
-  async removeUser(@Args('id', { type: () => Int }) id: number): Promise<boolean> {
+  async removeUser(
+    @Args('id', { type: () => Int }) id: number,
+  ): Promise<boolean> {
     const removed = await this.userService.remove(id);
     if (!removed) {
       throw new NotFoundException(`User with ID ${id} not found`);
@@ -91,8 +113,10 @@ export class UserResolver {
     return true;
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => User)
-  async authorizeUser(@Args('id', { type: () => Int }) id: number){
+  async authorizeUser(@Args('id', { type: () => Int }) id: number) {
     const user = await this.userService.findOne(id);
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
@@ -102,6 +126,8 @@ export class UserResolver {
   }
 
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => User)
   async unauthorizeUser(@Args('id', { type: () => Int }) id: number) {
     const user = await this.userService.findOne(id);
@@ -112,7 +138,8 @@ export class UserResolver {
     user.status = AuthStatus.UNAUTHORIZED;
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => User)
   async setUserRole(
     @Args('id', { type: () => Int }) id: number,
@@ -123,6 +150,5 @@ export class UserResolver {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
     user.role = role;
-
   }
 }

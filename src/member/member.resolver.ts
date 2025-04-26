@@ -1,4 +1,12 @@
-import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent } from '@nestjs/graphql';
+import {
+  Args,
+  Int,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql';
 import { MemberService } from './member.service';
 import { FirmService } from '../firm/firm.service';
 import { TeamMember } from './dto/member_gql.output';
@@ -6,6 +14,11 @@ import { PaginatedMembers } from './dto/paginated-member_gql.output';
 import { Firm } from '../firm/dto/firm_gql.output';
 import { UpdateMemberInput } from './dto/update-member_gql.input';
 import { CreateMemberInput } from './dto/create-member_gql.input';
+import { UseGuards } from '@nestjs/common';
+import { AuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../user/entities/user.entity';
 
 @Resolver(() => TeamMember)
 export class MemberResolver {
@@ -14,7 +27,8 @@ export class MemberResolver {
     private readonly firmService: FirmService,
   ) {}
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Query(() => PaginatedMembers, { name: 'getMembers' })
   async getMembers(
     @Args('page', { type: () => Int, defaultValue: 1 }) page: number,
@@ -23,9 +37,12 @@ export class MemberResolver {
     return this.memberService.findAllWithPagination(page, limit);
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Query(() => TeamMember, { name: 'getMember' })
-  async getMember(@Args('id', { type: () => Int }) id: number): Promise<TeamMember> {
+  async getMember(
+    @Args('id', { type: () => Int }) id: number,
+  ): Promise<TeamMember> {
     const member = await this.memberService.findOne(id);
     if (!member) {
       throw new Error(`Member with ID ${id} not found`);
@@ -33,22 +50,8 @@ export class MemberResolver {
     return member;
   }
 
-
-  @Query(() => Firm, { name: 'getMemberFirm' })
-  async getMemberFirm(@Args('id', { type: () => Int }) id: number) {
-    const member = await this.memberService.findOne(id);
-    if (!member) {
-      throw new Error(`Member with ID ${id} not found`);
-    }
-
-    const firm = await this.firmService.findOneByName(member.firmName);
-    if (!firm) {
-      throw new Error(`No firm associated with member ID ${id}`);
-    }
-
-    return firm;
-  }
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @ResolveField(() => Firm, { name: 'firm', nullable: true })
   async getFirm(@Parent() member: TeamMember): Promise<{
     contactId: number[] | undefined;
@@ -56,7 +59,7 @@ export class MemberResolver {
     name: string;
     description: string;
     id: number;
-    requestIds: number[] | undefined
+    requestIds: number[] | undefined;
   } | null> {
     if (!member.firmName) return null;
 
@@ -64,7 +67,8 @@ export class MemberResolver {
     return firm || null;
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => TeamMember)
   async createMember(
     @Args('createMemberInput') createMemberInput: CreateMemberInput,
@@ -73,21 +77,29 @@ export class MemberResolver {
   }
 
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => TeamMember)
   async updateMember(
     @Args('id', { type: () => Int }) id: number,
     @Args('updateMemberInput') updateMemberInput: UpdateMemberInput,
   ): Promise<TeamMember> {
-    const updatedMember = await this.memberService.apiUpdate(id, updateMemberInput);
+    const updatedMember = await this.memberService.apiUpdate(
+      id,
+      updateMemberInput,
+    );
     if (!updatedMember) {
       throw new Error(`Member with ID ${id} not found`);
     }
     return updatedMember;
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => Boolean)
-  async removeMember(@Args('id', { type: () => Int }) id: number): Promise<boolean> {
+  async removeMember(
+    @Args('id', { type: () => Int }) id: number,
+  ): Promise<boolean> {
     const removed = await this.memberService.remove(id);
     if (!removed) {
       throw new Error(`Member with ID ${id} not found`);
@@ -95,6 +107,8 @@ export class MemberResolver {
     return true;
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => TeamMember)
   async assignFirmToMember(
     @Args('memberId', { type: () => Int }) memberId: number,
@@ -103,12 +117,12 @@ export class MemberResolver {
     return this.memberService.assignFirm(memberId, firmName);
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Mutation(() => TeamMember)
   async removeFirmFromMember(
     @Args('memberId', { type: () => Int }) memberId: number,
   ) {
     return this.memberService.removeFirm(memberId);
   }
-
-
 }

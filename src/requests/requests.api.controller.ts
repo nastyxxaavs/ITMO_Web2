@@ -3,7 +3,8 @@ import {
   Body,
   Controller,
   Delete,
-  Get, Headers,
+  Get,
+  Headers,
   HttpCode,
   HttpStatus,
   NotFoundException,
@@ -11,6 +12,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
 import { RequestsService } from './requests.service';
@@ -19,18 +21,30 @@ import { ClientRequestEntity, Status } from './entities/request.entity';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { FirmService } from '../firm/firm.service';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ContactDto } from '../contact/dto/contact.dto';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { NotFoundResponse } from '../common/response';
 import { FirmDto } from '../firm/dto/firm.dto';
-import { CreateContactDto } from '../contact/dto/create-contact.dto';
-import { UpdateContactDto } from '../contact/dto/update-contact.dto';
+import { AuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../user/entities/user.entity';
 
 @ApiTags('requests')
 @Controller()
 export class RequestsApiController {
-  constructor(private readonly requestsService: RequestsService, private readonly firmService: FirmService) {}
+  constructor(
+    private readonly requestsService: RequestsService,
+    private readonly firmService: FirmService,
+  ) {}
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Get('/api/requests')
   @ApiResponse({
     status: 200,
@@ -58,9 +72,9 @@ export class RequestsApiController {
       userId: number | undefined;
       teamMemberName: string | undefined;
       serviceRequested: string | undefined;
-      status: Status
+      status: Status;
     }[];
-    page: number
+    page: number;
   }> {
     const skip = (page - 1) * limit;
     const [requests, total] = await this.requestsService.findAllWithPagination(
@@ -73,8 +87,12 @@ export class RequestsApiController {
     }
 
     const totalPages = Math.ceil(total / limit);
-    const prevPage = page > 1 ? `${host}/api/requests?page=${page - 1}&limit=${limit}` : null;
-    const nextPage = page < totalPages ? `${host}/api/requests?page=${page + 1}&limit=${limit}` : null;
+    const prevPage =
+      page > 1 ? `${host}/api/requests?page=${page - 1}&limit=${limit}` : null;
+    const nextPage =
+      page < totalPages
+        ? `${host}/api/requests?page=${page + 1}&limit=${limit}`
+        : null;
 
     const linkHeader: string[] = [];
     if (prevPage) {
@@ -92,6 +110,8 @@ export class RequestsApiController {
     };
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Get('/api/requests/:id')
   @ApiOperation({ summary: 'Get a request by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The request ID' })
@@ -114,7 +134,7 @@ export class RequestsApiController {
     userId: number | undefined;
     teamMemberName: string | undefined;
     serviceRequested: string | undefined;
-    status: Status
+    status: Status;
   }> {
     const request = await this.requestsService.findOne(id);
     if (!request) {
@@ -123,7 +143,8 @@ export class RequestsApiController {
     return request;
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Get('/api/requests/:id/firm')
   @ApiOperation({ summary: 'Get a request`s firm by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The request ID' })
@@ -143,7 +164,7 @@ export class RequestsApiController {
     name: string;
     description: string;
     id: number;
-    requestIds: number[] | undefined
+    requestIds: number[] | undefined;
   }> {
     const request = await this.requestsService.findOne(id);
     if (!request) {
@@ -158,7 +179,8 @@ export class RequestsApiController {
     return firm;
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Post('/api/request-add')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new request' })
@@ -182,7 +204,8 @@ export class RequestsApiController {
     }
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Patch('/api/request-edit/:id')
   @ApiOperation({ summary: 'Update an existing request' })
   @ApiParam({ name: 'id', type: Number, description: 'The request ID' })
@@ -209,7 +232,7 @@ export class RequestsApiController {
     userId: number | undefined;
     teamMemberName: string | undefined;
     serviceRequested: string | undefined;
-    status: Status
+    status: Status;
   }> {
     const updatedRequest = await this.requestsService.apiUpdate(
       id,
@@ -221,7 +244,8 @@ export class RequestsApiController {
     return updatedRequest;
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Delete('/api/request-delete/:id')
   @ApiOperation({ summary: 'Delete an existing request' })
   @ApiParam({ name: 'id', type: Number, description: 'The request ID' })

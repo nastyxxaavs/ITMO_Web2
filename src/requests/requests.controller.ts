@@ -1,29 +1,36 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  ValidationPipe,
+  Get,
   HttpCode,
-  HttpStatus, NotFoundException, Render, Req, Sse, Res, UseGuards,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Render,
+  Req,
+  Res,
+  Sse,
+  UseGuards,
+  ValidationPipe,
 } from '@nestjs/common';
 import { RequestsService } from './requests.service';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { Status } from './entities/request.entity';
 import { interval, map, mergeWith, Observable } from 'rxjs';
-import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
+import { ApiExcludeController } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { PublicAccess } from '../auth/public-access.decorator';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../user/entities/user.entity';
 
 @ApiExcludeController()
 @Controller()
 export class RequestsController {
-  constructor(private readonly requestsService: RequestsService) {
-  }
+  constructor(private readonly requestsService: RequestsService) {}
 
   @Sse('request-events')
   sendEvents(@Res() res): Observable<MessageEvent> {
@@ -31,12 +38,13 @@ export class RequestsController {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
     return interval(50000).pipe(
-      map(() => ({ data: { type: 'heartbeat' } } as MessageEvent)),
+      map(() => ({ data: { type: 'heartbeat' } }) as MessageEvent),
       mergeWith(
-        this.requestsService.getEventStream().pipe(
-          map(data => ({ data } as MessageEvent))
-        )
-      ))
+        this.requestsService
+          .getEventStream()
+          .pipe(map((data) => ({ data }) as MessageEvent)),
+      ),
+    );
   }
 
   @PublicAccess()
@@ -46,18 +54,21 @@ export class RequestsController {
     const result = {
       isAuthenticated: req.session.isAuthenticated,
       user: req.session.user?.username,
-      content: "request-add",
+      content: 'request-add',
       titleContent: 'Добавить запрос',
       customStyle: '../styles/entity-add.css',
     };
     console.log('Render data:', result);
-    return result
+    return result;
   }
 
   @PublicAccess()
   @Post('/request-add')
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body(ValidationPipe) createRequestDto: CreateRequestDto, @Req() req) {
+  async create(
+    @Body(ValidationPipe) createRequestDto: CreateRequestDto,
+    @Req() req,
+  ) {
     await this.requestsService.create(createRequestDto);
     this.requestsService.notifyRequestChange('Request added'); //SSE
     return {
@@ -67,10 +78,11 @@ export class RequestsController {
     };
   }
 
-  @PublicAccess()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Get('/requests')
   @Render('general')
-  async findAll(@Req() req):Promise<{
+  async findAll(@Req() req): Promise<{
     customStyle: string;
     titleContent: string;
     isAuthenticated: any;
@@ -83,11 +95,11 @@ export class RequestsController {
       userId: number | undefined;
       teamMemberName: string | undefined;
       serviceRequested: string | undefined;
-      status: Status
+      status: Status;
     }[];
     user: string | null;
     content: string;
-    alertMessage?: string
+    alertMessage?: string;
   }> {
     const isAuthenticated = req.session.isAuthenticated;
     const requests = await this.requestsService.findAll();
@@ -99,7 +111,8 @@ export class RequestsController {
         content: 'requests',
         titleContent: 'Список запросов',
         customStyle: '../styles/entities.css',
-        alertMessage: "Запросы не найдены",};
+        alertMessage: 'Запросы не найдены',
+      };
     }
     return {
       isAuthenticated,
@@ -107,20 +120,21 @@ export class RequestsController {
       requests,
       content: 'requests',
       titleContent: 'Список запросов',
-      customStyle: '../styles/entities.css', };
+      customStyle: '../styles/entities.css',
+    };
   }
 
   @PublicAccess()
   @Get('/requests/:id')
   @Render('general')
-  async findOne(@Param('id') id: number){
+  async findOne(@Param('id') id: number) {
     const request = await this.requestsService.findOne(id);
     if (!request) {
       return {
         content: 'request',
         titleContent: 'Требуемый запрос',
         customStyle: '../styles/entity-info.css',
-        alertMessage: "Запрос не найден",
+        alertMessage: 'Запрос не найден',
       };
     }
     return {
@@ -138,7 +152,7 @@ export class RequestsController {
   @PublicAccess()
   @Get('/request-edit/:id')
   @Render('general')
-  showEditForm(@Req() req, @Param('id') id: string){
+  showEditForm(@Req() req, @Param('id') id: string) {
     return {
       id,
       isAuthenticated: req.session.isAuthenticated,
@@ -149,21 +163,23 @@ export class RequestsController {
     };
   }
 
-
   @PublicAccess()
   @Patch('/request-edit/:id')
   @HttpCode(HttpStatus.OK)
-  async update(@Param('id') id: number, @Body() updateRequestDto: UpdateRequestDto) {
+  async update(
+    @Param('id') id: number,
+    @Body() updateRequestDto: UpdateRequestDto,
+  ) {
     if (await this.requestsService.update(+id, updateRequestDto)) {
       this.requestsService.notifyRequestChange('Request updated'); //SSE
       return {
         statusCode: HttpStatus.OK,
-      }
+      };
     }
     this.requestsService.notifyRequestChange('Failed update');
     return {
       statusCode: HttpStatus.NOT_MODIFIED,
-    }
+    };
   }
 
   @PublicAccess()
@@ -172,11 +188,12 @@ export class RequestsController {
   async showDeleteOpportunity(@Req() req, @Param('id') id: string) {
     return {
       id,
-      isAuthenticated:req.session.isAuthenticated,
+      isAuthenticated: req.session.isAuthenticated,
       user: req.session.user?.username,
-      content: "request-delete",
+      content: 'request-delete',
       titleContent: 'Удалить запрос',
-      customStyle: '../styles/entity-edit.css',};
+      customStyle: '../styles/entity-edit.css',
+    };
   }
 
   @PublicAccess()
@@ -187,7 +204,7 @@ export class RequestsController {
       this.requestsService.notifyRequestChange('Request deleted'); //SSE
       return {
         statusCode: HttpStatus.OK,
-      }
+      };
     }
     this.requestsService.notifyRequestChange('Failed delete');
     return { statusCode: HttpStatus.NOT_MODIFIED };

@@ -3,7 +3,8 @@ import {
   Body,
   Controller,
   Delete,
-  Get, Headers,
+  Get,
+  Headers,
   HttpCode,
   HttpStatus,
   NotFoundException,
@@ -11,6 +12,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
 import { MemberService } from './member.service';
@@ -18,15 +20,30 @@ import { TeamMemberDto } from './dto/member.dto';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
 import { FirmService } from '../firm/firm.service';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { FirmDto } from '../firm/dto/firm.dto';
 import { NotFoundResponse } from '../common/response';
+import { AuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../user/entities/user.entity';
 
 @ApiTags('member')
 @Controller()
 export class MemberApiController {
-  constructor(private readonly memberService: MemberService, private readonly firmService: FirmService) {}
+  constructor(
+    private readonly memberService: MemberService,
+    private readonly firmService: FirmService,
+  ) {}
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Get('/api/members')
   @ApiResponse({
     status: 200,
@@ -42,7 +59,12 @@ export class MemberApiController {
     @Query('page') page = 1,
     @Query('limit') limit = 3,
     @Headers('host') host: string,
-  ): Promise<{ total: number; members: TeamMemberDto[]; links: string | null; page: number }> {
+  ): Promise<{
+    total: number;
+    members: TeamMemberDto[];
+    links: string | null;
+    page: number;
+  }> {
     const skip = (page - 1) * limit;
     const [members, total] = await this.memberService.findAllWithPagination(
       skip,
@@ -54,8 +76,12 @@ export class MemberApiController {
     }
 
     const totalPages = Math.ceil(total / limit);
-    const prevPage = page > 1 ? `${host}/api/members?page=${page - 1}&limit=${limit}` : null;
-    const nextPage = page < totalPages ? `${host}/api/members?page=${page + 1}&limit=${limit}` : null;
+    const prevPage =
+      page > 1 ? `${host}/api/members?page=${page - 1}&limit=${limit}` : null;
+    const nextPage =
+      page < totalPages
+        ? `${host}/api/members?page=${page + 1}&limit=${limit}`
+        : null;
 
     const linkHeader: string[] = [];
     if (prevPage) {
@@ -73,6 +99,8 @@ export class MemberApiController {
     };
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Get('/api/members/:id')
   @ApiOperation({ summary: 'Get a member by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The member ID' })
@@ -94,7 +122,8 @@ export class MemberApiController {
     return member;
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Get('/api/members/:id/firm')
   @ApiOperation({ summary: 'Get a member`s firm by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The member ID' })
@@ -114,7 +143,7 @@ export class MemberApiController {
     name: string;
     description: string;
     id: number;
-    requestIds: number[] | undefined
+    requestIds: number[] | undefined;
   }> {
     const member = await this.memberService.findOne(id);
     if (!member) {
@@ -129,7 +158,8 @@ export class MemberApiController {
     return firm;
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Post('/api/member-add')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new member' })
@@ -154,6 +184,8 @@ export class MemberApiController {
   }
 
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Patch('/api/member-edit/:id')
   @ApiOperation({ summary: 'Update an existing member' })
   @ApiParam({ name: 'id', type: Number, description: 'The member ID' })
@@ -182,7 +214,8 @@ export class MemberApiController {
     return updatedMember;
   }
 
-
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Delete('/api/member-delete/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete an existing member' })

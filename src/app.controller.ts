@@ -36,7 +36,7 @@ export class AppController {
     const user = await this.userService.validateUser(body.username, body.password);
     if (user) {
       req.session.isAuthenticated = true;
-      req.session.user = { username: user.username};
+      req.session.user = { username: user.username, role: user.role};
       return { url: '/main' };
     }
     else

@@ -3,7 +3,8 @@ import {
   Body,
   Controller,
   Delete,
-  Get, Headers,
+  Get,
+  Headers,
   HttpCode,
   HttpStatus,
   NotFoundException,
@@ -11,20 +12,33 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
 import { FirmService } from './firm.service';
 import { FirmDto } from './dto/firm.dto';
 import { CreateFirmDto } from './dto/create-firm.dto';
 import { UpdateFirmDto } from './dto/update-firm.dto';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { NotFoundResponse } from '../common/response';
+import { AuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../user/entities/user.entity';
 
 @ApiTags('firm')
 @Controller()
 export class FirmApiController {
   constructor(private readonly firmService: FirmService) {}
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Get('/api/firms')
   @ApiResponse({
     status: 200,
@@ -87,6 +101,8 @@ export class FirmApiController {
     };
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Get('/api/firms/:id')
   @ApiOperation({ summary: 'Get a firm by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The firm ID' })
@@ -115,6 +131,8 @@ export class FirmApiController {
     return firm;
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Post('/api/firm-add')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new firm' })
@@ -138,6 +156,9 @@ export class FirmApiController {
     }
   }
 
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Patch('/api/firm-edit/:id')
   @ApiOperation({ summary: 'Update an existing firm' })
   @ApiParam({ name: 'id', type: Number, description: 'The firm ID' })
@@ -170,6 +191,9 @@ export class FirmApiController {
     return updatedFirm;
   }
 
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Delete('/api/firm-delete/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete an existing firm' })

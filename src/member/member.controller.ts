@@ -1,30 +1,30 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
   HttpCode,
   HttpStatus,
-  ValidationPipe,
-  NotFoundException,
+  Param,
+  Patch,
+  Post,
   Render,
   Req,
+  UploadedFile,
+  UseGuards,
   UseInterceptors,
-  UploadedFile, UseGuards,
+  ValidationPipe,
 } from '@nestjs/common';
 import { MemberService } from './member.service';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
 import { TeamMemberDto } from './dto/member.dto';
-import { Position } from './entities/member.entity';
-import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
+import { ApiExcludeController } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from '../common/upload.service';
-import { AuthGuard } from '@nestjs/passport';
-import { PublicAccess } from '../auth/public-access.decorator';
+import { AuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../user/entities/user.entity';
 
 @ApiExcludeController()
 @Controller()
@@ -34,25 +34,25 @@ export class MemberController {
     private readonly uploadService: UploadService,
   ) {}
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Get('/member-add')
   @Render('general')
   showMember(@Req() req) {
-   return {
-     isAuthenticated: req.session.isAuthenticated,
-     user: req.session.user?.username,
+    return {
+      isAuthenticated: req.session.isAuthenticated,
+      user: req.session.user?.username,
       content: 'member-add',
       titleContent: 'Добавить сотрудника',
       customStyle: '../styles/entity-add.css',
     };
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Post('/member-add')
   @HttpCode(HttpStatus.CREATED)
-  @UseInterceptors(
-    FileInterceptor('photo'),
-  )
+  @UseInterceptors(FileInterceptor('photo'))
   async create(
     @UploadedFile() file: Express.Multer.File,
     @Body(ValidationPipe) createMemberDto: CreateMemberDto,
@@ -64,12 +64,18 @@ export class MemberController {
         console.log('File uploaded successfully:', createMemberDto.photoUrl);
       } catch (err) {
         console.error('Error uploading file:', err);
-        return { statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: 'Error uploading file' };
+        return {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Error uploading file',
+        };
       }
     }
     if (!file) {
       console.error('No file uploaded');
-      return { statusCode: HttpStatus.BAD_REQUEST, message: 'No file uploaded' };
+      return {
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'No file uploaded',
+      };
     }
 
     await this.memberService.create(createMemberDto);
@@ -80,7 +86,8 @@ export class MemberController {
     };
   }
 
-  @PublicAccess()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Get('/members')
   @Render('general')
   async findAll(): Promise<{
@@ -105,8 +112,8 @@ export class MemberController {
     };
   }
 
-
-  @PublicAccess()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CLIENT)
   @Get('/members/:id')
   @Render('general')
   async findOne(@Param('id') id: number) {
@@ -128,6 +135,8 @@ export class MemberController {
     };
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @UseGuards(AuthGuard)
   @Get('/member-edit/:id')
   @Render('general')
@@ -142,10 +151,15 @@ export class MemberController {
     };
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @UseGuards(AuthGuard)
   @Patch('/member-edit/:id')
   @HttpCode(HttpStatus.OK)
-  async update(@Param('id') id: number, @Body() updateMemberDto: UpdateMemberDto) {
+  async update(
+    @Param('id') id: number,
+    @Body() updateMemberDto: UpdateMemberDto,
+  ) {
     const updated = await this.memberService.update(+id, updateMemberDto);
     if (updated) {
       return { statusCode: HttpStatus.OK };
@@ -153,10 +167,14 @@ export class MemberController {
     return { statusCode: HttpStatus.NOT_MODIFIED };
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @UseGuards(AuthGuard)
   @Get('/member-delete/:id')
   @HttpCode(HttpStatus.OK)
-  async remove(@Param('id') id: number): Promise<{ success: boolean; message: string }> {
+  async remove(
+    @Param('id') id: number,
+  ): Promise<{ success: boolean; message: string }> {
     const isRemoved = await this.memberService.remove(+id);
     if (isRemoved) {
       return {
