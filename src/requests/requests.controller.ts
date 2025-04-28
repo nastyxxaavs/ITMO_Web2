@@ -12,7 +12,6 @@ import {
   Req,
   Res,
   Sse,
-  UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
 import { RequestsService } from './requests.service';
@@ -21,11 +20,7 @@ import { UpdateRequestDto } from './dto/update-request.dto';
 import { Status } from './entities/request.entity';
 import { interval, map, mergeWith, Observable } from 'rxjs';
 import { ApiExcludeController } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
-import { PublicAccess } from '../auth/public-access.decorator';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
-import { Role } from '../user/entities/user.entity';
+import { PublicAccess, VerifySession, Session as STSession } from 'supertokens-nestjs';
 
 @ApiExcludeController()
 @Controller()
@@ -33,10 +28,17 @@ export class RequestsController {
   constructor(private readonly requestsService: RequestsService) {}
 
   @Sse('request-events')
-  sendEvents(@Res() res): Observable<MessageEvent> {
+  @VerifySession()
+  sendEvents(@Res() res, @STSession() session): Observable<MessageEvent> {
+    const payload = session.getAccessTokenPayload();
+    const isAuthenticated = payload?.isAuthenticated;
+
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
+
+    console.log(`User is authenticated: ${isAuthenticated}`);
+
     return interval(50000).pipe(
       map(() => ({ data: { type: 'heartbeat' } }) as MessageEvent),
       mergeWith(
@@ -48,12 +50,14 @@ export class RequestsController {
   }
 
   @PublicAccess()
+  @VerifySession()
   @Get('/request-add')
   @Render('general')
-  showForm(@Req() req) {
+  showForm(@STSession() session: any) {
+    const payload = session.getAccessTokenPayload();
     const result = {
-      isAuthenticated: req.session.isAuthenticated,
-      user: req.session.user?.username,
+      isAuthenticated: payload.isAuthenticated,
+      user: payload.username,
       content: 'request-add',
       titleContent: 'Добавить запрос',
       customStyle: '../styles/entity-add.css',
@@ -63,26 +67,28 @@ export class RequestsController {
   }
 
   @PublicAccess()
+  @VerifySession()
   @Post('/request-add')
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body(ValidationPipe) createRequestDto: CreateRequestDto,
-    @Req() req,
+    @STSession() session: any,
   ) {
+    const payload = session.getAccessTokenPayload();
     await this.requestsService.create(createRequestDto);
     this.requestsService.notifyRequestChange('Request added'); //SSE
     return {
       statusCode: HttpStatus.CREATED,
-      isAuthenticated: req.session.isAuthenticated,
-      user: req.session.user?.username,
+      isAuthenticated: payload.isAuthenticated,
+      user: payload.username,
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @PublicAccess()
+  @VerifySession()
   @Get('/requests')
   @Render('general')
-  async findAll(@Req() req): Promise<{
+  async findAll(@STSession() session: any): Promise<{
     customStyle: string;
     titleContent: string;
     isAuthenticated: any;
@@ -101,12 +107,12 @@ export class RequestsController {
     content: string;
     alertMessage?: string;
   }> {
-    const isAuthenticated = req.session.isAuthenticated;
+    const payload = session.getAccessTokenPayload();
     const requests = await this.requestsService.findAll();
     if (!requests) {
       return {
-        isAuthenticated,
-        user: isAuthenticated ? 'Anastasia' : null,
+        isAuthenticated: payload.isAuthenticated,
+        user: payload.username,
         requests,
         content: 'requests',
         titleContent: 'Список запросов',
@@ -115,8 +121,8 @@ export class RequestsController {
       };
     }
     return {
-      isAuthenticated,
-      user: isAuthenticated ? 'Anastasia' : null,
+      isAuthenticated: payload.isAuthenticated,
+      user: payload.username,
       requests,
       content: 'requests',
       titleContent: 'Список запросов',
@@ -150,13 +156,15 @@ export class RequestsController {
   }
 
   @PublicAccess()
+  @VerifySession()
   @Get('/request-edit/:id')
   @Render('general')
-  showEditForm(@Req() req, @Param('id') id: string) {
+  showEditForm(@STSession() session: any, @Param('id') id: string) {
+    const payload = session.getAccessTokenPayload();
     return {
       id,
-      isAuthenticated: req.session.isAuthenticated,
-      user: req.session.user?.username,
+      isAuthenticated: payload.isAuthenticated,
+      user: payload.username,
       content: 'request-edit',
       titleContent: 'Редактировать запрос',
       customStyle: '../styles/entity-edit.css',
@@ -183,13 +191,15 @@ export class RequestsController {
   }
 
   @PublicAccess()
+  @VerifySession()
   @Get('/request-delete/:id')
   @Render('general')
-  async showDeleteOpportunity(@Req() req, @Param('id') id: string) {
+  async showDeleteOpportunity(@STSession() session: any, @Param('id') id: string) {
+    const payload = session.getAccessTokenPayload();
     return {
       id,
-      isAuthenticated: req.session.isAuthenticated,
-      user: req.session.user?.username,
+      isAuthenticated: payload.isAuthenticated,
+      user: payload.username,
       content: 'request-delete',
       titleContent: 'Удалить запрос',
       customStyle: '../styles/entity-edit.css',

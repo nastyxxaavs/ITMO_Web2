@@ -21,10 +21,8 @@ import { TeamMemberDto } from './dto/member.dto';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from '../common/upload.service';
-import { AuthGuard } from '../auth/auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
-import { Role } from '../user/entities/user.entity';
+import { PublicAccess, SuperTokensAuthGuard, VerifySession, Session as STSession } from 'supertokens-nestjs';
+
 
 @ApiExcludeController()
 @Controller()
@@ -34,30 +32,32 @@ export class MemberController {
     private readonly uploadService: UploadService,
   ) {}
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
+  @VerifySession()
   @Get('/member-add')
   @Render('general')
-  showMember(@Req() req) {
+  showMember(@STSession() session: any) {
+    const payload = session.getAccessTokenPayload();
     return {
-      isAuthenticated: req.session.isAuthenticated,
-      user: req.session.user?.username,
+      isAuthenticated: payload.isAuthenticated,
+      user: payload.username,
       content: 'member-add',
       titleContent: 'Добавить сотрудника',
       customStyle: '../styles/entity-add.css',
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
+  @VerifySession()
   @Post('/member-add')
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(FileInterceptor('photo'))
   async create(
     @UploadedFile() file: Express.Multer.File,
     @Body(ValidationPipe) createMemberDto: CreateMemberDto,
-    @Req() req,
+    @STSession() session: any,
   ) {
+    const payload = session.getAccessTokenPayload();
     if (file) {
       try {
         createMemberDto.photoUrl = await this.uploadService.uploadFile(file);
@@ -81,13 +81,12 @@ export class MemberController {
     await this.memberService.create(createMemberDto);
     return {
       statusCode: HttpStatus.CREATED,
-      isAuthenticated: req.session.isAuthenticated,
-      user: req.session.user?.username,
+      isAuthenticated: payload.isAuthenticated,
+      user: payload.username,
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @PublicAccess()
   @Get('/members')
   @Render('general')
   async findAll(): Promise<{
@@ -112,8 +111,7 @@ export class MemberController {
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @PublicAccess()
   @Get('/members/:id')
   @Render('general')
   async findOne(@Param('id') id: number) {
@@ -135,25 +133,23 @@ export class MemberController {
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
-  @UseGuards(AuthGuard)
+  @UseGuards(SuperTokensAuthGuard)
+  @VerifySession()
   @Get('/member-edit/:id')
   @Render('general')
-  showContactEdit(@Req() req, @Param('id') id: string) {
+  showContactEdit(@STSession() session: any, @Param('id') id: string) {
+    const payload = session.getAccessTokenPayload();
     return {
       id,
-      isAuthenticated: req.session.isAuthenticated,
-      user: req.session.user?.username,
+      isAuthenticated: payload.isAuthenticated,
+      user: payload.username,
       content: 'member-edit',
       titleContent: 'Редактировать сотрудника',
       customStyle: '../styles/entity-edit.css',
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
-  @UseGuards(AuthGuard)
+  @UseGuards(SuperTokensAuthGuard)
   @Patch('/member-edit/:id')
   @HttpCode(HttpStatus.OK)
   async update(
@@ -167,9 +163,7 @@ export class MemberController {
     return { statusCode: HttpStatus.NOT_MODIFIED };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
-  @UseGuards(AuthGuard)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/member-delete/:id')
   @HttpCode(HttpStatus.OK)
   async remove(

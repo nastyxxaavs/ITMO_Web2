@@ -3,7 +3,7 @@
   <div class="welcome-message">
     <h3>Добро пожаловать, {{user}}!</h3>
     <p>Вы успешно вошли в систему</p>
-    <form action="/logout" method="GET">
+    <form action="/auth/signout" method="POST">
       <button type="submit">Выйти</button>
     </form>
   </div>
@@ -11,9 +11,9 @@
   <!-- Состояние для неавторизованного пользователя -->
   <div class="register-message">
     <h3>Пожалуйста, войдите в систему, чтобы получить доступ к полному функционалу</h3>
-    <form class="login-prompt" action="/main" method="POST">
+    <form class="login-prompt" id="loginForm">
       <label>
-        <input type="text" placeholder="Логин" class="login_input" name="username">
+        <input type="text" placeholder="Логин" class="login_input" name="login">
       </label>
       <label>
         <input type="text" placeholder="Пароль" class="password_input" name="password">
@@ -22,3 +22,36 @@
     </form>
   </div>
 {{/if}}
+
+<script>
+  document.getElementById('loginForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const data = {
+      formFields: [
+        { id: 'email', value: formData.get('login') },
+        { id: 'password', value: formData.get('password') }
+      ]
+    };
+
+    const response = await fetch('/auth/signin', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    if (response.ok) {
+      const result = await response.json();
+      console.log('Login successful:', result);
+
+      window.location.reload();
+
+    } else {
+
+      console.error('Login failed:', response.statusText);
+    }
+
+  });
+
+</script>

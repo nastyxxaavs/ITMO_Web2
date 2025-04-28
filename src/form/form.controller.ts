@@ -14,7 +14,8 @@ import { FormService } from './form.service';
 import { CreateSubmissionDto } from './dto/create-form.dto';
 import { UpdateFormDto } from './dto/update-form.dto';
 import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
-import { PublicAccess } from '../auth/public-access.decorator';
+import { PublicAccess } from 'supertokens-nestjs';
+
 
 @ApiExcludeController()
 @Controller()

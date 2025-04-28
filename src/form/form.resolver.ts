@@ -5,17 +5,14 @@ import { PaginatedForms } from './dto/paginated-form_gql.output';
 import { UpdateFirmInput } from '../firm/dto/update-firm_gql.input';
 import { CreateSubmissionInput } from './dto/create-form_gql.input';
 import { UseGuards } from '@nestjs/common';
-import { AuthGuard } from '../auth/auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
-import { Role } from '../user/entities/user.entity';
+import { SuperTokensAuthGuard } from 'supertokens-nestjs';
+
 
 @Resolver(() => Submission)
 export class FormResolver {
   constructor(private readonly formService: FormService) {}
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Query(() => PaginatedForms, { name: 'getForms' })
   async getForms(
     @Args('page', { type: () => Int, defaultValue: 1 }) page: number,
@@ -24,8 +21,7 @@ export class FormResolver {
     return this.formService.findAllWithPagination(page, limit);
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Query(() => Submission, { name: 'getForm' })
   async getForm(
     @Args('id', { type: () => Int }) id: number,
@@ -38,8 +34,7 @@ export class FormResolver {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => Submission)
   async createForm(
     @Args('createSubmissionInput') createSubmissionInput: CreateSubmissionInput,
@@ -48,8 +43,7 @@ export class FormResolver {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => Submission)
   async updateForm(
     @Args('id', { type: () => Int }) id: number,
@@ -66,8 +60,7 @@ export class FormResolver {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => Boolean)
   async removeForm(
     @Args('id', { type: () => Int }) id: number,

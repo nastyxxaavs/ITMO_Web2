@@ -15,10 +15,8 @@ import { Firm } from '../firm/dto/firm_gql.output';
 import { CreateContactInput } from './dto/create-contact_gql.input';
 import { UpdateContactInput } from './dto/update-contact_gql.input';
 import { UseGuards } from '@nestjs/common';
-import { AuthGuard } from '../auth/auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
-import { Role } from '../user/entities/user.entity';
+import { SuperTokensAuthGuard } from 'supertokens-nestjs';
+
 
 @Resolver(() => Contact)
 export class ContactResolver {
@@ -27,8 +25,7 @@ export class ContactResolver {
     private readonly firmService: FirmService,
   ) {}
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Query(() => Contact, { name: 'getContact' })
   async getContact(
     @Args('id', { type: () => Int }) id: number,
@@ -40,8 +37,7 @@ export class ContactResolver {
     return contact;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @ResolveField(() => Firm, { name: 'firm', nullable: true })
   async getFirm(@Parent() contact: Contact): Promise<{
     contactId: number[] | undefined;
@@ -57,8 +53,7 @@ export class ContactResolver {
     return firm || null;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Query(() => PaginatedContacts, { name: 'getContacts' })
   async getContacts(
     @Args('page', { type: () => Int, defaultValue: 1 }) page: number,
@@ -93,8 +88,7 @@ export class ContactResolver {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => Contact)
   async createContact(
     @Args('createContactInput') createContactInput: CreateContactInput,
@@ -103,8 +97,7 @@ export class ContactResolver {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => Contact)
   async updateContact(
     @Args('id', { type: () => Int }) id: number,
@@ -121,8 +114,7 @@ export class ContactResolver {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => Boolean)
   async removeContact(
     @Args('id', { type: () => Int }) id: number,

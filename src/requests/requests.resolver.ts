@@ -16,10 +16,7 @@ import { PaginatedRequests } from './dto/paginated-requests_gql.output';
 import { Firm } from '../firm/dto/firm_gql.output';
 import { CreateRequestInput } from './dto/create-request_gql.input';
 import { UpdateRequestInput } from './dto/update-request_gql.input';
-import { AuthGuard } from '../auth/auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
-import { Role } from '../user/entities/user.entity';
+import { SuperTokensAuthGuard } from 'supertokens-nestjs';
 
 @Resolver(() => ClientRequest)
 export class RequestsResolver {
@@ -28,8 +25,7 @@ export class RequestsResolver {
     private readonly firmService: FirmService,
   ) {}
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Query(() => PaginatedRequests, { name: 'getRequests' })
   async getRequests(
     @Args('page', { type: () => Int, defaultValue: 1 }) page: number,
@@ -47,8 +43,7 @@ export class RequestsResolver {
     return requests;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Query(() => ClientRequest, { name: 'getRequest' })
   async getRequest(@Args('id', { type: () => Int }) id: number) {
     const request = await this.requestsService.findOne(id);
@@ -58,8 +53,7 @@ export class RequestsResolver {
     return request;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @ResolveField(() => Firm, { name: 'firm', nullable: true })
   async getFirm(@Parent() request: ClientRequest): Promise<{
     contactId: number[] | undefined;
@@ -75,8 +69,7 @@ export class RequestsResolver {
     return firm || null;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => ClientRequest)
   async createRequest(
     @Args('createRequestInput') createRequestInput: CreateRequestInput,
@@ -84,8 +77,7 @@ export class RequestsResolver {
     return this.requestsService.create(createRequestInput);
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => ClientRequest)
   async updateRequest(
     @Args('id', { type: () => Int }) id: number,
@@ -101,8 +93,7 @@ export class RequestsResolver {
     return updatedRequest;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => Boolean)
   async removeRequest(
     @Args('id', { type: () => Int }) id: number,
@@ -115,8 +106,7 @@ export class RequestsResolver {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => ClientRequest, { name: 'markRequestCompleted' })
   async markRequestCompleted(@Args('id', { type: () => Int }) id: number) {
     const request = await this.requestsService.updateStatus(
@@ -129,8 +119,7 @@ export class RequestsResolver {
     return request;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => ClientRequest, { name: 'markRequestInProgress' })
   async markRequestInProgress(@Args('id', { type: () => Int }) id: number) {
     const request = await this.requestsService.updateStatus(

@@ -63,6 +63,9 @@ export class User {
   @OneToMany(() => ClientRequestEntity, (request) => request.users)
   requests: ClientRequestEntity[];
 
+  @Column({ name: 'supertokensId', type: 'varchar', nullable: true, unique: true })
+  supertokensId: string;
+
   login(password: string): boolean {
     if (this.password === password) { // возможно изменить на проверку юрла потом
       this.status = AuthStatus.AUTHORIZED;

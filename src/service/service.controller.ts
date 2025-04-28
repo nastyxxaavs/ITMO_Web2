@@ -17,49 +17,49 @@ import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { ServiceDto } from './dto/service.dto';
 import { ApiExcludeController } from '@nestjs/swagger';
-import { AuthGuard } from '../auth/auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
-import { Role } from '../user/entities/user.entity';
+import { PublicAccess, SuperTokensAuthGuard, VerifySession, Session as STSession } from 'supertokens-nestjs';
+
+
+
 
 @ApiExcludeController()
 @Controller()
 export class ServiceController {
   constructor(private readonly serviceService: ServiceService) {}
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
+  @VerifySession()
   @Get('/service-add')
   @Render('general')
-  showContact(@Req() req) {
+  showContact(@STSession() session: any) {
+    const payload = session.getAccessTokenPayload();
     return {
-      isAuthenticated: req.session.isAuthenticated,
-      user: req.session.user?.username,
+      isAuthenticated: payload.isAuthenticated,
+      user: payload.username,
       content: 'service-add',
       titleContent: 'Добавить сервис',
       customStyle: '../styles/entity-add.css',
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
-  @UseGuards(AuthGuard)
+  @UseGuards(SuperTokensAuthGuard)
+  @VerifySession()
   @Post('/service-add')
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body(ValidationPipe) createServiceDto: CreateServiceDto,
-    @Req() req,
+    @STSession() session: any,
   ) {
+    const payload = session.getAccessTokenPayload();
     await this.serviceService.create(createServiceDto);
     return {
       statusCode: HttpStatus.CREATED,
-      isAuthenticated: req.session.isAuthenticated,
-      user: req.session.user?.username,
+      isAuthenticated: payload.isAuthenticated,
+      user: payload.username,
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @PublicAccess()
   @Get('/all-services')
   @Render('general')
   async findAll(): Promise<{
@@ -84,8 +84,7 @@ export class ServiceController {
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @PublicAccess()
   @Get('/services/:id')
   @Render('general')
   async findOne(@Param('id') id: number) {
@@ -108,16 +107,16 @@ export class ServiceController {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
-  @UseGuards(AuthGuard)
+  @UseGuards(SuperTokensAuthGuard)
+  @VerifySession()
   @Get('/service-edit/:id')
   @Render('general')
-  showContactEdit(@Req() req, @Param('id') id: string) {
+  showContactEdit(@STSession() session: any, @Param('id') id: string) {
+    const payload = session.getAccessTokenPayload();
     return {
       id,
-      isAuthenticated: req.session.isAuthenticated,
-      user: req.session.user?.username,
+      isAuthenticated: payload.isAuthenticated,
+      user: payload.username,
       content: 'service-edit',
       titleContent: 'Редактировать сервис',
       customStyle: '../styles/entity-edit.css',
@@ -125,9 +124,7 @@ export class ServiceController {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
-  @UseGuards(AuthGuard)
+  @UseGuards(SuperTokensAuthGuard)
   @Patch('/service-edit/:id')
   @HttpCode(HttpStatus.OK)
   async update(
@@ -140,9 +137,7 @@ export class ServiceController {
     return { statusCode: HttpStatus.NOT_MODIFIED };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
-  @UseGuards(AuthGuard)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/service-delete/:id')
   @HttpCode(HttpStatus.OK)
   async removeViaGet(

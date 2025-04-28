@@ -28,12 +28,11 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { NotFoundResponse } from '../common/response';
-import { AuthGuard } from '../auth/auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
-import { Role } from '../user/entities/user.entity';
+import { ApiCookieAuth } from '@nestjs/swagger';
+import { SuperTokensAuthGuard } from 'supertokens-nestjs';
 
 @ApiTags('contact')
+@ApiCookieAuth('sAccessToken')
 @Controller()
 export class ContactApiController {
   constructor(
@@ -41,8 +40,7 @@ export class ContactApiController {
     private readonly firmService: FirmService,
   ) {}
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/api/contacts')
   @ApiResponse({
     status: 200,
@@ -98,8 +96,7 @@ export class ContactApiController {
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/api/contacts/:id')
   @ApiOperation({ summary: 'Get a contact by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The contact ID' })
@@ -121,8 +118,7 @@ export class ContactApiController {
     return contact;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/api/contacts/:id/firm')
   @ApiOperation({ summary: 'Get a contact`s firm by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The contact ID' })
@@ -157,8 +153,7 @@ export class ContactApiController {
     return firm;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Post('/api/contact-add')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new contact' })
@@ -178,8 +173,7 @@ export class ContactApiController {
     return await this.contactService.create(createContactDto);
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Patch('/api/contact-edit/:id')
   @ApiOperation({ summary: 'Update an existing contact' })
   @ApiParam({ name: 'id', type: Number, description: 'The contact ID' })
@@ -208,8 +202,7 @@ export class ContactApiController {
     return updatedContact;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Delete('/api/contact-delete/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete an existing contact' })

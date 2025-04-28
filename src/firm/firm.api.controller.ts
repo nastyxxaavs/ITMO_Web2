@@ -20,25 +20,23 @@ import { FirmDto } from './dto/firm.dto';
 import { CreateFirmDto } from './dto/create-firm.dto';
 import { UpdateFirmDto } from './dto/update-firm.dto';
 import {
-  ApiBody,
+  ApiBody, ApiCookieAuth,
   ApiOperation,
   ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { NotFoundResponse } from '../common/response';
-import { AuthGuard } from '../auth/auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
-import { Role } from '../user/entities/user.entity';
+import { SuperTokensAuthGuard } from 'supertokens-nestjs';
+
 
 @ApiTags('firm')
+@ApiCookieAuth('sAccessToken')
 @Controller()
 export class FirmApiController {
   constructor(private readonly firmService: FirmService) {}
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/api/firms')
   @ApiResponse({
     status: 200,
@@ -101,8 +99,7 @@ export class FirmApiController {
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/api/firms/:id')
   @ApiOperation({ summary: 'Get a firm by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The firm ID' })
@@ -131,8 +128,7 @@ export class FirmApiController {
     return firm;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Post('/api/firm-add')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new firm' })
@@ -157,8 +153,7 @@ export class FirmApiController {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Patch('/api/firm-edit/:id')
   @ApiOperation({ summary: 'Update an existing firm' })
   @ApiParam({ name: 'id', type: Number, description: 'The firm ID' })
@@ -192,8 +187,7 @@ export class FirmApiController {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Delete('/api/firm-delete/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete an existing firm' })

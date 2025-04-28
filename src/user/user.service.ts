@@ -4,13 +4,15 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthStatus, Role, User } from './entities/user.entity';
 import { UserRepository } from './user.repository';
 import { UserDto } from './dto/user.dto';
-import { ContactDto } from '../contact/dto/contact.dto';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { CreateUserInput } from './dto/create-user_gql.input';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly userRepository: UserRepository,
-              @Inject(CACHE_MANAGER) private cacheManager: Cache,) {}
+  constructor(
+    private readonly userRepository: UserRepository,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   private mapToDto(user: User): UserDto {
     return {
@@ -22,8 +24,9 @@ export class UserService {
     };
   }
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserInput): Promise<User> {
     return this.userRepository.create({
+      supertokensId: '',
       username: createUserDto.username,
       email: createUserDto.email,
       status: createUserDto.status,
@@ -31,9 +34,9 @@ export class UserService {
     });
   }
 
-  async findAll():Promise<UserDto[]> {
+  async findAll(): Promise<UserDto[]> {
     const users = await this.userRepository.findAll();
-    if (!users){
+    if (!users) {
       throw new NotFoundException(`Users are not found`);
     }
     return users.map(this.mapToDto);
@@ -45,16 +48,17 @@ export class UserService {
   ): Promise<[UserDto[], number]> {
     const cacheKey = `users-page-${skip}-${take}`;
 
-
     const cached = await this.cacheManager.get<[UserDto[], number]>(cacheKey);
     if (cached) {
       console.log('✅ From cache:', cacheKey);
       return cached;
     }
 
-    const [users, total] = await this.userRepository.findAllWithPagination(skip, take);
+    const [users, total] = await this.userRepository.findAllWithPagination(
+      skip,
+      take,
+    );
     const mappedUsers = users.map(this.mapToDto);
-
 
     await this.cacheManager.set(cacheKey, [mappedUsers, total], 60);
     console.log('📦 Not from cache (fetched from DB):', cacheKey);
@@ -62,10 +66,9 @@ export class UserService {
     return [mappedUsers, total];
   }
 
-
   async findOne(id: number): Promise<UserDto | null> {
     const user = await this.userRepository.findOne(id);
-    if (!user){
+    if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
     return user ? this.mapToDto(user) : null;
@@ -73,7 +76,7 @@ export class UserService {
 
   async findByName(username: string): Promise<User | null> {
     const user = await this.userRepository.findOneByName(username);
-    if (!user){
+    if (!user) {
       throw new NotFoundException(`User with name ${username} not found`);
     }
     return user;
@@ -87,12 +90,15 @@ export class UserService {
         status: updateUserDto.status,
         role: updateUserDto.role,
       });
-      return  true;
+      return true;
     }
-      return false;
+    return false;
   }
 
-  async apiUpdate(id: number, updateUserDto: UpdateUserDto): Promise<UserDto | null> {
+  async apiUpdate(
+    id: number,
+    updateUserDto: UpdateUserDto,
+  ): Promise<UserDto | null> {
     if (await this.userRepository.existById(id)) {
       await this.userRepository.update(id, {
         username: updateUserDto.username,
@@ -106,9 +112,8 @@ export class UserService {
     throw new NotFoundException(`User with ID ${id} not found`);
   }
 
-
   async remove(id: number): Promise<boolean> {
-    if (await this.userRepository.existById(id)){
+    if (await this.userRepository.existById(id)) {
       await this.userRepository.remove(id);
       await this.cacheManager.clear();
       return true;
@@ -122,5 +127,26 @@ export class UserService {
       return user;
     }
     return null;
+  }
+
+  async createFromSupertokensUser(supertokensUser: {
+    id: string;
+    email: string;
+  }): Promise<User> {
+    if (!supertokensUser.id || !supertokensUser.email) {
+      throw new Error('Missing SuperTokens user ID or email');
+    }
+
+    return this.userRepository.create({
+      email: supertokensUser.email,
+      username: supertokensUser.email.split('@')[0],
+      supertokensId: supertokensUser.id,
+      status: AuthStatus.AUTHORIZED,
+      role: Role.CLIENT,
+    });
+  }
+
+  async findBySupertokensId(supertokensId: string): Promise<User | null> {
+    return this.userRepository.findOneBySupertokensId(supertokensId);
   }
 }

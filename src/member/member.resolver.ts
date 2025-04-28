@@ -15,10 +15,7 @@ import { Firm } from '../firm/dto/firm_gql.output';
 import { UpdateMemberInput } from './dto/update-member_gql.input';
 import { CreateMemberInput } from './dto/create-member_gql.input';
 import { UseGuards } from '@nestjs/common';
-import { AuthGuard } from '../auth/auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
-import { Role } from '../user/entities/user.entity';
+import { SuperTokensAuthGuard } from 'supertokens-nestjs';
 
 @Resolver(() => TeamMember)
 export class MemberResolver {
@@ -27,8 +24,7 @@ export class MemberResolver {
     private readonly firmService: FirmService,
   ) {}
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Query(() => PaginatedMembers, { name: 'getMembers' })
   async getMembers(
     @Args('page', { type: () => Int, defaultValue: 1 }) page: number,
@@ -37,8 +33,7 @@ export class MemberResolver {
     return this.memberService.findAllWithPagination(page, limit);
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Query(() => TeamMember, { name: 'getMember' })
   async getMember(
     @Args('id', { type: () => Int }) id: number,
@@ -50,8 +45,7 @@ export class MemberResolver {
     return member;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @ResolveField(() => Firm, { name: 'firm', nullable: true })
   async getFirm(@Parent() member: TeamMember): Promise<{
     contactId: number[] | undefined;
@@ -67,8 +61,7 @@ export class MemberResolver {
     return firm || null;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => TeamMember)
   async createMember(
     @Args('createMemberInput') createMemberInput: CreateMemberInput,
@@ -77,8 +70,7 @@ export class MemberResolver {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => TeamMember)
   async updateMember(
     @Args('id', { type: () => Int }) id: number,
@@ -94,8 +86,7 @@ export class MemberResolver {
     return updatedMember;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => Boolean)
   async removeMember(
     @Args('id', { type: () => Int }) id: number,
@@ -107,8 +98,8 @@ export class MemberResolver {
     return true;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => TeamMember)
   async assignFirmToMember(
     @Args('memberId', { type: () => Int }) memberId: number,
@@ -117,8 +108,7 @@ export class MemberResolver {
     return this.memberService.assignFirm(memberId, firmName);
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => TeamMember)
   async removeFirmFromMember(
     @Args('memberId', { type: () => Int }) memberId: number,

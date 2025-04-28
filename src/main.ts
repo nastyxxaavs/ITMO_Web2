@@ -6,18 +6,22 @@ import { join } from 'path';
 import * as path from 'node:path';
 import { engine } from 'express-handlebars';
 import express from 'express';
-import { ExpressAdapter } from '@nestjs/platform-express';
+import supertokens from 'supertokens-node';
 import session from 'express-session';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { renderPlaygroundPage } from 'graphql-playground-html';
 import { ElapsedTimeInterceptor } from './common/elapsed-time.interceptor';
 import { ETagInterceptor } from './common/etag.interceptor';
+import { middleware as superTokensMiddleware } from 'supertokens-node/framework/express';
+import { SuperTokensExceptionFilter } from 'supertokens-nestjs';
+import { UserService } from './user/user.service';
+import Session from 'supertokens-node/recipe/session';
+import EmailPassword from 'supertokens-node/recipe/emailpassword';
+import * as process from 'node:process';
 
 async function bootstrap() {
-  const server = express();
   const app = await NestFactory.create<NestExpressApplication>(
-    AppModule,
-    new ExpressAdapter(server),
+    AppModule
   );
   const configService = app.get(ConfigService);
 
@@ -30,7 +34,7 @@ async function bootstrap() {
     }),
   );
 
-  server.engine(
+  app.engine(
     'hbs',
     engine({
       extname: 'hbs',
@@ -53,19 +57,105 @@ async function bootstrap() {
   const viewsPath = path.join(__dirname, '..', 'views');
   app.setBaseViewsDir(viewsPath);
 
-  server.use('/public', express.static(join(__dirname, '..', 'public')));
-  server.use('/data', express.static(join(__dirname, '..', 'data')));
+  app.use('/public', express.static(join(__dirname, '..', 'public')));
+  app.use('/data', express.static(join(__dirname, '..', 'data')));
+
+  // app.enableCors({
+  //   origin: true,//'*', // Разрешаем запросы с любых доменов
+  //   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'HEAD', 'PUT'],
+  //   allowedHeaders: 'Content-Type, Accept',
+  // });
 
   app.enableCors({
-    origin: true,//'*', // Разрешаем запросы с любых доменов
+    origin: configService.get<string>('CORS_ORIGIN') || 'http://localhost:8082',
+    credentials: true, //  чтобы куки передавались
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'HEAD', 'PUT'],
-    allowedHeaders: 'Content-Type, Accept',
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'x-csrf-token', // важно для SuperTokens
+      'rid',          // SuperTokens internal header
+    ],
   });
+
+  const userService = app.get(UserService);
+  supertokens.init({
+    debug: true,
+    appInfo: {
+      appName: 'm3311-avsyukevich',
+      apiDomain: 'http://localhost:8082',
+      websiteDomain: 'http://localhost:8082',
+    },
+    supertokens: {
+      connectionURI: process.env.SUPERTOKENS_CONNECTION_URI!,
+      apiKey: process.env.SUPERTOKENS_API_KEY,
+    },
+    recipeList: [
+      EmailPassword.init({
+        override: {
+          apis: (original) => ({
+            ...original,
+            signUpPOST: async (input) => {
+
+              if (!original.signUpPOST) {
+                throw new Error('signUpPOST is not defined');
+              }
+
+              const response = await original.signUpPOST!(input);
+
+              if (response.status === 'OK') {
+                const email = response.user.emails?.[0];
+                if (!email) throw new Error('Email not found');
+
+                const appUser = await userService.createFromSupertokensUser({
+                  id: response.user.id,
+                  email,
+                });
+
+                await response.session.mergeIntoAccessTokenPayload({
+                  username: appUser.username,
+                  isAuthenticated: true,
+                });
+              }
+
+              return response;
+            },
+
+            signInPOST: async function (input) {
+              if (!original.signInPOST) {
+                throw new Error('signInPOST is not defined');
+              }
+
+              const response = await original.signInPOST(input);
+
+              if (response.status === 'OK') {
+                const appUser = await userService.findBySupertokensId(response.user.id);
+                if (!appUser) throw new Error('User not found');
+
+                await response.session.mergeIntoAccessTokenPayload({
+                  username: appUser.username,
+                  isAuthenticated: true,
+                });
+              }
+              return response;
+            },
+          }),
+        },
+      }),
+      Session.init(),
+    ],
+  });
+
+  app.use(superTokensMiddleware());
+  app.useGlobalFilters(new SuperTokensExceptionFilter());
+
 
   const config = new DocumentBuilder()
     .setTitle('API Documentation')
     .setDescription('API for managing law firm')
     .setVersion('1.0')
+    .addCookieAuth('sAccessToken')
     .addTag('contact')
     .addTag('firm')
     .addTag('form')

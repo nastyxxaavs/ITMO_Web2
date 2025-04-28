@@ -21,7 +21,7 @@ import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
 import { FirmService } from '../firm/firm.service';
 import {
-  ApiBody,
+  ApiBody, ApiCookieAuth,
   ApiOperation,
   ApiParam,
   ApiResponse,
@@ -29,12 +29,10 @@ import {
 } from '@nestjs/swagger';
 import { FirmDto } from '../firm/dto/firm.dto';
 import { NotFoundResponse } from '../common/response';
-import { AuthGuard } from '../auth/auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
-import { Role } from '../user/entities/user.entity';
+import { SuperTokensAuthGuard } from 'supertokens-nestjs';
 
 @ApiTags('member')
+@ApiCookieAuth('sAccessToken')
 @Controller()
 export class MemberApiController {
   constructor(
@@ -42,8 +40,7 @@ export class MemberApiController {
     private readonly firmService: FirmService,
   ) {}
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/api/members')
   @ApiResponse({
     status: 200,
@@ -99,8 +96,7 @@ export class MemberApiController {
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/api/members/:id')
   @ApiOperation({ summary: 'Get a member by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The member ID' })
@@ -122,8 +118,7 @@ export class MemberApiController {
     return member;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/api/members/:id/firm')
   @ApiOperation({ summary: 'Get a member`s firm by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The member ID' })
@@ -158,8 +153,7 @@ export class MemberApiController {
     return firm;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Post('/api/member-add')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new member' })
@@ -184,8 +178,7 @@ export class MemberApiController {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Patch('/api/member-edit/:id')
   @ApiOperation({ summary: 'Update an existing member' })
   @ApiParam({ name: 'id', type: Number, description: 'The member ID' })
@@ -214,8 +207,7 @@ export class MemberApiController {
     return updatedMember;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Delete('/api/member-delete/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete an existing member' })

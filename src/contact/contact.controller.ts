@@ -21,10 +21,8 @@ import { UpdateContactDto } from './dto/update-contact.dto';
 import { ContactDto } from './dto/contact.dto';
 import { interval, map, mergeWith, Observable } from 'rxjs';
 import { ApiExcludeController } from '@nestjs/swagger';
-import { AuthGuard } from '../auth/auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Role } from '../user/entities/user.entity';
-import { Roles } from '../auth/roles.decorator';
+import { PublicAccess, SuperTokensAuthGuard, VerifySession, Session as STSession } from 'supertokens-nestjs';
+
 
 @ApiExcludeController()
 @Controller()
@@ -32,10 +30,17 @@ export class ContactController {
   constructor(private readonly contactService: ContactService) {}
 
   @Sse('contact-events')
-  sendEvents(@Res() res): Observable<MessageEvent> {
+  @VerifySession()
+  sendEvents(@Res() res, @STSession() session): Observable<MessageEvent> {
+    const payload = session.getAccessTokenPayload();
+    const isAuthenticated = payload?.isAuthenticated;
+
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
+
+    console.log(`User is authenticated: ${isAuthenticated}`);
+
     return interval(50000).pipe(
       map(() => ({ data: { type: 'heartbeat' } }) as MessageEvent),
       mergeWith(
@@ -46,14 +51,15 @@ export class ContactController {
     );
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(SuperTokensAuthGuard)
+  @VerifySession()
   @Get('/contact-add')
-  @Roles(Role.ADMIN)
   @Render('general')
-  showContact(@Req() req) {
+  showContact(@STSession() session: any) {
+    const payload = session.getAccessTokenPayload();
     return {
-      isAuthenticated: req.session.isAuthenticated,
-      user: req.session.user?.username,
+      isAuthenticated: payload.isAuthenticated,
+      user: payload.username,
       content: 'contact-add',
       titleContent: 'Добавить контакт',
       customStyle: '../styles/entity-add.css',
@@ -61,24 +67,24 @@ export class ContactController {
   }
 
   @Post('/contact-add')
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @HttpCode(HttpStatus.CREATED)
+  @VerifySession()
   async create(
     @Body(ValidationPipe) createContactDto: CreateContactDto,
-    @Req() req,
+    @STSession() session: any,
   ) {
+    const payload = session.getAccessTokenPayload();
     await this.contactService.create(createContactDto);
     this.contactService.notifyContactChange('Contact added'); //SSE
     return {
       statusCode: HttpStatus.CREATED,
-      isAuthenticated: req.session.isAuthenticated,
-      user: req.session.user?.username,
+      isAuthenticated: payload?.isAuthenticated,
+      user: payload?.username,
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.CLIENT, Role.ADMIN)
+  @PublicAccess()
   @Get('/contacts')
   @Render('general')
   async findAll(): Promise<{
@@ -104,16 +110,17 @@ export class ContactController {
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.CLIENT, Role.ADMIN)
+  @PublicAccess()
   @Get('/contacts/:id')
+  @VerifySession()
   @Render('general')
-  async findOne(@Param('id') id: number, @Req() req) {
+  async findOne(@Param('id') id: number, @STSession() session: any) {
+    const payload = session.getAccessTokenPayload();
     const contact = await this.contactService.findOne(id);
     if (!contact) {
       return {
-        isAuthenticated: req.session.isAuthenticated,
-        user: req.session.user?.username,
+        isAuthenticated: payload.isAuthenticated,
+        user: payload.username,
         content: 'contact',
         titleContent: 'Контакт',
         customStyle: '../styles/entity-info.css',
@@ -126,31 +133,31 @@ export class ContactController {
       email: contact.email,
       mapsLink: contact.mapsLink,
       firmName: contact.firmId,
-      isAuthenticated: req.session.isAuthenticated,
-      user: req.session.user?.username,
+      isAuthenticated: payload.isAuthenticated,
+      user: payload.username,
       content: 'contact',
       titleContent: 'Контакт',
       customStyle: '../styles/entity-info.css',
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
+  @VerifySession()
   @Get('/contact-edit/:id')
   @Render('general')
-  showContactEdit(@Req() req, @Param('id') id: string) {
+  showContactEdit(@STSession() session: any, @Param('id') id: string) {
+    const payload = session.getAccessTokenPayload();
     return {
       id,
-      isAuthenticated: req.session.isAuthenticated,
-      user: req.session.user?.username,
+      isAuthenticated: payload.isAuthenticated,
+      user: payload.username,
       content: 'contact-edit',
       titleContent: 'Редактировать контакт',
       customStyle: '../styles/entity-edit.css',
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Patch('/contact-edit/:id')
   @HttpCode(HttpStatus.OK)
   async update(
@@ -169,23 +176,23 @@ export class ContactController {
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
+  @VerifySession()
   @Get('/contact-delete/:id')
   @Render('general')
-  async showDeleteOpportunity(@Req() req, @Param('id') id: string) {
+  async showDeleteOpportunity(@STSession() session: any, @Param('id') id: string) {
+    const payload = session.getAccessTokenPayload();
     return {
       id,
-      isAuthenticated: req.session.isAuthenticated,
-      user: req.session.user?.username,
+      isAuthenticated: payload.isAuthenticated,
+      user: payload.username,
       content: 'contact-delete',
       titleContent: 'Удалить контакт',
       customStyle: '../styles/entity-edit.css',
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Delete('/contact-delete/:id')
   @HttpCode(HttpStatus.OK)
   async remove(@Param('id') id: number) {

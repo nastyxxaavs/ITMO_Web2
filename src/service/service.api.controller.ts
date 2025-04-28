@@ -21,7 +21,7 @@ import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { FirmService } from '../firm/firm.service';
 import {
-  ApiBody,
+  ApiBody, ApiCookieAuth,
   ApiOperation,
   ApiParam,
   ApiResponse,
@@ -29,12 +29,11 @@ import {
 } from '@nestjs/swagger';
 import { FirmDto } from '../firm/dto/firm.dto';
 import { NotFoundResponse } from '../common/response';
-import { AuthGuard } from '../auth/auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
-import { Role } from '../user/entities/user.entity';
+import { SuperTokensAuthGuard } from 'supertokens-nestjs';
+
 
 @ApiTags('service')
+@ApiCookieAuth('sAccessToken')
 @Controller()
 export class ServiceApiController {
   constructor(
@@ -42,8 +41,7 @@ export class ServiceApiController {
     private readonly firmService: FirmService,
   ) {}
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/api/services')
   @ApiResponse({
     status: 200,
@@ -99,8 +97,7 @@ export class ServiceApiController {
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/api/services/:id')
   @ApiOperation({ summary: 'Get a service by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The service ID' })
@@ -122,8 +119,7 @@ export class ServiceApiController {
     return service;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/api/services/:id/firm')
   @ApiOperation({ summary: 'Get a service`s firm by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The service ID' })
@@ -158,8 +154,7 @@ export class ServiceApiController {
     return firm;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Post('/api/service-add')
   @ApiOperation({ summary: 'Create a new service' })
   @ApiBody({ type: CreateServiceDto })
@@ -183,8 +178,7 @@ export class ServiceApiController {
     }
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Patch('/api/service-edit/:id')
   @ApiOperation({ summary: 'Update an existing service' })
   @ApiParam({ name: 'id', type: Number, description: 'The service ID' })
@@ -214,8 +208,7 @@ export class ServiceApiController {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Delete('/api/service-delete/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete an existing service' })

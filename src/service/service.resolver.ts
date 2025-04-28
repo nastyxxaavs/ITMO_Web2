@@ -15,10 +15,8 @@ import { PaginatedServices } from './dto/paginatec-service_gql.output';
 import { Firm } from '../firm/dto/firm_gql.output';
 import { CreateServiceInput } from './dto/create-service_gql.input';
 import { UpdateServiceInput } from './dto/update-service_gql.input';
-import { AuthGuard } from '../auth/auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
-import { Role } from '../user/entities/user.entity';
+import { SuperTokensAuthGuard } from 'supertokens-nestjs';
+
 
 @Resolver(() => Service)
 export class ServiceResolver {
@@ -27,8 +25,7 @@ export class ServiceResolver {
     private readonly firmService: FirmService,
   ) {}
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Query(() => PaginatedServices, { name: 'getServices' })
   async getServices(
     @Args('page', { type: () => Int, defaultValue: 1 }) page: number,
@@ -46,8 +43,7 @@ export class ServiceResolver {
     return services;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Query(() => Service, { name: 'getService' })
   async getService(
     @Args('id', { type: () => Int }) id: number,
@@ -59,8 +55,7 @@ export class ServiceResolver {
     return service;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @ResolveField(() => Firm, { name: 'firm', nullable: true })
   async getFirm(@Parent() service: Service): Promise<{
     contactId: number[] | undefined;
@@ -77,8 +72,7 @@ export class ServiceResolver {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => Service)
   async createService(
     @Args('createServiceInput') createServiceInput: CreateServiceInput,
@@ -87,8 +81,7 @@ export class ServiceResolver {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => Service)
   async updateService(
     @Args('id', { type: () => Int }) id: number,
@@ -105,8 +98,7 @@ export class ServiceResolver {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => Boolean)
   async removeService(
     @Args('id', { type: () => Int }) id: number,

@@ -44,7 +44,7 @@
     "cache-manager": "^6.4.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
-    "express": "^5.0.1",
+    "express": "^4.21.2",
     "express-handlebars": "^8.0.1",
     "express-session": "^1.18.1",
     "graphql": "^16.10.0",
@@ -61,6 +61,7 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "supertokens-auth-react": "^0.49.1",
+    "supertokens-nestjs": "^0.0.2",
     "supertokens-node": "^22.1.0",
     "swagger-ui-express": "^5.0.1",
     "toastr": "^2.1.4"

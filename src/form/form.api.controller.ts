@@ -20,25 +20,22 @@ import { SubmissionDto } from './dto/form.dto';
 import { CreateSubmissionDto } from './dto/create-form.dto';
 import { UpdateFormDto } from './dto/update-form.dto';
 import {
-  ApiBody,
+  ApiBody, ApiCookieAuth,
   ApiOperation,
   ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { NotFoundResponse } from '../common/response';
-import { AuthGuard } from '../auth/auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
-import { Role } from '../user/entities/user.entity';
+import { SuperTokensAuthGuard } from 'supertokens-nestjs';
 
 @ApiTags('form')
+@ApiCookieAuth('sAccessToken')
 @Controller()
 export class FormApiController {
   constructor(private readonly formService: FormService) {}
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/api/forms')
   @ApiResponse({
     status: 200,
@@ -94,8 +91,7 @@ export class FormApiController {
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/api/forms/:id')
   @ApiOperation({ summary: 'Get a form by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The form ID' })
@@ -118,8 +114,7 @@ export class FormApiController {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Post('/api/form-add')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new form' })
@@ -144,8 +139,7 @@ export class FormApiController {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Patch('/api/form-edit/:id')
   @ApiOperation({ summary: 'Update an existing form' })
   @ApiParam({ name: 'id', type: Number, description: 'The form ID' })
@@ -172,8 +166,7 @@ export class FormApiController {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Delete('/api/form-delete/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete an existing form' })

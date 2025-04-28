@@ -16,9 +16,8 @@ import { Firm } from '../firm/dto/firm_gql.output';
 import { UpdateUserInput } from './dto/update-user_gql.input';
 import { CreateUserInput } from './dto/create-user_gql.input';
 import { AuthStatus, Role } from './entities/user.entity';
-import { AuthGuard } from '../auth/auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
+import { SuperTokensAuthGuard } from 'supertokens-nestjs';
+
 
 @Resolver(() => User)
 export class UserResolver {
@@ -27,8 +26,7 @@ export class UserResolver {
     private readonly firmService: FirmService,
   ) {}
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Query(() => PaginatedUsers, { name: 'getUsers' })
   async getUsers(
     @Args('page', { type: () => Int, defaultValue: 1 }) page: number,
@@ -48,8 +46,7 @@ export class UserResolver {
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Query(() => User, { name: 'getUser' })
   async getUser(@Args('id', { type: () => Int }) id: number) {
     const user = await this.userService.findOne(id);
@@ -59,8 +56,7 @@ export class UserResolver {
     return user;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @ResolveField(() => Firm, { name: 'firm', nullable: true })
   async getFirm(@Parent() user: User): Promise<{
     contactId: number[] | undefined;
@@ -77,16 +73,14 @@ export class UserResolver {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => User)
   async createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
     return this.userService.create(createUserInput);
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => User)
   async updateUser(
     @Args('id', { type: () => Int }) id: number,
@@ -100,8 +94,7 @@ export class UserResolver {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => Boolean)
   async removeUser(
     @Args('id', { type: () => Int }) id: number,
@@ -113,8 +106,7 @@ export class UserResolver {
     return true;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => User)
   async authorizeUser(@Args('id', { type: () => Int }) id: number) {
     const user = await this.userService.findOne(id);
@@ -126,8 +118,7 @@ export class UserResolver {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => User)
   async unauthorizeUser(@Args('id', { type: () => Int }) id: number) {
     const user = await this.userService.findOne(id);
@@ -138,8 +129,7 @@ export class UserResolver {
     user.status = AuthStatus.UNAUTHORIZED;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => User)
   async setUserRole(
     @Args('id', { type: () => Int }) id: number,

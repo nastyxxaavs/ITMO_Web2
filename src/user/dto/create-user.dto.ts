@@ -13,6 +13,8 @@ export class CreateUserDto {
   @ApiProperty({description: 'User email'})
   email: string;
 
+  supertokensId: string;
+
   @IsEnum(AuthStatus)
   @IsOptional()
   @ApiProperty({description: 'User auth status: AUTHORIZED\n' +

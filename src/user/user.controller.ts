@@ -17,45 +17,45 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDto } from './dto/user.dto';
 import { ApiExcludeController } from '@nestjs/swagger';
-import { AuthGuard } from '../auth/auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
-import { Role } from './entities/user.entity';
+import { PublicAccess, SuperTokensAuthGuard, VerifySession, Session as STSession } from 'supertokens-nestjs';
+
+
 
 @ApiExcludeController()
 @Controller()
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
+  @VerifySession()
   @Get('/user-add')
   @Render('general')
-  showUser(@Req() req) {
+  showUser(@STSession() session: any) {
+    const payload = session.getAccessTokenPayload();
     return {
-      isAuthenticated: req.session.isAuthenticated,
-      user: req.session.user?.username,
+      isAuthenticated: payload.isAuthenticated,
+      user: payload.username,
       content: 'user-add',
       titleContent: 'Добавить пользователя',
       customStyle: '../styles/entity-add.css',
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
+  @VerifySession()
   @Post('/user-add')
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body(ValidationPipe) createUserDto: CreateUserDto, @Req() req) {
+  async create(@Body(ValidationPipe) createUserDto: CreateUserDto, @STSession() session: any) {
+    const payload = session.getAccessTokenPayload();
     await this.userService.create(createUserDto);
     return {
       statusCode: HttpStatus.CREATED,
-      isAuthenticated: req.session.isAuthenticated,
-      user: req.session.user?.username,
+      isAuthenticated: payload.isAuthenticated,
+      user: payload.username,
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @PublicAccess()
   @Get('/users')
   @Render('general')
   async findAll(): Promise<{
@@ -76,8 +76,7 @@ export class UserController {
     return { users, content: 'users', customStyle: '../styles/entities.css' };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @PublicAccess()
   @Get('/users/:id')
   @Render('general')
   async findOne(@Param('id') id: number) {
@@ -99,24 +98,23 @@ export class UserController {
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
+  @VerifySession()
   @Get('/user-edit/:id')
   @Render('general')
-  showContactEdit(@Req() req, @Param('id') id: string) {
+  showContactEdit(@STSession() session: any, @Param('id') id: string) {
+    const payload = session.getAccessTokenPayload();
     return {
       id,
-      isAuthenticated: req.session.isAuthenticated,
-      user: req.session.user?.username,
+      isAuthenticated: payload.isAuthenticated,
+      user: payload.username,
       content: 'user-edit',
       titleContent: 'Редактировать пользователя',
       customStyle: '../styles/entity-edit.css',
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
-  @UseGuards(AuthGuard)
+  @UseGuards(SuperTokensAuthGuard)
   @Patch('/user-edit/:id')
   @HttpCode(HttpStatus.OK)
   async update(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
@@ -126,9 +124,7 @@ export class UserController {
     return { statusCode: HttpStatus.NOT_MODIFIED };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
-  @UseGuards(AuthGuard)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/user-delete/:id')
   @HttpCode(HttpStatus.OK)
   async removeViaGet(

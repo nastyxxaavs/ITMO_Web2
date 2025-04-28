@@ -21,7 +21,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FirmService } from '../firm/firm.service';
 import {
-  ApiBody,
+  ApiBody, ApiCookieAuth,
   ApiOperation,
   ApiParam,
   ApiResponse,
@@ -29,12 +29,11 @@ import {
 } from '@nestjs/swagger';
 import { NotFoundResponse } from '../common/response';
 import { FirmDto } from '../firm/dto/firm.dto';
-import { AuthGuard } from '../auth/auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
-import { Role } from './entities/user.entity';
+import { SuperTokensAuthGuard } from 'supertokens-nestjs';
+
 
 @ApiTags('user')
+@ApiCookieAuth('sAccessToken')
 @Controller()
 export class UserApiController {
   constructor(
@@ -42,8 +41,7 @@ export class UserApiController {
     private readonly firmService: FirmService,
   ) {}
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/api/users')
   @ApiResponse({
     status: 200,
@@ -99,8 +97,7 @@ export class UserApiController {
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/api/users/:id')
   @ApiOperation({ summary: 'Get a user by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The user ID' })
@@ -122,8 +119,7 @@ export class UserApiController {
     return user;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/api/users/:id/firm')
   @ApiOperation({ summary: 'Get a user`s firm by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The user ID' })
@@ -158,8 +154,7 @@ export class UserApiController {
     return firm;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Post('/api/user-add')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new user' })
@@ -183,8 +178,7 @@ export class UserApiController {
     }
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Patch('/api/user-edit/:id')
   @ApiOperation({ summary: 'Update an existing user' })
   @ApiParam({ name: 'id', type: Number, description: 'The user ID' })
@@ -211,8 +205,7 @@ export class UserApiController {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Delete('/api/user-delete/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete an existing user' })

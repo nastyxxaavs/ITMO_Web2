@@ -22,7 +22,7 @@ import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { FirmService } from '../firm/firm.service';
 import {
-  ApiBody,
+  ApiBody, ApiCookieAuth,
   ApiOperation,
   ApiParam,
   ApiResponse,
@@ -30,12 +30,10 @@ import {
 } from '@nestjs/swagger';
 import { NotFoundResponse } from '../common/response';
 import { FirmDto } from '../firm/dto/firm.dto';
-import { AuthGuard } from '../auth/auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
-import { Role } from '../user/entities/user.entity';
+import { SuperTokensAuthGuard } from 'supertokens-nestjs';
 
 @ApiTags('requests')
+@ApiCookieAuth('sAccessToken')
 @Controller()
 export class RequestsApiController {
   constructor(
@@ -43,8 +41,7 @@ export class RequestsApiController {
     private readonly firmService: FirmService,
   ) {}
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/api/requests')
   @ApiResponse({
     status: 200,
@@ -110,8 +107,7 @@ export class RequestsApiController {
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/api/requests/:id')
   @ApiOperation({ summary: 'Get a request by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The request ID' })
@@ -143,8 +139,7 @@ export class RequestsApiController {
     return request;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/api/requests/:id/firm')
   @ApiOperation({ summary: 'Get a request`s firm by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'The request ID' })
@@ -179,8 +174,7 @@ export class RequestsApiController {
     return firm;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Post('/api/request-add')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new request' })
@@ -204,8 +198,7 @@ export class RequestsApiController {
     }
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Patch('/api/request-edit/:id')
   @ApiOperation({ summary: 'Update an existing request' })
   @ApiParam({ name: 'id', type: Number, description: 'The request ID' })
@@ -244,8 +237,7 @@ export class RequestsApiController {
     return updatedRequest;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Delete('/api/request-delete/:id')
   @ApiOperation({ summary: 'Delete an existing request' })
   @ApiParam({ name: 'id', type: Number, description: 'The request ID' })

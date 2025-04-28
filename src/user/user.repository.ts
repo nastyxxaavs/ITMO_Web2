@@ -49,4 +49,8 @@ export class UserRepository {
   async existById(id: number): Promise<boolean> {
     return !!(await this.userRepo.findOne({ where: { id } }));
   }
+
+  async findOneBySupertokensId(supertokensId: string): Promise<User | null> {
+    return await this.userRepo.findOne({ where: {supertokensId } });
+  }
 }

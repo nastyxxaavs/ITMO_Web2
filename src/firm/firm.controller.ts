@@ -16,45 +16,44 @@ import { FirmService } from './firm.service';
 import { CreateFirmDto } from './dto/create-firm.dto';
 import { UpdateFirmDto } from './dto/update-firm.dto';
 import { ApiExcludeController } from '@nestjs/swagger';
-import { AuthGuard } from '../auth/auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
-import { Role } from '../user/entities/user.entity';
+import { PublicAccess, SuperTokensAuthGuard, VerifySession, Session as STSession } from 'supertokens-nestjs';
+
 
 @ApiExcludeController()
 @Controller()
 export class FirmController {
   constructor(private readonly firmService: FirmService) {}
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
+  @VerifySession()
   @Get('/firm-add')
   @Render('general')
-  showFirm(@Req() req) {
+  showFirm(@STSession() session: any) {
+    const payload = session.getAccessTokenPayload();
     return {
-      isAuthenticated: req.session.isAuthenticated,
-      user: req.session.user?.username,
+      isAuthenticated: payload.isAuthenticated,
+      user: payload.username,
       content: 'firm-add',
       titleContent: 'Добавить фирму',
       customStyle: '../styles/entity-add.css',
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
+  @VerifySession()
   @Post('/firm-add')
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body(ValidationPipe) createFirmDto: CreateFirmDto, @Req() req) {
+  async create(@Body(ValidationPipe) createFirmDto: CreateFirmDto, @STSession() session: any) {
+    const payload = session.getAccessTokenPayload();
     await this.firmService.create(createFirmDto);
     return {
       statusCode: HttpStatus.CREATED,
-      isAuthenticated: req.session.isAuthenticated,
-      user: req.session.user?.username,
+      isAuthenticated: payload.isAuthenticated,
+      user: payload.username,
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @PublicAccess()
   @Get('/firms')
   @Render('general')
   async findAll(): Promise<{
@@ -86,16 +85,17 @@ export class FirmController {
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @PublicAccess()
   @Get('/firms/:id')
+  @VerifySession()
   @Render('general')
-  async findOne(@Param('id') id: number, @Req() req) {
+  async findOne(@Param('id') id: number, @STSession() session: any) {
+    const payload = session.getAccessTokenPayload();
     const firm = await this.firmService.findOne(id);
     if (!firm) {
       return {
-        isAuthenticated: req.session.isAuthenticated,
-        user: req.session.user?.username,
+        isAuthenticated: payload.isAuthenticated,
+        user: payload.username,
         titleContent: 'Фирма',
         content: 'firm',
         customStyle: '../styles/entity-info.css',
@@ -106,31 +106,31 @@ export class FirmController {
       name: firm.name,
       description: firm.description,
       contact: firm.contactId,
-      isAuthenticated: req.session.isAuthenticated,
-      user: req.session.user?.username,
+      isAuthenticated: payload.isAuthenticated,
+      user: payload.username,
       titleContent: 'Фирма',
       content: 'firm',
       customStyle: '../styles/entity-info.css',
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
+  @VerifySession()
   @Get('/firm-edit/:id')
   @Render('general')
-  showContactEdit(@Req() req, @Param('id') id: string) {
+  showContactEdit(@STSession() session: any, @Param('id') id: string) {
+    const payload = session.getAccessTokenPayload();
     return {
       id,
-      isAuthenticated: req.session.isAuthenticated,
-      user: req.session.user?.username,
+      isAuthenticated: payload.isAuthenticated,
+      user: payload.username,
       content: 'firm-edit',
       titleContent: 'Редактировать фирму',
       customStyle: '../styles/entity-edit.css',
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Patch('/firm-edit/:id')
   @HttpCode(HttpStatus.OK)
   async update(@Param('id') id: number, @Body() updateFirmDto: UpdateFirmDto) {
@@ -140,8 +140,7 @@ export class FirmController {
     return { statusCode: HttpStatus.NOT_MODIFIED };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Get('/firm-delete/:id')
   @HttpCode(HttpStatus.OK)
   async removeViaGet(

@@ -5,17 +5,14 @@ import { Firm } from './dto/firm_gql.output';
 import { CreateFirmInput } from './dto/create-firm_gql.input';
 import { UpdateFirmInput } from './dto/update-firm_gql.input';
 import { UseGuards } from '@nestjs/common';
-import { AuthGuard } from '../auth/auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
-import { Role } from '../user/entities/user.entity';
+import { SuperTokensAuthGuard } from 'supertokens-nestjs';
+
 
 @Resolver(() => Firm)
 export class FirmResolver {
   constructor(private readonly firmService: FirmService) {}
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Query(() => PaginatedFirms, { name: 'getFirms' })
   async getFirms(
     @Args('page', { type: () => Int, defaultValue: 1 }) page: number,
@@ -56,8 +53,7 @@ export class FirmResolver {
     };
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.CLIENT)
+  @UseGuards(SuperTokensAuthGuard)
   @Query(() => Firm, { name: 'getFirm' })
   async getFirm(@Args('id', { type: () => Int }) id: number) {
     const firm = await this.firmService.findOne(id);
@@ -67,8 +63,7 @@ export class FirmResolver {
     return firm;
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => Firm)
   async createFirm(
     @Args('createFirmInput') createFirmInput: CreateFirmInput,
@@ -77,8 +72,7 @@ export class FirmResolver {
   }
 
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => Firm)
   async updateFirm(
     @Args('id', { type: () => Int }) id: number,
@@ -91,9 +85,7 @@ export class FirmResolver {
     return updatedFirm;
   }
 
-
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(SuperTokensAuthGuard)
   @Mutation(() => Boolean)
   async removeFirm(
     @Args('id', { type: () => Int }) id: number,

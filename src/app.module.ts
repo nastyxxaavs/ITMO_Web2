@@ -1,5 +1,5 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -22,15 +22,16 @@ import { fieldExtensionsEstimator, getComplexity, simpleEstimator } from 'graphq
 import { CacheModule } from '@nestjs/cache-manager';
 import { ElapsedTimeApolloPlugin } from './common/apollo.plugin';
 import { AuthModule } from './auth/auth.module';
-import { AuthMiddleware } from './auth/auth.middleware';
-import { User } from './user/entities/user.entity';
 import { UserService } from './user/user.service';
+import { SuperTokensAuthGuard } from 'supertokens-nestjs';
+
 
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true, // делаем конфигурацию глобальной, чтобы она была доступна в любом месте
+      envFilePath: '.env'
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
@@ -100,21 +101,29 @@ import { UserService } from './user/user.service';
       max: 100,        // Максимум записей в кэше
       isGlobal: true,
     }),
-    TypeOrmModule.forFeature([User]),
+    UserModule,
+    AuthModule.forRoot({
+      connectionURI: process.env.SUPERTOKENS_CONNECTION_URI!!,
+      apiKey: process.env.SUPERTOKENS_API_KEY,
+    }),
     FirmModule,
     ContactModule,
     MemberModule,
     RequestsModule,
     ServiceModule,
-    UserModule,
     FormModule,
-    AuthModule,
+
   ],
   controllers: [AppController],
-  providers: [AppService, UserService, {
+  providers: [AppService,  {
     provide: APP_FILTER,
     useClass: ExceptionFilterImpl
-  }],
-  exports: [UserService]
+  },
+    {
+    provide: 'APP_GUARD',
+  useClass: SuperTokensAuthGuard,
+   },
+    ],
+  exports: []
 })
 export class AppModule {}
