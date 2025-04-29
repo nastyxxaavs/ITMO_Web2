@@ -21,7 +21,9 @@ import { UpdateContactDto } from './dto/update-contact.dto';
 import { ContactDto } from './dto/contact.dto';
 import { interval, map, mergeWith, Observable } from 'rxjs';
 import { ApiExcludeController } from '@nestjs/swagger';
-import { PublicAccess, SuperTokensAuthGuard, VerifySession, Session as STSession } from 'supertokens-nestjs';
+import { PublicAccess, SuperTokensAuthGuard, VerifySession } from 'supertokens-nestjs';
+import { Request } from 'express';
+import Session from 'supertokens-node/recipe/session';
 
 
 @ApiExcludeController()
@@ -30,16 +32,12 @@ export class ContactController {
   constructor(private readonly contactService: ContactService) {}
 
   @Sse('contact-events')
-  @VerifySession()
-  sendEvents(@Res() res, @STSession() session): Observable<MessageEvent> {
-    const payload = session.getAccessTokenPayload();
-    const isAuthenticated = payload?.isAuthenticated;
+  sendEvents(@Res() res): Observable<MessageEvent>{
 
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    console.log(`User is authenticated: ${isAuthenticated}`);
 
     return interval(50000).pipe(
       map(() => ({ data: { type: 'heartbeat' } }) as MessageEvent),
@@ -55,8 +53,10 @@ export class ContactController {
   @VerifySession()
   @Get('/contact-add')
   @Render('general')
-  showContact(@STSession() session: any) {
+  async showContact(@Req() req: Request) {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
+
     return {
       isAuthenticated: payload.isAuthenticated,
       user: payload.username,
@@ -72,8 +72,9 @@ export class ContactController {
   @VerifySession()
   async create(
     @Body(ValidationPipe) createContactDto: CreateContactDto,
-    @STSession() session: any,
+    @Req() req: Request,
   ) {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
     await this.contactService.create(createContactDto);
     this.contactService.notifyContactChange('Contact added'); //SSE
@@ -110,11 +111,12 @@ export class ContactController {
     };
   }
 
-  @PublicAccess()
+
   @Get('/contacts/:id')
   @VerifySession()
   @Render('general')
-  async findOne(@Param('id') id: number, @STSession() session: any) {
+  async findOne(@Param('id') id: number, @Req() req: Request) {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
     const contact = await this.contactService.findOne(id);
     if (!contact) {
@@ -145,8 +147,10 @@ export class ContactController {
   @VerifySession()
   @Get('/contact-edit/:id')
   @Render('general')
-  showContactEdit(@STSession() session: any, @Param('id') id: string) {
+  async showContactEdit(@Req() req: Request, @Param('id') id: string) {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
+
     return {
       id,
       isAuthenticated: payload.isAuthenticated,
@@ -180,8 +184,10 @@ export class ContactController {
   @VerifySession()
   @Get('/contact-delete/:id')
   @Render('general')
-  async showDeleteOpportunity(@STSession() session: any, @Param('id') id: string) {
+  async showDeleteOpportunity(@Req() req: Request, @Param('id') id: string) {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
+
     return {
       id,
       isAuthenticated: payload.isAuthenticated,

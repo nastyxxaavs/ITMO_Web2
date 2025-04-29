@@ -6,6 +6,7 @@ import { PublicAccess, VerifySession, Session as STSession } from 'supertokens-n
 import { UserService } from './user/user.service';
 import { Response, Request } from 'express';
 import { SuperTokensSession } from 'supertokens-nestjs/dist/supertokens.types';
+import Session from 'supertokens-node/recipe/session';
 
 @ApiExcludeController()
 @Controller()
@@ -54,62 +55,68 @@ export class AppController {
   //   req.session.destroy(()=>{}) // Сбросить сессию
   //   return { url: '/main' };
   // }
-
-  @PublicAccess()
-  @Post('/auth/signin')
-  async signIn(@Req() req: Request, @Res() res: Response) {
-    res.redirect('/main');
-  }
-
+  //
+  // @PublicAccess()
+  // @Post('/auth/signin')
+  // async signIn(@Req() req: Request, @Res() res: Response) {
+  //   res.redirect('/main');
+  // }
+  //
   @PublicAccess()
   @Post('/auth/signout')
-  @Redirect('/main')
   async logOut(@STSession() session: SuperTokensSession | undefined) {
     if (session) {
       await session.revokeSession();
+      return { url: '/main' };
     }
   }
 
 
   @PublicAccess()
   @Get('/index')
-  @Render('general')
-  index(@STSession() session: any) {
-    let isAuthenticated = false;
-    let username = '';
-
-    if (session) {
-      const payload = session.getAccessTokenPayload();
-      isAuthenticated = payload.isAuthenticated;
-      username = payload.username;
-    }
-
-    return {
-      content: "index",
-      isAuthenticated,
-      titleContent: 'Рога и копыта: главная',
-      keywordsContent: 'рога и копыта, юридическая помощь, о нас, наши ценности, достижения',
-      descriptionContent: 'Данная страница (главная) содержит описание компании: раздел О нас, окно подачи заявки и всю контактную информацию',
-      customStyle: 'styles/main.css',
-      user: username
-    };
-  }
-
-  @PublicAccess()
-  @Get('/main')
   @VerifySession()
   @Render('general')
-  main(@STSession() session: any) {
-    //const userId = session.getUserId();
+  async index(@Req() req: Request) {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
     return {
-      content: "main",
+      content: "index",
       isAuthenticated: payload.isAuthenticated,
       titleContent: 'Рога и копыта: главная',
       keywordsContent: 'рога и копыта, юридическая помощь, о нас, наши ценности, достижения',
       descriptionContent: 'Данная страница (главная) содержит описание компании: раздел О нас, окно подачи заявки и всю контактную информацию',
       customStyle: 'styles/main.css',
-      user: payload.username,
+      user: payload.username
+    };
+  }
+
+
+  @PublicAccess()
+  @Get('/main')
+  @Render('general')
+  async main(@Req() req: Request) {
+    let isAuthenticated = false;
+    let username = '';
+
+    try {
+      const session = await Session.getSession(req, req.res, { sessionRequired: false });
+      if (session) {
+        const payload = session.getAccessTokenPayload();
+        isAuthenticated = payload.isAuthenticated;
+        username = payload.username;
+      }
+    } catch (error) {
+      console.log('No valid session', error);
+    }
+
+    return {
+      content: "main",
+      isAuthenticated: isAuthenticated,
+      user: username,
+      titleContent: 'Рога и копыта: главная',
+      keywordsContent: 'рога и копыта, юридическая помощь, о нас, наши ценности, достижения',
+      descriptionContent: 'Данная страница (главная) содержит описание компании: раздел О нас, окно подачи заявки и всю контактную информацию',
+      customStyle: 'styles/main.css',
     };
   }
 
@@ -117,7 +124,8 @@ export class AppController {
   @VerifySession()
   @Get('/services')
   @Render('general')
-  services(@STSession() session: any) {
+  async services(@Req() req: Request) {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
     return {
       content: "services",
@@ -134,7 +142,8 @@ export class AppController {
   @VerifySession()
   @Get('/team')
   @Render('general')
-  async team(@STSession() session: any) {
+  async team(@Req() req: Request) {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
 
     const filePath = 'data/employees.json';
@@ -160,7 +169,8 @@ export class AppController {
   @VerifySession()
   @Get('/client_feedbacks')
   @Render('general')
-  feedbacks(@STSession() session: any) {
+  async feedbacks(@Req() req: Request) {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
 
     return {

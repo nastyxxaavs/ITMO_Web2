@@ -3,7 +3,7 @@
   <div class="welcome-message">
     <h3>Добро пожаловать, {{user}}!</h3>
     <p>Вы успешно вошли в систему</p>
-    <form action="/auth/signout" method="POST">
+    <form id="logoutForm">
       <button type="submit">Выйти</button>
     </form>
   </div>
@@ -13,10 +13,10 @@
     <h3>Пожалуйста, войдите в систему, чтобы получить доступ к полному функционалу</h3>
     <form class="login-prompt" id="loginForm">
       <label>
-        <input type="text" placeholder="Логин" class="login_input" name="login">
+        <input type="text" placeholder="Email" class="login_input" name="email" id="userEmail" required>
       </label>
       <label>
-        <input type="text" placeholder="Пароль" class="password_input" name="password">
+        <input type="password" placeholder="Пароль" class="password_input" name="password" id="userPassword" required>
       </label>
       <button type="submit" class="login_button">Войти</button>
     </form>
@@ -26,32 +26,49 @@
 <script>
   document.getElementById('loginForm').addEventListener('submit', async (event) => {
     event.preventDefault();
-    const formData = new FormData(event.target);
-    const data = {
-      formFields: [
-        { id: 'email', value: formData.get('login') },
-        { id: 'password', value: formData.get('password') }
-      ]
-    };
+    const email = document.getElementById('userEmail').value;
+    const password = document.getElementById('userPassword').value;
 
     const response = await fetch('/auth/signin', {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        formFields: [
+          { id: 'email', value: email },
+          { id: 'password', value: password }
+        ],
+      }),
     });
-    if (response.ok) {
-      const result = await response.json();
-      console.log('Login successful:', result);
 
-      window.location.reload();
+    if (response.ok) {
+      window.location.href = '/main';
 
     } else {
-
-      console.error('Login failed:', response.statusText);
+      const error = await response.json();
+      alert('Ошибка входа: ' + error.message);
     }
 
   });
+</script>
 
+<script>
+  const logoutForm = document.getElementById('logoutForm');
+  if (logoutForm) {
+    logoutForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const response = await fetch('/auth/signout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (response.ok) {
+        window.location.reload();
+      } else {
+        console.error('Ошибка при выходе');
+        alert('Ошибка при выходе. Пожалуйста, попробуйте еще раз.');
+      }
+    });
+  }
 </script>

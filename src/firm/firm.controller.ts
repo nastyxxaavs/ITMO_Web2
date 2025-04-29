@@ -17,6 +17,8 @@ import { CreateFirmDto } from './dto/create-firm.dto';
 import { UpdateFirmDto } from './dto/update-firm.dto';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { PublicAccess, SuperTokensAuthGuard, VerifySession, Session as STSession } from 'supertokens-nestjs';
+import { Request } from 'express';
+import Session from 'supertokens-node/recipe/session';
 
 
 @ApiExcludeController()
@@ -28,8 +30,10 @@ export class FirmController {
   @VerifySession()
   @Get('/firm-add')
   @Render('general')
-  showFirm(@STSession() session: any) {
+  async showFirm(@Req() req: Request) {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
+
     return {
       isAuthenticated: payload.isAuthenticated,
       user: payload.username,
@@ -43,7 +47,8 @@ export class FirmController {
   @VerifySession()
   @Post('/firm-add')
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body(ValidationPipe) createFirmDto: CreateFirmDto, @STSession() session: any) {
+  async create(@Body(ValidationPipe) createFirmDto: CreateFirmDto, @Req() req: Request) {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
     await this.firmService.create(createFirmDto);
     return {
@@ -85,11 +90,12 @@ export class FirmController {
     };
   }
 
-  @PublicAccess()
+
   @Get('/firms/:id')
   @VerifySession()
   @Render('general')
-  async findOne(@Param('id') id: number, @STSession() session: any) {
+  async findOne(@Param('id') id: number, @Req() req: Request) {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
     const firm = await this.firmService.findOne(id);
     if (!firm) {
@@ -118,8 +124,10 @@ export class FirmController {
   @VerifySession()
   @Get('/firm-edit/:id')
   @Render('general')
-  showContactEdit(@STSession() session: any, @Param('id') id: string) {
+  async showContactEdit(@Req() req: Request, @Param('id') id: string) {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
+
     return {
       id,
       isAuthenticated: payload.isAuthenticated,

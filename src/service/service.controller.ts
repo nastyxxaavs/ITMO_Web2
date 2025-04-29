@@ -18,6 +18,8 @@ import { UpdateServiceDto } from './dto/update-service.dto';
 import { ServiceDto } from './dto/service.dto';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { PublicAccess, SuperTokensAuthGuard, VerifySession, Session as STSession } from 'supertokens-nestjs';
+import { Request } from 'express';
+import Session from 'supertokens-node/recipe/session';
 
 
 
@@ -31,8 +33,10 @@ export class ServiceController {
   @VerifySession()
   @Get('/service-add')
   @Render('general')
-  showContact(@STSession() session: any) {
+  async showContact(@Req() req: Request) {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
+
     return {
       isAuthenticated: payload.isAuthenticated,
       user: payload.username,
@@ -111,8 +115,10 @@ export class ServiceController {
   @VerifySession()
   @Get('/service-edit/:id')
   @Render('general')
-  showContactEdit(@STSession() session: any, @Param('id') id: string) {
+  async showContactEdit(@Req() req: Request, @Param('id') id: string) {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
+
     return {
       id,
       isAuthenticated: payload.isAuthenticated,

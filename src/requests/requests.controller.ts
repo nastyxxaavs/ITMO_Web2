@@ -21,6 +21,8 @@ import { Status } from './entities/request.entity';
 import { interval, map, mergeWith, Observable } from 'rxjs';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { PublicAccess, VerifySession, Session as STSession } from 'supertokens-nestjs';
+import { Request } from 'express';
+import Session from 'supertokens-node/recipe/session';
 
 @ApiExcludeController()
 @Controller()
@@ -28,16 +30,11 @@ export class RequestsController {
   constructor(private readonly requestsService: RequestsService) {}
 
   @Sse('request-events')
-  @VerifySession()
-  sendEvents(@Res() res, @STSession() session): Observable<MessageEvent> {
-    const payload = session.getAccessTokenPayload();
-    const isAuthenticated = payload?.isAuthenticated;
+  sendEvents(@Res() res): Observable<MessageEvent> {
 
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
-
-    console.log(`User is authenticated: ${isAuthenticated}`);
 
     return interval(50000).pipe(
       map(() => ({ data: { type: 'heartbeat' } }) as MessageEvent),
@@ -50,10 +47,10 @@ export class RequestsController {
   }
 
   @PublicAccess()
-  @VerifySession()
   @Get('/request-add')
   @Render('general')
-  showForm(@STSession() session: any) {
+  async showForm(@Req() req: Request) {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
     const result = {
       isAuthenticated: payload.isAuthenticated,
@@ -67,13 +64,13 @@ export class RequestsController {
   }
 
   @PublicAccess()
-  @VerifySession()
   @Post('/request-add')
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body(ValidationPipe) createRequestDto: CreateRequestDto,
-    @STSession() session: any,
+    @Req() req: Request,
   ) {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
     await this.requestsService.create(createRequestDto);
     this.requestsService.notifyRequestChange('Request added'); //SSE
@@ -85,10 +82,9 @@ export class RequestsController {
   }
 
   @PublicAccess()
-  @VerifySession()
   @Get('/requests')
   @Render('general')
-  async findAll(@STSession() session: any): Promise<{
+  async findAll(@Req() req: Request): Promise<{
     customStyle: string;
     titleContent: string;
     isAuthenticated: any;
@@ -107,7 +103,9 @@ export class RequestsController {
     content: string;
     alertMessage?: string;
   }> {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
+
     const requests = await this.requestsService.findAll();
     if (!requests) {
       return {
@@ -156,10 +154,10 @@ export class RequestsController {
   }
 
   @PublicAccess()
-  @VerifySession()
   @Get('/request-edit/:id')
   @Render('general')
-  showEditForm(@STSession() session: any, @Param('id') id: string) {
+  async showEditForm(@Req() req: Request, @Param('id') id: string) {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
     return {
       id,
@@ -191,10 +189,10 @@ export class RequestsController {
   }
 
   @PublicAccess()
-  @VerifySession()
   @Get('/request-delete/:id')
   @Render('general')
-  async showDeleteOpportunity(@STSession() session: any, @Param('id') id: string) {
+  async showDeleteOpportunity(@Req() req: Request, @Param('id') id: string) {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
     return {
       id,

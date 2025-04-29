@@ -12,7 +12,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { renderPlaygroundPage } from 'graphql-playground-html';
 import { ElapsedTimeInterceptor } from './common/elapsed-time.interceptor';
 import { ETagInterceptor } from './common/etag.interceptor';
-import { middleware as superTokensMiddleware } from 'supertokens-node/framework/express';
+import { middleware, middleware as superTokensMiddleware } from 'supertokens-node/framework/express';
 import { SuperTokensExceptionFilter } from 'supertokens-nestjs';
 import { UserService } from './user/user.service';
 import Session from 'supertokens-node/recipe/session';
@@ -25,14 +25,17 @@ async function bootstrap() {
   );
   const configService = app.get(ConfigService);
 
-  app.use(
-    session({
-      secret: 'your-secret-key', // Секрет для шифрования сессий
-      resave: false,
-      saveUninitialized: false,
-      cookie: { secure: false }, // Установить на true в продакшн для HTTPS
-    }),
-  );
+  // app.use(
+  //   session({
+  //     secret: 'your-secret-key', // Секрет для шифрования сессий
+  //     resave: false,
+  //     saveUninitialized: false,
+  //     cookie: { secure: false }, // Установить на true в продакшн для HTTPS
+  //   }),
+  // );
+
+  app.use(middleware());
+  app.use(superTokensMiddleware());
 
   app.engine(
     'hbs',
@@ -60,21 +63,16 @@ async function bootstrap() {
   app.use('/public', express.static(join(__dirname, '..', 'public')));
   app.use('/data', express.static(join(__dirname, '..', 'data')));
 
-  // app.enableCors({
-  //   origin: true,//'*', // Разрешаем запросы с любых доменов
-  //   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'HEAD', 'PUT'],
-  //   allowedHeaders: 'Content-Type, Accept',
-  // });
 
   app.enableCors({
-    origin: configService.get<string>('CORS_ORIGIN') || 'http://localhost:8082',
+    origin: 'http://localhost:8082',
     credentials: true, //  чтобы куки передавались
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'HEAD', 'PUT'],
     allowedHeaders: [
       'Content-Type',
       'Authorization',
       'X-Requested-With',
-      'x-csrf-token', // важно для SuperTokens
+      'x-csrf-token',
       'rid',          // SuperTokens internal header
     ],
   });
@@ -86,6 +84,7 @@ async function bootstrap() {
       appName: 'm3311-avsyukevich',
       apiDomain: 'http://localhost:8082',
       websiteDomain: 'http://localhost:8082',
+      apiBasePath: '/auth'
     },
     supertokens: {
       connectionURI: process.env.SUPERTOKENS_CONNECTION_URI!,
@@ -143,15 +142,18 @@ async function bootstrap() {
           }),
         },
       }),
-      Session.init(),
+      Session.init({cookieSameSite: 'lax',
+        cookieSecure: true,
+        cookieDomain:'http://localhost:8082',
+        getTokenTransferMethod: () => 'cookie'}
+      ),
     ],
   });
 
-  app.use(superTokensMiddleware());
   app.useGlobalFilters(new SuperTokensExceptionFilter());
 
 
-  const config = new DocumentBuilder()
+    const config = new DocumentBuilder()
     .setTitle('API Documentation')
     .setDescription('API for managing law firm')
     .setVersion('1.0')

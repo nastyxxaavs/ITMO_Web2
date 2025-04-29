@@ -22,6 +22,8 @@ import { ApiExcludeController } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from '../common/upload.service';
 import { PublicAccess, SuperTokensAuthGuard, VerifySession, Session as STSession } from 'supertokens-nestjs';
+import { Request } from 'express';
+import Session from 'supertokens-node/recipe/session';
 
 
 @ApiExcludeController()
@@ -36,7 +38,8 @@ export class MemberController {
   @VerifySession()
   @Get('/member-add')
   @Render('general')
-  showMember(@STSession() session: any) {
+  async showMember(@Req() req: Request) {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
     return {
       isAuthenticated: payload.isAuthenticated,
@@ -55,8 +58,9 @@ export class MemberController {
   async create(
     @UploadedFile() file: Express.Multer.File,
     @Body(ValidationPipe) createMemberDto: CreateMemberDto,
-    @STSession() session: any,
+    @Req() req: Request,
   ) {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
     if (file) {
       try {
@@ -137,7 +141,8 @@ export class MemberController {
   @VerifySession()
   @Get('/member-edit/:id')
   @Render('general')
-  showContactEdit(@STSession() session: any, @Param('id') id: string) {
+  async showContactEdit(@Req() req: Request, @Param('id') id: string) {
+    const session = await Session.getSession(req, req.res, { sessionRequired: true });
     const payload = session.getAccessTokenPayload();
     return {
       id,
